@@ -23,6 +23,26 @@ services:
             - sail
         depends_on:
             - pgsql
+
+    queue-worker:
+        build:
+            context: './vendor/laravel/sail/runtimes/8.4'
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: '${WWWGROUP}'
+        image: 'sail-8.4/app'
+        environment:
+            WWWUSER: '${WWWUSER}'
+            LARAVEL_SAIL: 1
+        command: ['php', '/var/www/html/artisan', 'queue:work']
+        volumes:
+            - '.:/var/www/html'
+        networks:
+            - sail
+        depends_on:
+            - laravel.test
+            - pgsql
+
     pgsql:
         image: 'postgres:17'
         ports:
