@@ -22,6 +22,10 @@ install:
 migrate:
 	./vendor/bin/sail artisan migrate
 
+# Refresh
+refresh:
+	./vendor/bin/sail artisan migrate:fresh
+
 # Install npm dependencies
 npm-install:
 	./vendor/bin/sail npm install
