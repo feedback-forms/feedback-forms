@@ -50,13 +50,13 @@ jobs:
           kubectl apply -f deployments/postgres-deployment.yaml
           kubectl rollout status deployment/postgres -n feedback-forms
           # Wait for PostgreSQL to be fully ready
-          kubectl wait --for=condition=ready pod -l app=postgres -n feedback-forms --timeout=120s
+          kubectl wait --for=condition=ready pod -l app=postgres -n feedback-forms --timeout=600s
 
       - name: Deploy database setup
         run: |
           kubectl delete job db-setup -n feedback-forms --ignore-not-found
           kubectl apply -f deployments/db-setup-job.yaml
-          kubectl wait --for=condition=complete job/db-setup -n feedback-forms --timeout=120s
+          kubectl wait --for=condition=complete job/db-setup -n feedback-forms --timeout=600s
 
       - name: Deploy application
         run: |
