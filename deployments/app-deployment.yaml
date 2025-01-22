@@ -31,12 +31,25 @@ spec:
             port: 9000
           initialDelaySeconds: 30
           periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
         readinessProbe:
           httpGet:
             path: /health
             port: 9000
           initialDelaySeconds: 5
           periodSeconds: 5
+          timeoutSeconds: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 9000
+          failureThreshold: 30
+          periodSeconds: 10
+        lifecycle:
+          postStart:
+            exec:
+              command: ["/bin/sh", "-c", "php artisan config:cache && php artisan route:cache && php artisan view:cache"]
         env:
         - name: APP_KEY
           valueFrom:

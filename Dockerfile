@@ -58,9 +58,16 @@ COPY --from=builder /app /app
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache && \
     chmod -R 775 /app/storage /app/bootstrap/cache
 
+# Create PHP-FPM configuration
+RUN echo "php_admin_flag[log_errors] = on" >> /usr/local/etc/php-fpm.d/www.conf && \
+    echo "php_admin_flag[display_errors] = off" >> /usr/local/etc/php-fpm.d/www.conf && \
+    echo "php_admin_value[error_log] = /dev/stderr" >> /usr/local/etc/php-fpm.d/www.conf
+
 # Add health check
 HEALTHCHECK --interval=30s --timeout=3s \
     CMD php artisan health || exit 1
 
 EXPOSE 9000
-CMD ["php-fpm"]
+
+# Run PHP-FPM in foreground
+CMD ["php-fpm", "-F"]
