@@ -73,6 +73,8 @@ spec:
               value: "mail.smtp2go.com"
             - name: MAIL_PORT
               value: "2525"
+            - name: MAIL_FROM_ADDRESS
+              value: "noreply@uts-x.com"
             - name: MAIL_USERNAME
               valueFrom:
                 secretKeyRef:
