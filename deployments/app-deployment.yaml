@@ -18,6 +18,8 @@ spec:
       labels:
         app: feedback-forms
     spec:
+      securityContext:
+        fsGroup: 82  # Moved here at pod level
       volumes:
         - name: app-files
           emptyDir: {}
@@ -37,7 +39,6 @@ spec:
           securityContext:
             runAsUser: 82  # www-data user ID
             runAsGroup: 82 # www-data group ID
-            fsGroup: 82
           volumeMounts:
             - name: app-files
               mountPath: /app
