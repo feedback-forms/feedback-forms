@@ -27,13 +27,17 @@ spec:
       initContainers:
         - name: app-files
           image: ghcr.io/feedback-forms/feedback-forms:dev
-          command: ["/bin/sh", "-c", "cp -r /app/. /var/www/html/"]
+          command: ["/bin/sh", "-c", "cp -r /app/. /var/www/html/ && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache"]
           volumeMounts:
             - name: app-files
               mountPath: /var/www/html
       containers:
         - name: php-fpm
           image: ghcr.io/feedback-forms/feedback-forms:dev
+          securityContext:
+            runAsUser: 82  # www-data user ID
+            runAsGroup: 82 # www-data group ID
+            fsGroup: 82
           volumeMounts:
             - name: app-files
               mountPath: /app
