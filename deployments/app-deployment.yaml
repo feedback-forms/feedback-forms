@@ -8,7 +8,7 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 1
+      maxUnavailable: 0
       maxSurge: 1
   selector:
     matchLabels:
@@ -19,7 +19,7 @@ spec:
         app: feedback-forms
     spec:
       securityContext:
-        fsGroup: 82  # Moved here at pod level
+        fsGroup: 82
       volumes:
         - name: app-files
           emptyDir: {}
@@ -29,7 +29,12 @@ spec:
       initContainers:
         - name: app-files
           image: ghcr.io/feedback-forms/feedback-forms:dev
-          command: ["/bin/sh", "-c", "cp -r /app/. /var/www/html/ && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache"]
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              cp -r /app/. /var/www/html/
+              chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+              chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
           volumeMounts:
             - name: app-files
               mountPath: /var/www/html
@@ -37,8 +42,8 @@ spec:
         - name: php-fpm
           image: ghcr.io/feedback-forms/feedback-forms:dev
           securityContext:
-            runAsUser: 82  # www-data user ID
-            runAsGroup: 82 # www-data group ID
+            runAsUser: 82
+            runAsGroup: 82
           volumeMounts:
             - name: app-files
               mountPath: /app
@@ -86,6 +91,26 @@ spec:
               value: "pgsql"
             - name: DB_PORT
               value: "5432"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 9000
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "200m"
         - name: nginx
           image: nginx:alpine
           volumeMounts:
