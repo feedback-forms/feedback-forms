@@ -26,15 +26,14 @@ jobs:
         with:
           version: 'latest'
 
-      - name: Set Kubernetes context
-        uses: azure/k8s-set-context@v3
-        with:
-          method: kubeconfig
-          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+      - name: Create kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
 
       - name: Deploy to Kubernetes
         run: |
-          # Apply deployments
           kubectl apply -f deployments/
 
       - name: Verify deployment
