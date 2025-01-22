@@ -6,6 +6,16 @@ on:
     types:
       - completed
     branches: [ main, feat/deployment ]
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: false
+        default: 'production'
+        type: string
+    secrets:
+      KUBE_CONFIG:
+        required: true
 
 jobs:
   deploy:
