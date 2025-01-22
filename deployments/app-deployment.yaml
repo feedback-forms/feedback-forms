@@ -46,7 +46,7 @@ spec:
         - name: DB_HOST
           value: postgres
         - name: DB_DATABASE
-          value: "fmrobot_db"
+          value: "feedback_forms"
         - name: DB_USERNAME
           valueFrom:
             secretKeyRef:

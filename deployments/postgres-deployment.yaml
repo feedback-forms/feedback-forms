@@ -20,7 +20,7 @@ spec:
         - containerPort: 5432
         env:
         - name: POSTGRES_DB
-          value: "fmrobot_db"
+          value: "feedback_forms"
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
