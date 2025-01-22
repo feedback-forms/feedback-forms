@@ -45,6 +45,13 @@ jobs:
           sed -i "s|:dev|:${IMAGE_TAG#ghcr.io/feedback-forms/feedback-forms:}|g" deployments/app-deployment.yaml
           sed -i "s|:dev|:${IMAGE_TAG#ghcr.io/feedback-forms/feedback-forms:}|g" deployments/queue-deployment.yaml
 
+      - name: Deploy PostgreSQL
+        run: |
+          kubectl apply -f deployments/postgres-deployment.yaml
+          kubectl rollout status deployment/postgres -n feedback-forms
+          # Wait for PostgreSQL to be fully ready
+          kubectl wait --for=condition=ready pod -l app=postgres -n feedback-forms --timeout=120s
+
       - name: Deploy database setup
         run: |
           kubectl delete job db-setup -n feedback-forms --ignore-not-found
