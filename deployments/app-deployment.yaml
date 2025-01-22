@@ -21,6 +21,9 @@ spec:
       volumes:
         - name: app-files
           emptyDir: {}
+        - name: nginx-config
+          configMap:
+            name: nginx-config
       initContainers:
         - name: app-files
           image: ghcr.io/feedback-forms/feedback-forms:dev
@@ -87,10 +90,6 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "100m"
-      volumes:
-        - name: nginx-config
-          configMap:
-            name: nginx-config
 ---
 apiVersion: v1
 kind: Service
