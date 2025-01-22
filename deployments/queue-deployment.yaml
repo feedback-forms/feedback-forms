@@ -23,8 +23,12 @@ spec:
               secretKeyRef:
                 name: laravel-secret
                 key: app-key
+          - name: DB_CONNECTION
+            value: "pgsql"
           - name: DB_HOST
             value: postgres
+          - name: DB_PORT
+            value: "5432"
           - name: DB_DATABASE
             value: "feedback_forms"
           - name: DB_USERNAME
@@ -37,3 +41,9 @@ spec:
               secretKeyRef:
                 name: postgres-secret
                 key: password
+          - name: CACHE_DRIVER
+            value: "database"
+          - name: QUEUE_CONNECTION
+            value: "database"
+          - name: SESSION_DRIVER
+            value: "database"

@@ -33,6 +33,34 @@ spec:
           volumeMounts:
             - name: app-files
               mountPath: /var/www/html
+        - name: db-migrations
+          image: ghcr.io/feedback-forms/feedback-forms:dev
+          command:
+            - /bin/sh
+            - -c
+            - |
+              php artisan migrate --force
+              php artisan session:table
+              php artisan migrate --force
+          env:
+            - name: DB_CONNECTION
+              value: "pgsql"
+            - name: DB_HOST
+              value: postgres
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_DATABASE
+              value: "feedback_forms"
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password
       containers:
         - name: php-fpm
           image: ghcr.io/feedback-forms/feedback-forms:dev
@@ -78,6 +106,14 @@ spec:
                 secretKeyRef:
                   name: smtp-secret
                   key: password
+            - name: SESSION_DRIVER
+              value: "database"
+            - name: SESSION_LIFETIME
+              value: "120"
+            - name: DB_CONNECTION
+              value: "pgsql"
+            - name: DB_PORT
+              value: "5432"
         - name: nginx
           image: nginx:alpine
           volumeMounts:
