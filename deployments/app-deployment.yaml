@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: feedback-forms
+  namespace: feedback-forms
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: feedback-forms
+  template:
+    metadata:
+      labels:
+        app: feedback-forms
+    spec:
+      containers:
+      - name: feedback-forms
+        image: ghcr.io/feedback-forms/feedback-forms:latest
+        ports:
+        - containerPort: 9000
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "300m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 9000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 9000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        env:
+        - name: APP_KEY
+          valueFrom:
+            secretKeyRef:
+              name: laravel-secret
+              key: app-key
+        - name: DB_HOST
+          value: postgres
+        - name: DB_DATABASE
+          value: "fmrobot_db"
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: feedback-forms
+  namespace: feedback-forms
+spec:
+  selector:
+    app: feedback-forms
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000

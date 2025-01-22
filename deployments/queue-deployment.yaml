@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: feedback-forms-queue
+  namespace: feedback-forms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: feedback-forms-queue
+  template:
+    metadata:
+      labels:
+        app: feedback-forms-queue
+    spec:
+      containers:
+      - name: queue
+        image: ghcr.io/feedback-forms/feedback-forms:latest
+        command: ["php", "artisan", "queue:work", "--tries=3", "--timeout=90"]
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        env:
+        - name: APP_KEY
+          valueFrom:
+            secretKeyRef:
+              name: laravel-secret
+              key: app-key
+        - name: DB_HOST
+          value: postgres
+        - name: DB_DATABASE
+          value: "fmrobot_db"
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: password
