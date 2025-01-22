@@ -38,8 +38,12 @@ jobs:
 
       - name: Update image tag
         run: |
-          sed -i "s|:dev|:${{ inputs.image_tag }}|g" deployments/app-deployment.yaml
-          sed -i "s|:dev|:${{ inputs.image_tag }}|g" deployments/queue-deployment.yaml
+          # Get the last tag (commit-sha) from the comma-separated list
+          IMAGE_TAG=$(echo "${{ inputs.image_tag }}" | tr ',' '\n' | tail -n1 | tr -d ' ')
+
+          # Update the image tags in deployment files
+          sed -i "s|:dev|:${IMAGE_TAG#ghcr.io/feedback-forms/feedback-forms:}|g" deployments/app-deployment.yaml
+          sed -i "s|:dev|:${IMAGE_TAG#ghcr.io/feedback-forms/feedback-forms:}|g" deployments/queue-deployment.yaml
 
       - name: Deploy to Kubernetes
         run: |
