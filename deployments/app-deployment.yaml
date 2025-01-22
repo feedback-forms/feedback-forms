@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: feedback-forms
-        image: ghcr.io/feedback-forms/feedback-forms:latest
+        image: ghcr.io/feedback-forms/feedback-forms:dev
         ports:
         - containerPort: 9000
         resources:

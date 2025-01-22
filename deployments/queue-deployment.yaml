@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: queue
-        image: ghcr.io/feedback-forms/feedback-forms:latest
+        image: ghcr.io/feedback-forms/feedback-forms:dev
         command: ["php", "artisan", "queue:work", "--tries=3", "--timeout=90"]
         resources:
           requests:
