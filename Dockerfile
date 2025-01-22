@@ -24,6 +24,9 @@ WORKDIR /app
 COPY composer.* ./
 COPY package*.json ./
 
+# Create required directories
+RUN mkdir -p resources/svg
+
 # Install PHP dependencies
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 
