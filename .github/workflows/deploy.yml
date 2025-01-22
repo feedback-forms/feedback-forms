@@ -52,7 +52,7 @@ jobs:
       - name: Deploy PostgreSQL
         run: |
           kubectl apply -f deployments/postgres-deployment.yaml
-          kubectl rollout status deployment/postgres -n feedback-forms --timeout=300s
+          kubectl rollout status deployment/postgres -n feedback-forms --timeout=180s
           # Additional wait to ensure PostgreSQL is accepting connections
           kubectl wait --for=condition=ready pod -l app=postgres -n feedback-forms --timeout=300s
 
@@ -62,7 +62,7 @@ jobs:
           kubectl delete job db-setup -n feedback-forms --ignore-not-found
           # Apply and wait for the new job
           kubectl apply -f deployments/db-setup-job.yaml
-          kubectl wait --for=condition=complete job/db-setup -n feedback-forms --timeout=300s
+          kubectl wait --for=condition=complete job/db-setup -n feedback-forms --timeout=800s
 
       - name: Deploy application and queue
         run: |
@@ -72,8 +72,8 @@ jobs:
 
       - name: Verify deployments
         run: |
-          kubectl rollout status deployment/feedback-forms -n feedback-forms --timeout=300s
-          kubectl rollout status deployment/feedback-forms-queue -n feedback-forms --timeout=300s
+          kubectl rollout status deployment/feedback-forms -n feedback-forms --timeout=800s
+          kubectl rollout status deployment/feedback-forms-queue -n feedback-forms --timeout=800s
 
       - name: Health check
         run: |
