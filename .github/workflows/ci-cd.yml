@@ -11,7 +11,7 @@ jobs:
 
   deploy:
     needs: build
-    # if: github.ref == 'refs/heads/main'  # Only deploy from main branch
+    # if: github.ref == 'refs/heads/master'  # Only deploy from master branch
     uses: ./.github/workflows/deploy.yml
     with:
       environment: production
