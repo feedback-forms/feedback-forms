@@ -1,0 +1,68 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-setup
+  namespace: feedback-forms
+spec:
+  backoffLimit: 5
+  template:
+    spec:
+      restartPolicy: OnFailure
+      initContainers:
+        - name: db-setup
+          image: postgres:17.0-alpine
+          command:
+            - /bin/sh
+            - -c
+            - |
+              export PGPASSWORD=$DB_PASSWORD
+              until pg_isready -h postgres -p 5432; do
+                echo "Waiting for postgres..."
+                sleep 2
+              done
+              psql -h postgres -U $DB_USERNAME -d postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'feedback_forms'" | grep -q 1 || psql -h postgres -U $DB_USERNAME -d postgres -c "CREATE DATABASE feedback_forms;"
+          env:
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password
+      containers:
+        - name: db-migrations
+          image: ghcr.io/feedback-forms/feedback-forms:dev
+          command:
+            - /bin/sh
+            - -c
+            - |
+              until pg_isready -h postgres -p 5432; do
+                echo "Waiting for postgres..."
+                sleep 2
+              done
+              php artisan migrate:install
+              php artisan migrate --force
+              php artisan session:table
+              php artisan migrate --force
+          env:
+            - name: DB_CONNECTION
+              value: "pgsql"
+            - name: DB_HOST
+              value: postgres
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_DATABASE
+              value: "feedback_forms"
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password
