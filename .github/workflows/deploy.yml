@@ -1,0 +1,55 @@
+name: Deploy to Kubernetes
+
+on:
+  workflow_run:
+    workflows: ["Build and Push"]
+    types:
+      - completed
+    branches: [ main, feat/deployment ]
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Set Kubernetes context
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Update deployment image
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get the latest image tag
+          IMAGE_TAG=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts" \
+            | jq -r '.artifacts[0].name')
+
+          # Update image tags in deployments
+          sed -i "s|\${GITHUB_REPOSITORY_OWNER}|${{ github.repository_owner }}|g" deployments/*.yaml
+
+          # Apply deployments
+          kubectl apply -f deployments/
+
+      - name: Verify deployment
+        run: |
+          kubectl rollout status deployment/feedback-forms -n feedback-forms
+          kubectl rollout status deployment/feedback-forms-queue -n feedback-forms
+          kubectl rollout status deployment/feedback-forms-nginx -n feedback-forms
+
+      - name: Verify application health
+        run: |
+          # Wait for ingress to be ready
+          sleep 30
+          curl -f https://feedback-forms.uts-x.com/health || exit 1
