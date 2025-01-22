@@ -14,6 +14,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: feedback-forms-nginx
+            name: feedback-forms
             port:
               number: 80

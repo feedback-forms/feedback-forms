@@ -13,79 +13,79 @@ spec:
       labels:
         app: feedback-forms
     spec:
+      volumes:
+        - name: app-files
+          emptyDir: {}
+      initContainers:
+        - name: app-files
+          image: ghcr.io/feedback-forms/feedback-forms:dev
+          command: ["/bin/sh", "-c", "cp -r /app/. /var/www/html/"]
+          volumeMounts:
+            - name: app-files
+              mountPath: /var/www/html
       containers:
-      - name: feedback-forms
-        image: ghcr.io/feedback-forms/feedback-forms:dev
-        ports:
-        - containerPort: 9000
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "512Mi"
-            cpu: "300m"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 9000
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 9000
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          timeoutSeconds: 3
-        startupProbe:
-          httpGet:
-            path: /health
-            port: 9000
-          failureThreshold: 30
-          periodSeconds: 10
-        lifecycle:
-          postStart:
-            exec:
-              command: ["/bin/sh", "-c", "php artisan config:cache && php artisan route:cache && php artisan view:cache"]
-        env:
-        - name: APP_KEY
-          valueFrom:
-            secretKeyRef:
-              name: laravel-secret
-              key: app-key
-        - name: DB_HOST
-          value: postgres
-        - name: DB_DATABASE
-          value: "feedback_forms"
-        - name: DB_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: postgres-secret
-              key: username
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: postgres-secret
-              key: password
-        - name: MAIL_MAILER
-          value: "smtp"
-        - name: MAIL_HOST
-          value: "mail.smtp2go.com"
-        - name: MAIL_PORT
-          value: "2525"
-        - name: MAIL_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: smtp-secret
-              key: username
-        - name: MAIL_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: smtp-secret
-              key: password
+        - name: php-fpm
+          image: ghcr.io/feedback-forms/feedback-forms:dev
+          volumeMounts:
+            - name: app-files
+              mountPath: /app
+          env:
+            - name: APP_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: laravel-secret
+                  key: app-key
+            - name: DB_HOST
+              value: postgres
+            - name: DB_DATABASE
+              value: "feedback_forms"
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password
+            - name: MAIL_MAILER
+              value: "smtp"
+            - name: MAIL_HOST
+              value: "mail.smtp2go.com"
+            - name: MAIL_PORT
+              value: "2525"
+            - name: MAIL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: smtp-secret
+                  key: username
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: smtp-secret
+                  key: password
+        - name: nginx
+          image: nginx:alpine
+          volumeMounts:
+            - name: app-files
+              mountPath: /app
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: nginx.conf
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nginx-config
 ---
 apiVersion: v1
 kind: Service
@@ -97,5 +97,5 @@ spec:
     app: feedback-forms
   ports:
     - protocol: TCP
-      port: 9000
-      targetPort: 9000
+      port: 80
+      targetPort: 80
