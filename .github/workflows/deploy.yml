@@ -8,6 +8,10 @@ on:
         required: false
         default: 'production'
         type: string
+      image_tag:
+        description: 'Docker image tag to deploy'
+        required: true
+        type: string
     secrets:
       KUBE_CONFIG:
         required: true
@@ -31,6 +35,11 @@ jobs:
           mkdir -p $HOME/.kube
           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
+
+      - name: Update image tag
+        run: |
+          sed -i "s|:dev|:${{ inputs.image_tag }}|g" deployments/app-deployment.yaml
+          sed -i "s|:dev|:${{ inputs.image_tag }}|g" deployments/queue-deployment.yaml
 
       - name: Deploy to Kubernetes
         run: |

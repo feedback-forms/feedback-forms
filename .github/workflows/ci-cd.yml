@@ -15,4 +15,5 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       environment: production
+      image_tag: ${{ needs.build.outputs.image_tag }}
     secrets: inherit
