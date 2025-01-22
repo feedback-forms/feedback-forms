@@ -33,12 +33,39 @@ spec:
           volumeMounts:
             - name: app-files
               mountPath: /var/www/html
+        - name: db-setup
+          image: postgres:17.0-alpine
+          command:
+            - /bin/sh
+            - -c
+            - |
+              export PGPASSWORD=$DB_PASSWORD
+              until pg_isready -h postgres -p 5432; do
+                echo "Waiting for postgres..."
+                sleep 2
+              done
+              psql -h postgres -U $DB_USERNAME -d postgres -c "CREATE DATABASE feedback_forms;"
+          env:
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password
         - name: db-migrations
           image: ghcr.io/feedback-forms/feedback-forms:dev
           command:
             - /bin/sh
             - -c
             - |
+              until php artisan migrate:status; do
+                echo "Waiting for database..."
+                sleep 2
+              done
               php artisan migrate --force
               php artisan session:table
               php artisan migrate --force
