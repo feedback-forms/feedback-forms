@@ -11,6 +11,12 @@ on:
     secrets:
       KUBE_CONFIG:
         required: true
+      DB_USERNAME:
+        required: true
+      DB_PASSWORD:
+        required: true
+      LARAVEL_APP_KEY:
+        required: true
 
 jobs:
   deploy:
