@@ -7,8 +7,7 @@ use Livewire\Volt\Volt;
 Route::resource('/', WelcomeController::class);
 
 Route::get('feedback/smiley', [SurveyController::class, 'showSmiley']);
-
-
+Route::get('feedback/table', [SurveyController::class, 'showTable']);
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
