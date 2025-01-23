@@ -8,6 +8,7 @@ Route::resource('/', WelcomeController::class);
 
 Route::get('feedback/smiley', [SurveyController::class, 'showSmiley']);
 Route::get('feedback/table', [SurveyController::class, 'showTable']);
+Route::get('feedback/target', [SurveyController::class, 'showTarget']);
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
