@@ -47,3 +47,21 @@ spec:
             value: "database"
           - name: SESSION_DRIVER
             value: "database"
+          - name: MAIL_MAILER
+            value: "smtp"
+          - name: MAIL_HOST
+            value: "mail.smtp2go.com"
+          - name: MAIL_PORT
+            value: "2525"
+          - name: MAIL_FROM_ADDRESS
+            value: "noreply@uts-x.com"
+          - name: MAIL_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: smtp-secret
+                key: username
+          - name: MAIL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: smtp-secret
+                key: password
