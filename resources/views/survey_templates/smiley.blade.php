@@ -18,7 +18,7 @@
                         </div>
                     </div>
                 </div>
-                <div style="display: flex; justify-content: flex-end; padding-right: 2%; padding-bottom: 2%">
+                <div class="flex justify-end pr-6 pb-6">
                     <x-primary-button>
                         Absenden <x-fas-arrow-right class="w-6 h-6" />
                     </x-primary-button>
