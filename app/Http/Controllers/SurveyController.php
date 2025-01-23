@@ -10,4 +10,9 @@ class SurveyController extends Controller
     {
         return view('survey_templates.smiley');
     }
+
+    public function showTable()
+    {
+        return view('survey_templates.table');
+    }
 }

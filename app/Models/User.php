@@ -56,10 +56,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function sendEmailVerificationNotification(): void
     {
         // Skip verification in non-production environments
-        // if (app()->environment('local', 'testing')) {
-        //     $this->markEmailAsVerified();
-        //     return;
-        // }
+        if (app()->environment('local', 'testing')) {
+            $this->markEmailAsVerified();
+            return;
+        }
 
 
         try {
