@@ -1,6 +1,6 @@
 <div class="flex flex-col gap-2 p-20">
     <!-- '/admin-panel' -->
-    <a class="flex flex-row gap-2 items-center w-fit" href="/admin-panel">
+    <a class="flex flex-row gap-2 items-center w-fit text-2xl px-2" href="/admin-panel">
         <x-fas-arrow-left class="w-4 h-4 text-gray-500 dark:text-gray-300" />
         <span class="text-gray-500 dark:text-gray-400">{{__('surveys.surveys')}}</span>
     </a>

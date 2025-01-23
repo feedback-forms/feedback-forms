@@ -2,7 +2,8 @@
     {{$attributes->merge([])}}
 
     @class([
-        '!bg-indigo-100' => $attributes->get('chip-checked') === 'true',
+        'bg-indigo-100' => $attributes->get('chip-checked') === 'true',
+        'dark:bg-indigo-900' => $attributes->get('chip-checked') === 'true',
         '!py-1'
     ])
 >
