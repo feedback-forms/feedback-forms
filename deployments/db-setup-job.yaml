@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-setup
+  namespace: feedback-forms
+spec:
+  backoffLimit: 10
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: db-migrations
+          image: ghcr.io/feedback-forms/feedback-forms:dev
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Waiting for postgres..."
+              while ! nc -z postgres 5432; do
+                sleep 1
+              done
+              php artisan migrate --force
+              php artisan session:table
+              php artisan migrate --force
+          env:
+            - name: DB_CONNECTION
+              value: "pgsql"
+            - name: DB_HOST
+              value: postgres
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_DATABASE
+              value: "feedback_forms"
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password
