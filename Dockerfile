@@ -36,6 +36,9 @@ RUN npm ci
 # Copy application files
 COPY . .
 
+# Copy .env.example to .env
+COPY .env.example .env
+
 # Generate optimized autoload files
 RUN composer dump-autoload --optimize
 
