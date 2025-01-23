@@ -3,8 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WelcomeController;
 
-Route::get('/', [WelcomeController::class, 'render']);
-Route::post('/', [WelcomeController::class, 'validate']);
+Route::resource('/', WelcomeController::class);
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])

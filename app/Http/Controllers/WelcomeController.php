@@ -9,7 +9,7 @@ use Illuminate\View\View;
 
 class WelcomeController extends Controller
 {
-    public function validate(Request $request): Response
+    public function store(Request $request): Response
     {
         $validated = $request->validate(['token' => 'required']);
 
@@ -18,7 +18,7 @@ class WelcomeController extends Controller
         dd($token);
     }
 
-    public function render(): View
+    public function index(): View
     {
         return view('welcome');
     }
