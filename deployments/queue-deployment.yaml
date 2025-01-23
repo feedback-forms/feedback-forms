@@ -23,6 +23,8 @@ spec:
               secretKeyRef:
                 name: laravel-secret
                 key: app-key
+          - name: APP_URL
+            value: "https://$(DOMAIN)"
           - name: DB_CONNECTION
             value: "pgsql"
           - name: DB_HOST
