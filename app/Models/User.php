@@ -55,15 +55,28 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function sendEmailVerificationNotification(): void
     {
-        Log::info('Sending verification email to user', [
-            'name' => $this->name,
-            'email' => $this->email
-        ]);
+        // Skip verification in non-production environments
+        // if (app()->environment('local', 'testing')) {
+        //     $this->markEmailAsVerified();
+        //     return;
+        // }
 
-        $this->notify(new CustomVerifyEmail);
+
+        try {
+            $this->notify(new CustomVerifyEmail);
+            Log::info('Verification email queued successfully', [
+                'user_id' => $this->id,
+                'email' => $this->email
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to queue verification email', [
+                'user_id' => $this->id,
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 
-    public function registerkey(): HasMany 
+    public function registerkey(): HasMany
     {
         return $this->hasMany(Registerkey::class);
     }

@@ -59,8 +59,10 @@ jobs:
             sed -i "s|:dev|:${IMAGE_TAG#ghcr.io/feedback-forms/feedback-forms:}|g" "$file"
           done
 
-          # Update domain in ingress
+          # Update domain in ingress and APP_URL in deployments
           sed -i "s/feedback-forms.uts-x.com/${{ env.DOMAIN }}/g" deployments/ingress.yaml
+          sed -i "s/\$(DOMAIN)/${{ env.DOMAIN }}/g" deployments/app-deployment.yaml
+          sed -i "s/\$(DOMAIN)/${{ env.DOMAIN }}/g" deployments/queue-deployment.yaml
 
       - name: Apply ConfigMaps and Secrets first
         run: |
