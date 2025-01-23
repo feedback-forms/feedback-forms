@@ -7,6 +7,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Config;
 
 class CustomVerifyEmail extends VerifyEmail implements ShouldQueue
 {
@@ -36,12 +38,23 @@ class CustomVerifyEmail extends VerifyEmail implements ShouldQueue
     {
         $verificationUrl = $this->verificationUrl($notifiable);
 
+        Log::info('Sending verification email', [
+            'user' => $notifiable->name,
+            'email' => $notifiable->email,
+            'url' => $verificationUrl
+        ]);
+
         return (new MailMessage)
-            ->subject('Verify Email Address')
-            ->greeting("Hello {$notifiable->name}!")
-            ->line('Please click the button below to verify your email address.')
-            ->action('Verify Email Address', $verificationUrl)
-            ->line('If you did not create an account, no further action is required.');
+            ->subject(__('notification.verify_email.subject'))
+            ->markdown('vendor.notifications.email', [
+                'greeting' => __('notification.verify_email.greeting', ['name' => $notifiable->name]),
+                'introLines' => [__('notification.verify_email.intro')],
+                'actionText' => __('notification.verify_email.action'),
+                'actionUrl' => $verificationUrl,
+                'level' => 'default',
+                'outroLines' => [__('notification.verify_email.outro')],
+                'salutation' => __('notification.verify_email.salutation') . "\n" . config('app.name') . ' Team'
+            ]);
     }
 
     /**
