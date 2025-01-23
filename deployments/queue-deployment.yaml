@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: feedback-forms-queue
+  namespace: feedback-forms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: feedback-forms-queue
+  template:
+    metadata:
+      labels:
+        app: feedback-forms-queue
+    spec:
+      containers:
+      - name: queue
+        image: ghcr.io/feedback-forms/feedback-forms:dev
+        command: ["php", "artisan", "queue:work", "--tries=3", "--timeout=90"]
+        env:
+          - name: APP_KEY
+            valueFrom:
+              secretKeyRef:
+                name: laravel-secret
+                key: app-key
+          - name: DB_CONNECTION
+            value: "pgsql"
+          - name: DB_HOST
+            value: postgres
+          - name: DB_PORT
+            value: "5432"
+          - name: DB_DATABASE
+            value: "feedback_forms"
+          - name: DB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: postgres-secret
+                key: username
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres-secret
+                key: password
+          - name: CACHE_DRIVER
+            value: "database"
+          - name: QUEUE_CONNECTION
+            value: "database"
+          - name: SESSION_DRIVER
+            value: "database"
+          - name: MAIL_MAILER
+            value: "smtp"
+          - name: MAIL_HOST
+            value: "mail.smtp2go.com"
+          - name: MAIL_PORT
+            value: "2525"
+          - name: MAIL_FROM_ADDRESS
+            value: "noreply@uts-x.com"
+          - name: MAIL_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: smtp-secret
+                key: username
+          - name: MAIL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: smtp-secret
+                key: password
