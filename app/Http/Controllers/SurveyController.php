@@ -15,4 +15,9 @@ class SurveyController extends Controller
     {
         return view('survey_templates.table');
     }
+
+    public function showTarget()
+    {
+        return view('survey_templates.target');
+    }
 }

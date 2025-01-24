@@ -32,4 +32,7 @@ Route::middleware('auth')->group(function () {
 
     Volt::route('surveys', Overview::class)
         ->name('surveys.list');
+
+    Volt::route('templates', \App\Livewire\Templates\Overview::class)
+        ->name('templates.list');
 });
