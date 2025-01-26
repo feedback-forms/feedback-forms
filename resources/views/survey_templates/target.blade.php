@@ -6,11 +6,25 @@
 
         path.selected {
             fill: rgba(59, 130, 246, var(--hover-opacity)) !important;
+            stroke: rgb(59, 130, 246) !important;
+            stroke-width: 2px !important;
         }
 
         .dark path:hover,
         .dark path.selected {
             fill: rgba(96, 165, 250, var(--hover-opacity)) !important;
+            stroke: rgb(96, 165, 250) !important;
+        }
+
+        g.selected path {
+            fill: rgba(59, 130, 246, var(--hover-opacity)) !important;
+            stroke: rgb(59, 130, 246) !important;
+            stroke-width: 2px !important;
+        }
+
+        .dark g.selected path {
+            fill: rgba(96, 165, 250, var(--hover-opacity)) !important;
+            stroke: rgb(96, 165, 250) !important;
         }
 
         .tooltip {
@@ -79,21 +93,33 @@
                                         @php
                                             $innerRadius = $ringIndex < 4 ? [160, 120, 80, 40][$ringIndex] : 0;
                                             $hoverOpacity = ($ringIndex + 1) * 0.15;
+
+                                            // Calculate arc points
+                                            $startX = 200 + $outerRadius * cos($index * pi() / 4);
+                                            $startY = 200 + $outerRadius * sin($index * pi() / 4);
+                                            $endX = 200 + $outerRadius * cos(($index + 1) * pi() / 4);
+                                            $endY = 200 + $outerRadius * sin(($index + 1) * pi() / 4);
+                                            $innerStartX = 200 + $innerRadius * cos($index * pi() / 4);
+                                            $innerStartY = 200 + $innerRadius * sin($index * pi() / 4);
+                                            $innerEndX = 200 + $innerRadius * cos(($index + 1) * pi() / 4);
+                                            $innerEndY = 200 + $innerRadius * sin(($index + 1) * pi() / 4);
                                         @endphp
-                                        <path
-                                            d="M 200 200
-                                               L {{ 200 + $outerRadius * cos($index * pi() / 4) }} {{ 200 + $outerRadius * sin($index * pi() / 4) }}
-                                               A {{ $outerRadius }} {{ $outerRadius }} 0 0 1 {{ 200 + $outerRadius * cos(($index + 1) * pi() / 4) }} {{ 200 + $outerRadius * sin(($index + 1) * pi() / 4) }}
-                                               L {{ 200 + $innerRadius * cos(($index + 1) * pi() / 4) }} {{ 200 + $innerRadius * sin(($index + 1) * pi() / 4) }}
-                                               A {{ $innerRadius }} {{ $innerRadius }} 0 0 0 {{ 200 + $innerRadius * cos($index * pi() / 4) }} {{ 200 + $innerRadius * sin($index * pi() / 4) }}
-                                               Z"
-                                            class="fill-transparent cursor-pointer transition-colors"
-                                            :class="{ 'selected': isSelected({{ $index }}, {{ $ringIndex + 1 }}) }"
-                                            style="--hover-opacity: {{ $hoverOpacity }};"
-                                            @click="toggleRating($event, {{ $index }}, {{ $ringIndex + 1 }})"
-                                            @mouseenter="showTooltip($event, '{{ $statement }} - Bewertung: {{ $ringIndex + 1 }}')"
-                                            @mouseleave="hideTooltip()"
-                                        />
+                                        <g class="cursor-pointer"
+                                           :class="{ 'selected': isSelected({{ $index }}, {{ $ringIndex + 1 }}) }"
+                                           style="--hover-opacity: {{ $hoverOpacity }};"
+                                           @click="toggleRating($event, {{ $index }}, {{ $ringIndex + 1 }})"
+                                           @mouseenter="showTooltip($event, '{{ $statement }} - Bewertung: {{ $ringIndex + 1 }}')"
+                                           @mouseleave="hideTooltip()">
+                                            <!-- Outer arc -->
+                                            <path
+                                                d="M {{ $startX }} {{ $startY }}
+                                                   A {{ $outerRadius }} {{ $outerRadius }} 0 0 1 {{ $endX }} {{ $endY }}
+                                                   L {{ $innerEndX }} {{ $innerEndY }}
+                                                   A {{ $innerRadius }} {{ $innerRadius }} 0 0 0 {{ $innerStartX }} {{ $innerStartY }}
+                                                   Z"
+                                                class="fill-transparent transition-colors stroke-transparent hover:fill-blue-500 hover:fill-opacity-[var(--hover-opacity)]"
+                                            />
+                                        </g>
                                     @endforeach
                                 @endforeach
 
