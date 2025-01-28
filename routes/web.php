@@ -22,4 +22,8 @@ Route::get('/admin-panel', App\Livewire\Admin\Panel::class)
     ->middleware(['auth'])
     ->name('admin.panel');
 
+Route::get('/admin/users', App\Livewire\Admin\Users::class)
+    ->middleware(['auth'])
+    ->name('admin.users');
+
 require __DIR__.'/auth.php';
