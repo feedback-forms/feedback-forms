@@ -16,7 +16,7 @@
     <body class="antialiased font-sans">
         <div class="bg-gray-100 text-black/50 dark:bg-gray-900 dark:text-white/50">
             <main>
-                <div class="min-h-screen flex flex-col items-center justify-center gap-12 selection:bg-[#FF2D20] selection:text-white">
+                <div class="min-h-dvh flex flex-col items-center justify-center gap-12 selection:bg-[#FF2D20] selection:text-white">
                     <a href="/">
                         <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
                     </a>
