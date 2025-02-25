@@ -20,4 +20,9 @@ class SurveyController extends Controller
     {
         return view('survey_templates.target');
     }
+
+    public function retrieveSmiley(Request $request)
+    {
+        dd($request);
+    }
 }
