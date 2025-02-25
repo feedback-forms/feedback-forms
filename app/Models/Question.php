@@ -7,6 +7,13 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasOne};
 
 class Question extends Model
 {
+    protected $fillable = [
+        'feedback_template_id',
+        'question_template_id',
+        'feedback_id',
+        'question'
+    ];
+
     public function feedback_template(): BelongsTo
     {
         return $this->belongsTo(Feedback_template::class);
