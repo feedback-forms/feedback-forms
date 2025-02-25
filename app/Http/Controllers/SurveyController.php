@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Http\Requests\SmileyRequest;
 use Illuminate\Http\Request;
 
 class SurveyController extends Controller
@@ -21,7 +21,7 @@ class SurveyController extends Controller
         return view('survey_templates.target');
     }
 
-    public function retrieveSmiley(Request $request)
+    public function retrieveSmiley(SmileyRequest $request)
     {
         dd($request);
     }
