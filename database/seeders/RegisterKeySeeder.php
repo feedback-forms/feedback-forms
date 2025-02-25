@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Registerkey;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class RegisterKeySeeder extends Seeder
 {
@@ -12,7 +12,7 @@ class RegisterKeySeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('registerkeys')->insert([
+        Registerkey::updateOrCreate([
             'code' => 'ABCD-EFGH'
         ]);
     }
