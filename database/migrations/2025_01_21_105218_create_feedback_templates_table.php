@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('feedback_templates', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('title')->nullable();
             $table->timestamps();
         });
     }
