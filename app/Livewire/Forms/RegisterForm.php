@@ -23,12 +23,6 @@ class RegisterForm extends Form
     {
         $registerKey = Registerkey::query()->where('code', $code)->first();
 
-        if (!$registerKey) {
-            throw ValidationException::withMessages([
-                'test' => 'Code invalid'
-            ]);
-        }
-
         return $registerKey;
     }
 

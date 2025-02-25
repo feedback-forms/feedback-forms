@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Forms\RegisterForm;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
@@ -14,6 +15,7 @@ new #[Layout('layouts.guest')] class extends Component {
     public string $password = '';
     public string $password_confirmation = '';
     public string $register_key = '';
+    public RegisterForm $registerForm;
 
     /**
      * Handle an incoming registration request.
@@ -30,6 +32,7 @@ new #[Layout('layouts.guest')] class extends Component {
             'register_key.exists' => __('register.invalid_code'),
         ]);
 
+        $validated['registerkey_id'] = $this->registerForm->getRegisterKey($this->register_key)->id;
         $validated['password'] = Hash::make($validated['password']);
 
         event(new Registered($user = User::create($validated)));
