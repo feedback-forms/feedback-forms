@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('question_templates', function (Blueprint $table) {
             $table->id();
             $table->string('type');
-            $table->integer('max_value');
-            $table->integer('min_value');
+            $table->integer('max_value')->nullable();
+            $table->integer('min_value')->nullable();
             $table->timestamps();
         });
     }

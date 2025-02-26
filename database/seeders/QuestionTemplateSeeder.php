@@ -16,18 +16,18 @@ class QuestionTemplateSeeder extends Seeder
         # Target Feedback
         Question_template::updateOrCreate([
             'type' => 'range',
-            'min' => 1,
-            'max' => 5,
+            'min_value' => 1,
+            'max_value' => 5,
         ]);
 
         Question_template::updateOrCreate([
             'type' => 'checkboxes',
-            'max' => 4,
+            'max_value' => 4,
         ]);
 
         Question_template::updateOrCreate([
             'type' => 'textarea',
-            'max' => 3,
-        ])
+            'max_value' => 3,
+        ]);
     }
 }

@@ -14,8 +14,7 @@ return new class extends Migration
     {
         Schema::create('registerkeys', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(User::class);
-            $table->string('code');
+            $table->char('code', 9)->unique();
             $table->timestamps();
         });
     }

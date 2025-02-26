@@ -11,7 +11,7 @@ Route::get('feedback/table', [SurveyController::class, 'showTable']);
 Route::get('feedback/target', [SurveyController::class, 'showTarget']);
 
 Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('dashboard');
 
 Route::view('profile', 'profile')
