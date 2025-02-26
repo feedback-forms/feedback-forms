@@ -57,6 +57,18 @@ The following issues have been addressed:
 
 9. **Survey Access Error**: Fixed an error in the WelcomeController that was preventing students from accessing surveys using the access key on the main page. The controller was only dumping the token value instead of properly handling it. Updated the controller to validate the token, find the corresponding survey, and display it to the student.
 
+10. **Student Survey Access Logic**: Fixed a logic problem where students were not seeing the correct survey when using a survey code. The issue was in how surveys were being loaded and displayed to students. Made the following improvements:
+    - Enhanced the eager loading of relationships in both WelcomeController and SurveyResponseController to ensure the correct survey with its questions is loaded
+    - Added explicit loading of the survey's questions before processing responses in the submitResponses method
+    - Improved the question creation process in SurveyService to handle cases where a template question might not have a question_template_id
+    - Ensured consistent handling of survey access across different entry points (welcome page and dedicated survey access page)
+
+11. **Template-Specific Survey Responses**: Implemented a complete overhaul of the survey response system to show students the actual template-based surveys:
+    - Created template-specific response views for each survey type (target, table, smiley, checkbox)
+    - Modified controllers to render the appropriate template based on the survey type
+    - Updated the SurveyService to handle both standard and template-specific response formats
+    - Enhanced the Result model to properly handle JSON responses from complex templates
+
 ## Implementation Plan
 
 ### 1. Bug Fixes and Immediate Improvements
@@ -71,6 +83,7 @@ The following issues have been addressed:
 - [x] Fix survey editing route issue by updating route references from 'surveys.index' to 'surveys.list'
 - [x] Fix issue with school-related fields (Grade Level, Department, Subject) not appearing selected in edit view
 - [x] Add error handling to prevent null reference exceptions
+- [x] Fix logic problem with student survey access to ensure students see the correct survey created by teachers
 - [ ] Implement proper validation for template selection
 
 ### 2. Template Management Enhancements

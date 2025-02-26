@@ -38,7 +38,7 @@ class SurveyService
                     Question::create([
                         'feedback_template_id' => $data['template_id'],
                         'feedback_id' => $survey->id,
-                        'question_template_id' => $templateQuestion->question_template_id,
+                        'question_template_id' => $templateQuestion->question_template_id ?? null,
                         'question' => $templateQuestion->question,
                     ]);
                 }
@@ -100,7 +100,21 @@ class SurveyService
             // Get all questions for this survey
             $questions = $survey->questions;
 
-            // Store each response
+            // Check if this is a JSON response (from template-specific forms like target)
+            if (count($responses) === 1 && isset($responses[0]) && is_string($responses[0])) {
+                try {
+                    $jsonData = json_decode($responses[0], true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($jsonData)) {
+                        // Handle template-specific response format
+                        $this->storeTemplateSpecificResponses($survey, $jsonData);
+                        return true;
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Error parsing JSON response: ' . $e->getMessage());
+                }
+            }
+
+            // Handle regular question-by-question responses
             foreach ($responses as $questionId => $value) {
                 // Verify the question belongs to this survey
                 $question = $questions->firstWhere('id', $questionId);
@@ -121,5 +135,30 @@ class SurveyService
 
             return true;
         });
+    }
+
+    /**
+     * Store responses from template-specific forms (like target diagram)
+     */
+    private function storeTemplateSpecificResponses(Feedback $survey, array $jsonData): void
+    {
+        // Get the template type
+        $templateName = $survey->feedback_template->name ?? '';
+        $templateType = '';
+        if (preg_match('/templates\.feedback\.(\w+)$/', $templateName, $matches)) {
+            $templateType = $matches[1];
+        }
+
+        // Store the entire response as JSON for future reference
+        $responseJson = json_encode($jsonData);
+
+        // Create a single result record with the JSON data
+        Result::create([
+            'question_id' => $survey->questions->first()->id ?? null,
+            'value' => $responseJson
+        ]);
+
+        // Increment the response count
+        $survey->increment('already_answered');
     }
 }
