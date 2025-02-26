@@ -8,6 +8,7 @@ return [
 
     'smiley' => [
         'positive' => 'Ich finde gut, dass...',
-        'negative' => 'Ich finde nicht gut, dass...'
+        'negative' => 'Ich finde nicht gut, dass...',
+        'button' => 'Absenden',
     ],
 ];

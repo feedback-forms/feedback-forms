@@ -25,6 +25,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
+        'registerkey_id'
     ];
 
     /**
@@ -58,6 +59,10 @@ class User extends Authenticatable implements MustVerifyEmail
         // Skip verification in non-production environments
         if (app()->environment('local', 'testing')) {
             $this->markEmailAsVerified();
+            return;
+        }
+
+        if (!$this->email) {
             return;
         }
 

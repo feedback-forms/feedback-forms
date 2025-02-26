@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Http\Requests\SmileyRequest;
+use Illuminate\Support\Facades\{Log};
 use Illuminate\Http\Request;
 
 class SurveyController extends Controller
@@ -23,6 +24,11 @@ class SurveyController extends Controller
 
     public function retrieveSmiley(SmileyRequest $request)
     {
-        dd($request);
+        try {
+
+            dd($regquest);
+        } catch(\Exception $e) {
+            Log::debug('Error while retrieving Data from Smiley Template: ' . $e);
+        }
     }
 }

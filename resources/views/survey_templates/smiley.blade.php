@@ -1,4 +1,13 @@
 <x-app-layout>
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
     <form action="/feedback/smiley" method="POST">
         @csrf
         <div class="py-12">
@@ -22,7 +31,7 @@
                     </div>
                     <div class="flex justify-end pr-6 pb-6">
                         <x-primary-button type="submit">
-                            Absenden <x-fas-arrow-right class="w-6 h-6" />
+                            {{ __('surveys.smiley.button') }} <x-fas-arrow-right class="w-6 h-6" />
                         </x-primary-button>
                     </div>
                 </div>

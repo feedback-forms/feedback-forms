@@ -8,7 +8,6 @@ Route::resource('/', WelcomeController::class);
 
 Route::middleware(['auth'])->group(function () {
     Route::view('dashboard', 'dashboard')
-        ->middleware(['verified'])
         ->name('dashboard');
 
     Route::view('profile', 'profile')->name('profile');
