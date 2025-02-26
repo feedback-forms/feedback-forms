@@ -55,6 +55,8 @@ The following issues have been addressed:
 
 8. **Survey Response System**: Implemented the backend logic for students to access and submit surveys using the unique access key.
 
+9. **Survey Access Error**: Fixed an error in the WelcomeController that was preventing students from accessing surveys using the access key on the main page. The controller was only dumping the token value instead of properly handling it. Updated the controller to validate the token, find the corresponding survey, and display it to the student.
+
 ## Implementation Plan
 
 ### 1. Bug Fixes and Immediate Improvements
@@ -68,7 +70,7 @@ The following issues have been addressed:
 - [x] Add proper date casting to Feedback model and handle date formatting in Edit component
 - [x] Fix survey editing route issue by updating route references from 'surveys.index' to 'surveys.list'
 - [x] Fix issue with school-related fields (Grade Level, Department, Subject) not appearing selected in edit view
-- [ ] Add error handling to prevent null reference exceptions
+- [x] Add error handling to prevent null reference exceptions
 - [ ] Implement proper validation for template selection
 
 ### 2. Template Management Enhancements
