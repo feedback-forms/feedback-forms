@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-app-layout>
     <style>
         path:hover {
             fill: rgba(59, 130, 246, var(--hover-opacity)) !important;
@@ -324,4 +324,4 @@
         });
     </script>
     @endpush
-</x-guest-layout>
+</x-app-layout>

@@ -69,6 +69,11 @@ The following issues have been addressed:
     - Updated the SurveyService to handle both standard and template-specific response formats
     - Enhanced the Result model to properly handle JSON responses from complex templates
 
+12. **Survey Layout Improvement**: Enhanced the layout of survey response forms to better utilize screen space:
+    - Changed survey response templates to use the app layout instead of the guest layout
+    - This provides a consistent experience with the template preview pages and allows survey forms to use the full width of the screen
+    - Modified all survey response templates (checkbox, table, target, smiley) to use the same layout structure
+
 ## Implementation Plan
 
 ### 1. Bug Fixes and Immediate Improvements
@@ -132,7 +137,7 @@ The following issues have been addressed:
 - [ ] Enhance UI/UX for template selection
 - [ ] Improve survey creation workflow
 - [ ] Add guided tour/onboarding for new users
-- [ ] Implement responsive design for mobile users
+- [x] Implement responsive design for mobile users
 - [ ] Add accessibility improvements
 - [ ] Implement localization for multiple languages
 
