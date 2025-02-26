@@ -35,7 +35,7 @@
                                     required>
                                 <option value="">{{ __('surveys.select_department_placeholder') }}</option>
                                 @foreach($departments as $dept)
-                                    <option value="{{ $dept->code }}">{{ $dept->name }}</option>
+                                    <option value="{{ $dept->name }}">{{ $dept->name }}</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('department')" class="mt-2" />
@@ -50,7 +50,7 @@
                                     required>
                                 <option value="">{{ __('surveys.select_grade_level_placeholder') }}</option>
                                 @foreach($gradeLevels as $grade)
-                                    <option value="{{ $grade->level }}">{{ $grade->name }}</option>
+                                    <option value="{{ $grade->name }}">{{ $grade->name }}</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('grade_level')" class="mt-2" />
@@ -80,7 +80,7 @@
                                     required>
                                 <option value="">{{ __('surveys.select_subject_placeholder') }}</option>
                                 @foreach($subjects as $subject)
-                                    <option value="{{ $subject->code }}">{{ $subject->name }}</option>
+                                    <option value="{{ $subject->name }}">{{ $subject->name }}</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('subject')" class="mt-2" />
