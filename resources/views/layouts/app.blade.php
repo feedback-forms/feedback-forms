@@ -13,6 +13,7 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css'])
+        @vite(['resources/css/surveys-page.css'])
         @livewireStyles
     </head>
     <body class="font-sans antialiased">
