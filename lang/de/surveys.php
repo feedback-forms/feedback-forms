@@ -72,4 +72,27 @@ return [
     'updated_at' => 'Aktualisiert am',
     'view_details' => 'Details anzeigen',
     'edit' => 'Bearbeiten',
+
+    // Survey response
+    'survey' => 'Umfrage',
+    'access_survey' => 'Umfrage aufrufen',
+    'enter_access_key_hint' => 'Geben Sie den 8-stelligen Zugriffsschlüssel ein, den Sie von Ihrem Lehrer erhalten haben',
+    'invalid_access_key' => 'Ungültiger Zugriffsschlüssel. Bitte überprüfen und erneut versuchen.',
+    'survey_not_available' => 'Diese Umfrage ist nicht mehr verfügbar. Sie ist möglicherweise abgelaufen oder hat das Antwortlimit erreicht.',
+    'submit_response' => 'Antwort absenden',
+    'response_submitted' => 'Ihre Antwort wurde erfolgreich übermittelt.',
+    'submission_failed' => 'Fehler beim Übermitteln Ihrer Antwort.',
+    'thank_you' => 'Vielen Dank!',
+    'response_received' => 'Ihre Antwort wurde empfangen. Vielen Dank für Ihr Feedback.',
+    'access_another_survey' => 'Eine andere Umfrage aufrufen',
+    'whoops' => 'Hoppla! Etwas ist schiefgelaufen.',
+
+    // Survey response options
+    'strongly_agree' => 'Stimme voll zu',
+    'agree' => 'Stimme eher zu',
+    'disagree' => 'Stimme eher nicht zu',
+    'strongly_disagree' => 'Stimme überhaupt nicht zu',
+    'subject' => 'Fach',
+    'grade_level' => 'Jahrgangsstufe',
+    'class' => 'Klasse',
 ];

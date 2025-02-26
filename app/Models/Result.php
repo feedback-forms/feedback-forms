@@ -3,12 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Result extends Model
 {
-    public function question(): HasOne
+    protected $fillable = [
+        'question_id',
+        'value'
+    ];
+
+    public function question(): BelongsTo
     {
-        return $this->hasOne(Question::class);
+        return $this->belongsTo(Question::class);
     }
 }

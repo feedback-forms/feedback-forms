@@ -26,6 +26,12 @@ The project already has:
   - Basic survey listing with filtering (expired, running, cancelled)
   - Teachers can view and modify survey settings and information
 
+- **Survey Response**:
+  - Students can access surveys using a unique 8-character access key
+  - Survey response forms adapt to the survey template type (smiley, target, checkbox, table)
+  - Responses are stored in the database and linked to the corresponding questions
+  - Survey response count is tracked to enforce response limits
+
 ## Fixed Issues
 
 The following issues have been addressed:
@@ -46,6 +52,8 @@ The following issues have been addressed:
 6. **Survey Management**: Implemented functionality for teachers to view and modify survey settings after creation.
 
 7. **School-Related Fields Selection**: Fixed issue where "Jahrgangsstufe" (Grade Level), "Abteilung" (Department), and "Fach" (Subject) fields appeared unselected when editing a newly created survey. The root cause was a mismatch between the values being stored during creation (using code/level) and the values being compared during editing (using name). Modified the create form to consistently use name values for all these fields.
+
+8. **Survey Response System**: Implemented the backend logic for students to access and submit surveys using the unique access key.
 
 ## Implementation Plan
 
@@ -90,10 +98,10 @@ The following issues have been addressed:
 - [ ] Add filtering and sorting options for surveys
 
 ### 5. Response Collection & Management
-- [ ] Implement secure survey access via unique links
-- [ ] Create response collection interface
-- [ ] Add response validation
-- [ ] Implement response storage and management
+- [x] Implement secure survey access via unique access keys
+- [x] Create response collection interface
+- [x] Add response validation
+- [x] Implement response storage and management
 - [ ] Add response export functionality (CSV, PDF)
 - [ ] Implement anonymous response option
 

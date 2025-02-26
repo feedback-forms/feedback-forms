@@ -90,4 +90,36 @@ class SurveyService
 
         return true;
     }
+
+    /**
+     * Store survey responses
+     */
+    public function storeResponses(Feedback $survey, array $responses): bool
+    {
+        return DB::transaction(function () use ($survey, $responses) {
+            // Get all questions for this survey
+            $questions = $survey->questions;
+
+            // Store each response
+            foreach ($responses as $questionId => $value) {
+                // Verify the question belongs to this survey
+                $question = $questions->firstWhere('id', $questionId);
+
+                if (!$question) {
+                    continue; // Skip if question doesn't belong to this survey
+                }
+
+                // Create or update the result
+                Result::updateOrCreate(
+                    ['question_id' => $questionId],
+                    ['value' => $value]
+                );
+            }
+
+            // Increment the response count
+            $survey->increment('already_answered');
+
+            return true;
+        });
+    }
 }

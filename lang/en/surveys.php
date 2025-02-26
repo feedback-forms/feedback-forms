@@ -72,4 +72,27 @@ return [
     'updated_at' => 'Updated At',
     'view_details' => 'View Details',
     'edit' => 'Edit',
+
+    // Survey response
+    'survey' => 'Survey',
+    'access_survey' => 'Access Survey',
+    'enter_access_key_hint' => 'Enter the 8-character access key provided by your teacher',
+    'invalid_access_key' => 'Invalid access key. Please check and try again.',
+    'survey_not_available' => 'This survey is no longer available. It may have expired or reached its response limit.',
+    'submit_response' => 'Submit Response',
+    'response_submitted' => 'Your response has been submitted successfully.',
+    'submission_failed' => 'Failed to submit your response.',
+    'thank_you' => 'Thank You!',
+    'response_received' => 'Your response has been received. Thank you for your feedback.',
+    'access_another_survey' => 'Access Another Survey',
+    'whoops' => 'Whoops! Something went wrong.',
+
+    // Survey response options
+    'strongly_agree' => 'Strongly Agree',
+    'agree' => 'Agree',
+    'disagree' => 'Disagree',
+    'strongly_disagree' => 'Strongly Disagree',
+    'subject' => 'Subject',
+    'grade_level' => 'Grade Level',
+    'class' => 'Class',
 ];
