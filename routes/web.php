@@ -19,11 +19,11 @@ Route::view('profile', 'profile')
     ->name('profile');
 
 Route::get('/admin-panel', App\Livewire\Admin\Panel::class)
-    ->middleware(['auth'])
+    ->middleware(['auth', 'can:admin'])
     ->name('admin.panel');
 
 Route::get('/admin/users', App\Livewire\Admin\Users::class)
-    ->middleware(['auth'])
+    ->middleware(['auth', 'can:admin'])
     ->name('admin.users');
 
 require __DIR__.'/auth.php';

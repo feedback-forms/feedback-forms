@@ -16,7 +16,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             FeedbackTemplateSeeder::class,
             QuestionTemplateSeeder::class,
-            RegisterKeySeeder::class
+            RegisterKeySeeder::class,
+            UserSeeder::class
         ]);
     }
 }

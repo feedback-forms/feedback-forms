@@ -1,4 +1,4 @@
-.PHONY: up down build install migrate fresh test npm-install npm-build npm-dev logs ps key
+.PHONY: up down build install migrate fresh test npm-install npm-build npm-dev logs ps key seed
 
 # Start the application
 up:
@@ -56,3 +56,7 @@ ps:
 # Generate application key
 key:
 	./vendor/bin/sail artisan key:generate
+
+# Seed database
+seed:
+	./vendor/bin/sail artisan db:seed
