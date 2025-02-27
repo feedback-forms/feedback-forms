@@ -36,7 +36,9 @@ The project already has:
 
 The following issues have been addressed:
 
-1. **SQL Syntax Error**: Fixed the SQL syntax error in the surveys overview page by properly quoting the 'limit' column name in PostgreSQL.
+1. **Survey Response Counter**: Fixed an issue where the survey response counter wasn't increasing on the surveys overview page. The problem was in the `storeResponses` method of the `SurveyService` class, which was using `updateOrCreate` with only `question_id` as the unique identifier. This caused new responses to overwrite existing ones instead of creating new records. Changed the method to use `create` instead, ensuring each response is stored as a new record.
+
+2. **SQL Syntax Error**: Fixed the SQL syntax error in the surveys overview page by properly quoting the 'limit' column name in PostgreSQL.
 
 2. **Missing Model Properties**: Added fillable properties to the Feedback and Feedback_template models to allow mass assignment.
 
@@ -89,6 +91,7 @@ The following issues have been addressed:
 - [x] Fix issue with school-related fields (Grade Level, Department, Subject) not appearing selected in edit view
 - [x] Add error handling to prevent null reference exceptions
 - [x] Fix logic problem with student survey access to ensure students see the correct survey created by teachers
+- [x] Fix survey response counter not increasing when submitting responses
 - [ ] Implement proper validation for template selection
 
 ### 2. Template Management Enhancements
@@ -122,6 +125,7 @@ The following issues have been addressed:
 - [x] Create response collection interface
 - [x] Add response validation
 - [x] Implement response storage and management
+- [x] Fix response counter tracking to ensure accurate response counts
 - [ ] Add response export functionality (CSV, PDF)
 - [ ] Implement anonymous response option
 

@@ -80,7 +80,7 @@ jobs:
         run: |
           kubectl delete job db-setup -n ${{ env.NAMESPACE }} --ignore-not-found
           kubectl apply -f deployments/db-setup-job.yaml
-          kubectl wait --for=condition=complete job/db-setup -n ${{ env.NAMESPACE }} --timeout=900s
+          kubectl wait --for=condition=complete job/db-setup -n ${{ env.NAMESPACE }} --timeout=1800s
 
       - name: Deploy application and queue
         run: |

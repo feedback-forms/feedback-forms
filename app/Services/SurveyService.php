@@ -123,11 +123,11 @@ class SurveyService
                     continue; // Skip if question doesn't belong to this survey
                 }
 
-                // Create or update the result
-                Result::updateOrCreate(
-                    ['question_id' => $questionId],
-                    ['value' => $value]
-                );
+                // Create a new result for each response
+                Result::create([
+                    'question_id' => $questionId,
+                    'value' => $value
+                ]);
             }
 
             // Increment the response count
