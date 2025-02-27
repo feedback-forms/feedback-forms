@@ -6,25 +6,21 @@ use Livewire\Volt\Volt;
 
 Route::resource('/', WelcomeController::class);
 
-Route::get('feedback/smiley', [SurveyController::class, 'showSmiley']);
-Route::get('feedback/table', [SurveyController::class, 'showTable']);
-Route::get('feedback/target', [SurveyController::class, 'showTarget']);
+Route::middleware(['auth'])->group(function () {
+    Route::view('dashboard', 'dashboard')
+        ->name('dashboard');
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth'])
-    ->name('dashboard');
+    Route::view('profile', 'profile')->name('profile');
+    Route::get('/admin-panel', App\Livewire\Admin\Panel::class)->name('admin.panel');
+    Route::get('/admin/users', App\Livewire\Admin\Users::class)->name('admin.users');
+});
 
-Route::view('profile', 'profile')
-    ->middleware(['auth'])
-    ->name('profile');
-
-Route::get('/admin-panel', App\Livewire\Admin\Panel::class)
-    ->middleware(['auth'])
-    ->name('admin.panel');
-
-Route::get('/admin/users', App\Livewire\Admin\Users::class)
-    ->middleware(['auth'])
-    ->name('admin.users');
+Route::controller(SurveyController::class)->group(function (){
+    Route::get('feedback/smiley', 'showSmiley');
+    Route::get('feedback/table', 'showTable');
+    Route::get('feedback/target', 'showTarget');
+    Route::post('feedback/smiley', 'retrieveSmiley');
+});
 
 // Survey response routes (for students)
 Route::get('/survey', [SurveyResponseController::class, 'showAccessForm'])

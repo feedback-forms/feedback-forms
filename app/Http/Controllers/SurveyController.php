@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Requests\SmileyRequest;
+use Illuminate\Support\Facades\{Log};
 
 use App\Services\SurveyService;
 use App\Models\{Feedback_template, Question_template, Feedback};
@@ -131,5 +133,15 @@ class SurveyController extends Controller
     public function showTarget()
     {
         return view('survey_templates.target');
+    }
+
+    public function retrieveSmiley(SmileyRequest $request)
+    {
+        try {
+
+            dd($regquest);
+        } catch(\Exception $e) {
+            Log::debug('Error while retrieving Data from Smiley Template: ' . $e);
+        }
     }
 }

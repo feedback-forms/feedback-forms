@@ -23,13 +23,11 @@ class QuestionTemplateSeeder extends Seeder
         Question_template::updateOrCreate([
             'type' => 'checkboxes',
             'max_value' => 4,
-            'min_value' => 0,
         ]);
 
         Question_template::updateOrCreate([
             'type' => 'textarea',
             'max_value' => 3,
-            'min_value' => 0,
         ]);
     }
 }
