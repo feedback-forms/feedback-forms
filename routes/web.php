@@ -29,6 +29,13 @@ Route::get('/survey/thank-you', [SurveyResponseController::class, 'showThankYou'
     ->name('surveys.thank-you');
 Route::post('/survey/{accesskey}/submit', [SurveyResponseController::class, 'submitResponses'])
     ->name('surveys.submit');
+Route::view('profile', 'profile')
+    ->middleware(['auth'])
+    ->name('profile');
+
+Route::get('/admin-panel', App\Livewire\Admin\Panel::class)
+    ->middleware(['auth', 'can:admin'])
+    ->name('admin.panel');
 
 Route::middleware(['auth'])->group(function () {
     // Survey management routes - use Livewire component
@@ -50,5 +57,8 @@ Route::middleware(['auth'])->group(function () {
     // Use resource route but exclude 'edit' and 'index' to avoid conflicts with Livewire
     Route::resource('surveys', SurveyController::class)->except(['edit', 'index']);
 });
+Route::get('/admin/users', App\Livewire\Admin\Users::class)
+    ->middleware(['auth', 'can:admin'])
+    ->name('admin.users');
 
 require __DIR__.'/auth.php';

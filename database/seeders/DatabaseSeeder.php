@@ -17,7 +17,8 @@ class DatabaseSeeder extends Seeder
             FeedbackTemplateSeeder::class,
             QuestionTemplateSeeder::class,
             SchoolOptionsSeeder::class,
-            RegisterKeySeeder::class
+            RegisterKeySeeder::class,
+            UserSeeder::class
         ]);
     }
 }
