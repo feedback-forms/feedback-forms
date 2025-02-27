@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-survey-layout>
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -13,7 +13,7 @@
                         <p class="mt-4">{{ __('surveys.response_received') }}</p>
 
                         <div class="mt-8">
-                            <a href="{{ route('surveys.access') }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">
+                            <a href="{{ route('welcome') }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">
                                 {{ __('surveys.access_another_survey') }}
                             </a>
                         </div>
@@ -22,4 +22,4 @@
             </div>
         </div>
     </div>
-</x-guest-layout>
+</x-survey-layout>

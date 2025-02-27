@@ -8,25 +8,59 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Log;
 
 class WelcomeController extends Controller
 {
-    public function store(Request $request): View|\Illuminate\Http\RedirectResponse
-    {
-        $validated = $request->validate(['token' => 'required|string']);
+    public function __construct(
+        protected SurveyService $surveyService
+    ) {}
 
-        // Find the survey by accesskey
+    /**
+     * Show the welcome page with survey access form
+     */
+    public function index(): View
+    {
+        return view('welcome');
+    }
+
+    /**
+     * Access a survey using an access key
+     */
+    public function accessSurvey(Request $request): View|RedirectResponse
+    {
+        $validated = $request->validate([
+            'token' => 'required|string',
+        ]);
+
+        Log::info("Survey access attempt", [
+            'accesskey' => $validated['token']
+        ]);
+
         $survey = Feedback::where('accesskey', $validated['token'])->first();
 
         if (!$survey) {
+            Log::warning("Invalid access key used", [
+                'accesskey' => $validated['token']
+            ]);
             return back()->with('error', __('surveys.invalid_access_key'));
         }
 
-        // Check if the survey can be answered
-        $surveyService = app(SurveyService::class);
-        if (!$surveyService->canBeAnswered($survey)) {
+        if (!$this->surveyService->canBeAnswered($survey)) {
+            Log::warning("Attempt to access unavailable survey", [
+                'survey_id' => $survey->id,
+                'accesskey' => $validated['token'],
+                'expire_date' => $survey->expire_date,
+                'limit' => $survey->limit,
+                'already_answered' => $survey->already_answered
+            ]);
             return back()->with('error', __('surveys.survey_not_available'));
         }
+
+        Log::info("Survey accessed successfully", [
+            'survey_id' => $survey->id,
+            'accesskey' => $validated['token']
+        ]);
 
         // Load the survey with its template and questions
         $survey->load([
@@ -57,10 +91,5 @@ class WelcomeController extends Controller
         return view('surveys.respond', [
             'survey' => $survey,
         ]);
-    }
-
-    public function index(): View
-    {
-        return view('welcome');
     }
 }

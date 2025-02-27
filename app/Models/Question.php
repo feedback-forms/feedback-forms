@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasOne};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
 class Question extends Model
 {
@@ -29,8 +29,16 @@ class Question extends Model
         return $this->belongsTo(Question_template::class);
     }
 
-    public function result(): HasOne
+    public function results(): HasMany
     {
-        return $this->hasOne(Result::class);
+        return $this->hasMany(Result::class);
+    }
+
+    /**
+     * Get the latest result for this question.
+     */
+    public function latestResult()
+    {
+        return $this->results()->latest()->first();
     }
 }

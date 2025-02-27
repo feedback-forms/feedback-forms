@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-survey-layout>
     <style>
         path:hover {
             fill: rgba(59, 130, 246, var(--hover-opacity)) !important;
@@ -324,4 +324,4 @@
         });
     </script>
     @endpush
-</x-app-layout>
+</x-survey-layout>

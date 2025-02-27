@@ -9,6 +9,7 @@ class Result extends Model
 {
     protected $fillable = [
         'question_id',
+        'submission_id',
         'value'
     ];
 

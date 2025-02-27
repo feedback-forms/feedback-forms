@@ -4,7 +4,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{WelcomeController, SurveyController, SurveyResponseController};
 use Livewire\Volt\Volt;
 
-Route::resource('/', WelcomeController::class);
+// Root route for welcome page and survey access
+Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
+Route::post('/', [WelcomeController::class, 'accessSurvey'])->name('surveys.access.submit');
 
 Route::middleware(['auth'])->group(function () {
     Route::view('dashboard', 'dashboard')
@@ -22,15 +24,11 @@ Route::controller(SurveyController::class)->group(function (){
     Route::post('feedback/smiley', 'retrieveSmiley');
 });
 
-// Survey response routes (for students)
-Route::get('/survey', [SurveyResponseController::class, 'showAccessForm'])
-    ->name('surveys.access');
-Route::post('/survey/access', [SurveyResponseController::class, 'accessSurvey'])
-    ->name('surveys.access.submit');
-Route::post('/survey/{accesskey}/submit', [SurveyResponseController::class, 'submitResponses'])
-    ->name('surveys.submit');
+// The thank-you route needs to be defined before the dynamic {accesskey} route to avoid conflicts
 Route::get('/survey/thank-you', [SurveyResponseController::class, 'showThankYou'])
     ->name('surveys.thank-you');
+Route::post('/survey/{accesskey}/submit', [SurveyResponseController::class, 'submitResponses'])
+    ->name('surveys.submit');
 
 Route::middleware(['auth'])->group(function () {
     // Survey management routes - use Livewire component

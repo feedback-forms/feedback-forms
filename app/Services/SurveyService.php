@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\{Feedback, Question, Result, Feedback_template, Question_template};
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class SurveyService
@@ -96,51 +98,118 @@ class SurveyService
      */
     public function storeResponses(Feedback $survey, array $responses): bool
     {
-        return DB::transaction(function () use ($survey, $responses) {
-            // Get all questions for this survey
-            $questions = $survey->questions;
+        try {
+            return DB::transaction(function () use ($survey, $responses) {
+                // Generate a unique submission ID to group all responses from this submission
+                $submissionId = (string) Str::uuid();
 
-            // Check if this is a JSON response (from template-specific forms like target)
-            if (count($responses) === 1 && isset($responses[0]) && is_string($responses[0])) {
-                try {
-                    $jsonData = json_decode($responses[0], true);
-                    if (json_last_error() === JSON_ERROR_NONE && is_array($jsonData)) {
-                        // Handle template-specific response format
-                        $this->storeTemplateSpecificResponses($survey, $jsonData);
-                        return true;
-                    }
-                } catch (\Exception $e) {
-                    \Log::error('Error parsing JSON response: ' . $e->getMessage());
-                }
-            }
-
-            // Handle regular question-by-question responses
-            foreach ($responses as $questionId => $value) {
-                // Verify the question belongs to this survey
-                $question = $questions->firstWhere('id', $questionId);
-
-                if (!$question) {
-                    continue; // Skip if question doesn't belong to this survey
-                }
-
-                // Create a new result for each response
-                Result::create([
-                    'question_id' => $questionId,
-                    'value' => $value
+                // Log the submission attempt
+                Log::info("Processing survey submission", [
+                    'survey_id' => $survey->id,
+                    'accesskey' => $survey->accesskey,
+                    'submission_id' => $submissionId
                 ]);
-            }
 
-            // Increment the response count
-            $survey->increment('already_answered');
+                // Get all questions for this survey
+                $questions = $survey->questions;
+                $responseCount = 0;
 
-            return true;
-        });
+                // Check if this is a JSON response (from template-specific forms like target)
+                if (count($responses) === 1 && isset($responses[0]) && is_string($responses[0])) {
+                    try {
+                        $jsonData = json_decode($responses[0], true);
+                        if (json_last_error() === JSON_ERROR_NONE && is_array($jsonData)) {
+                            // Handle template-specific response format
+                            $this->storeTemplateSpecificResponses($survey, $jsonData, $submissionId);
+                            return true;
+                        }
+                    } catch (\Exception $e) {
+                        Log::error('Error parsing JSON response: ' . $e->getMessage(), [
+                            'survey_id' => $survey->id,
+                            'response_data' => $responses[0],
+                            'exception' => $e
+                        ]);
+                        return false;
+                    }
+                }
+
+                // Handle regular question-by-question responses
+                foreach ($responses as $questionId => $value) {
+                    // Skip non-numeric keys (like 'feedback' from the form)
+                    if (!is_numeric($questionId) && $questionId !== 'feedback') {
+                        continue;
+                    }
+
+                    // Special handling for feedback
+                    if ($questionId === 'feedback' && !empty($value)) {
+                        Result::create([
+                            'question_id' => $questions->first()->id ?? null,
+                            'submission_id' => $submissionId,
+                            'value' => ['feedback' => $value]
+                        ]);
+                        $responseCount++;
+                        continue;
+                    }
+
+                    // Verify the question belongs to this survey
+                    $question = $questions->firstWhere('id', $questionId);
+
+                    if (!$question) {
+                        // Try to find by index if the questionId is numeric but not an actual ID
+                        $index = (int)$questionId;
+                        if ($index >= 0 && $index < $questions->count()) {
+                            $question = $questions[$index];
+                        } else {
+                            Log::warning("Question not found for survey", [
+                                'survey_id' => $survey->id,
+                                'question_id' => $questionId,
+                                'index' => $index
+                            ]);
+                            continue; // Skip if question doesn't belong to this survey
+                        }
+                    }
+
+                    // Create a new result for each response
+                    Result::create([
+                        'question_id' => $question->id,
+                        'submission_id' => $submissionId,
+                        'value' => $value
+                    ]);
+
+                    $responseCount++;
+                }
+
+                // Only increment if we actually stored responses
+                if ($responseCount > 0) {
+                    // Increment the response count
+                    $survey->increment('already_answered');
+                    Log::info("Survey response stored successfully", [
+                        'survey_id' => $survey->id,
+                        'submission_id' => $submissionId,
+                        'response_count' => $responseCount
+                    ]);
+                } else {
+                    Log::warning("No responses were stored for survey", [
+                        'survey_id' => $survey->id
+                    ]);
+                    return false;
+                }
+
+                return true;
+            });
+        } catch (\Exception $e) {
+            Log::error('Error storing survey responses: ' . $e->getMessage(), [
+                'survey_id' => $survey->id,
+                'exception' => $e
+            ]);
+            return false;
+        }
     }
 
     /**
      * Store responses from template-specific forms (like target diagram)
      */
-    private function storeTemplateSpecificResponses(Feedback $survey, array $jsonData): void
+    private function storeTemplateSpecificResponses(Feedback $survey, array $jsonData, string $submissionId): void
     {
         // Get the template type
         $templateName = $survey->feedback_template->name ?? '';
@@ -149,12 +218,20 @@ class SurveyService
             $templateType = $matches[1];
         }
 
+        // Log the template type for debugging
+        Log::info("Processing template-specific response", [
+            'survey_id' => $survey->id,
+            'template_type' => $templateType,
+            'submission_id' => $submissionId
+        ]);
+
         // Store the entire response as JSON for future reference
         $responseJson = json_encode($jsonData);
 
         // Create a single result record with the JSON data
         Result::create([
             'question_id' => $survey->questions->first()->id ?? null,
+            'submission_id' => $submissionId,
             'value' => $responseJson
         ]);
 

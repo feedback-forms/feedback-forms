@@ -9,6 +9,7 @@ use App\Services\SurveyService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Log;
 
 class SurveyResponseController extends Controller
 {
@@ -17,100 +18,105 @@ class SurveyResponseController extends Controller
     ) {}
 
     /**
-     * Show the survey access form
-     */
-    public function showAccessForm(): View
-    {
-        return view('surveys.access');
-    }
-
-    /**
-     * Access a survey using an access key
-     */
-    public function accessSurvey(Request $request): View|RedirectResponse
-    {
-        $validated = $request->validate([
-            'accesskey' => 'required|string|size:8',
-        ]);
-
-        $survey = Feedback::where('accesskey', $validated['accesskey'])->first();
-
-        if (!$survey) {
-            return back()->with('error', __('surveys.invalid_access_key'));
-        }
-
-        if (!$this->surveyService->canBeAnswered($survey)) {
-            return back()->with('error', __('surveys.survey_not_available'));
-        }
-
-        // Load the survey with its template and questions
-        $survey->load([
-            'feedback_template',
-            'questions' => function($query) {
-                $query->with('question_template');
-            }
-        ]);
-
-        // Get the template name from the feedback_template
-        $templateName = $survey->feedback_template->name ?? '';
-
-        // Extract the template type from the name (e.g., "templates.feedback.target" -> "target")
-        $templateType = '';
-        if (preg_match('/templates\.feedback\.(\w+)$/', $templateName, $matches)) {
-            $templateType = $matches[1];
-        }
-
-        // If we have a valid template type, render that template
-        if (in_array($templateType, ['target', 'smiley', 'table', 'checkbox'])) {
-            return view("survey_templates.{$templateType}_respond", [
-                'survey' => $survey,
-                'isStudentView' => true,
-            ]);
-        }
-
-        // Fallback to the generic response form
-        return view('surveys.respond', [
-            'survey' => $survey,
-        ]);
-    }
-
-    /**
      * Submit survey responses
      */
     public function submitResponses(Request $request, string $accesskey): RedirectResponse
     {
+        Log::info("Survey submission attempt", [
+            'accesskey' => $accesskey,
+            'has_responses' => $request->has('responses'),
+            'response_type' => gettype($request->input('responses'))
+        ]);
+
         $survey = Feedback::where('accesskey', $accesskey)->first();
 
         if (!$survey) {
-            return redirect()->route('surveys.access')
+            Log::warning("Invalid access key used for survey submission", [
+                'accesskey' => $accesskey
+            ]);
+            return redirect()->route('welcome')
                 ->with('error', __('surveys.invalid_access_key'));
         }
 
         if (!$this->surveyService->canBeAnswered($survey)) {
-            return redirect()->route('surveys.access')
+            Log::warning("Attempt to submit to unavailable survey", [
+                'survey_id' => $survey->id,
+                'accesskey' => $accesskey,
+                'expire_date' => $survey->expire_date,
+                'limit' => $survey->limit,
+                'already_answered' => $survey->already_answered
+            ]);
+            return redirect()->route('welcome')
                 ->with('error', __('surveys.survey_not_available'));
         }
-
-        // Validate the responses
-        $validated = $request->validate([
-            'responses' => 'required|array',
-            'responses.*' => 'required|string',
-        ]);
 
         try {
             // Load the survey with its questions to ensure we're working with the correct data
             $survey->load('questions');
 
-            // Process and store the responses
-            $this->surveyService->storeResponses($survey, $validated['responses']);
+            // Check if the response is a JSON string (from template-specific forms)
+            $responses = $request->input('responses');
+            $success = false;
+
+            if (is_string($responses) && $this->isJson($responses)) {
+                // Handle JSON string response
+                $jsonData = json_decode($responses, true);
+                Log::info("Processing JSON response", [
+                    'survey_id' => $survey->id,
+                    'json_data' => $jsonData
+                ]);
+
+                // Process and store the responses as a JSON object
+                $success = $this->surveyService->storeResponses($survey, [$responses]);
+            } else {
+                // Validate the responses with more flexible validation for array inputs
+                $validated = $request->validate([
+                    'responses' => 'required|array',
+                    'responses.*' => 'required',
+                ]);
+
+                // Process and store the responses as an array
+                $success = $this->surveyService->storeResponses($survey, $validated['responses']);
+            }
+
+            if (!$success) {
+                throw new \Exception('Failed to store responses');
+            }
+
+            // Ensure the counter is updated
+            $survey->refresh();
+
+            Log::info("Survey submission successful", [
+                'survey_id' => $survey->id,
+                'accesskey' => $accesskey
+            ]);
 
             return redirect()->route('surveys.thank-you')
                 ->with('success', __('surveys.response_submitted'));
         } catch (\Exception $e) {
+            Log::error('Survey submission failed: ' . $e->getMessage(), [
+                'survey_id' => $survey->id,
+                'accesskey' => $accesskey,
+                'exception' => $e
+            ]);
+
             return back()
                 ->withInput()
-                ->with('error', __('surveys.submission_failed') . ' ' . $e->getMessage());
+                ->with('error', __('surveys.submission_failed'));
         }
+    }
+
+    /**
+     * Check if a string is valid JSON
+     */
+    private function isJson($string): bool
+    {
+        if (!is_string($string)) {
+            return false;
+        }
+
+        json_decode($string);
+        return json_last_error() === JSON_ERROR_NONE;
     }
 
     /**

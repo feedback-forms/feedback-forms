@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-survey-layout>
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -58,7 +58,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('surveys.submit', $survey->accesskey) }}">
+                    <form method="POST" action="{{ route('surveys.submit', $survey->accesskey) }}" id="surveyForm">
                         @csrf
 
                         <!-- Table Survey -->
@@ -74,23 +74,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach([
-                                        'Der Unterricht ist gut strukturiert.',
-                                        'Die Lehrkraft erklärt verständlich.',
-                                        'Die Lehrkraft geht auf Fragen ein.',
-                                        'Die Lehrkraft gibt hilfreiches Feedback.',
-                                        'Die Lehrkraft behandelt alle Schüler fair.',
-                                        'Die Aufgaben sind angemessen schwierig.',
-                                        'Ich fühle mich im Unterricht wohl.',
-                                        'Ich lerne in diesem Fach viel.'
-                                    ] as $index => $statement)
-                                        <tr class="{{ $index % 2 == 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700' }}">
-                                            <td class="border px-4 py-2">{{ $statement }}</td>
+                                    @foreach($survey->questions as $index => $question)
+                                        <tr class="{{ $index % 2 == 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700' }}" data-question-id="{{ $question->id }}">
+                                            <td class="border px-4 py-2">{{ $question->question }}</td>
                                             @foreach(range(1, 4) as $value)
                                                 <td class="border px-4 py-2 text-center">
                                                     <input
                                                         type="radio"
-                                                        name="responses[{{ $index }}]"
+                                                        name="responses[{{ $question->id }}]"
                                                         value="{{ $value }}"
                                                         class="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
                                                         required
@@ -116,14 +107,49 @@
                             ></textarea>
                         </div>
 
+                        <div id="validation-error" class="hidden mb-4 p-4 bg-red-100 text-red-700 rounded-md">
+                            {{ __('surveys.please_answer_all_questions') }}
+                        </div>
+
                         <div class="flex justify-end mt-6">
-                            <x-primary-button>
+                            <x-primary-button type="submit">
                                 {{ __('surveys.submit_response') }}
                             </x-primary-button>
                         </div>
                     </form>
+
+                    <script>
+                        document.getElementById('surveyForm').addEventListener('submit', function(e) {
+                            // Check if at least one radio button is selected for each question
+                            const questions = document.querySelectorAll('tbody tr');
+                            let valid = true;
+
+                            questions.forEach(function(question) {
+                                const radios = question.querySelectorAll('input[type="radio"]');
+                                const checked = Array.from(radios).some(radio => radio.checked);
+
+                                if (!checked) {
+                                    valid = false;
+                                    // Highlight the question that's missing an answer
+                                    question.classList.add('bg-red-100', 'dark:bg-red-900');
+                                } else {
+                                    question.classList.remove('bg-red-100', 'dark:bg-red-900');
+                                }
+                            });
+
+                            if (!valid) {
+                                e.preventDefault();
+                                document.getElementById('validation-error').classList.remove('hidden');
+                                // Scroll to the first unanswered question
+                                const firstUnanswered = document.querySelector('tr.bg-red-100, tr.dark:bg-red-900');
+                                if (firstUnanswered) {
+                                    firstUnanswered.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
+                            }
+                        });
+                    </script>
                 </div>
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-survey-layout>
