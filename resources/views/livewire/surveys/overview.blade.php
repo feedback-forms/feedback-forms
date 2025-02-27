@@ -13,11 +13,26 @@
         </div>
 
         <div class="flex flex-row gap-10 flex-wrap justify-center">
-            @foreach($items as $item)
+            @foreach($surveys as $survey)
                 <div class="flex flex-col gap-2 lg:flex-[1_0_17%] md:flex-[1_0_30%] sm:flex-[1_0_100%]">
-                    <img src="{{asset('img/preview.png')}}" alt="a" class="rounded-3xl" />
-                    <p class="text-ellipsis text-gray-600 dark:text-gray-500"><b>Title</b></p>
-                    <p class="text-ellipsis text-gray-500 dark:text-gray-400">Updated today Updated today Updated today Updated today Updated today</p>
+                    <div class="relative">
+                        <img src="{{asset('img/preview.png')}}" alt="a" class="rounded-3xl" />
+                        <div class="absolute top-2 right-2 flex gap-2">
+                            <a href="{{ route('surveys.edit', ['id' => $survey->id]) }}" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full transition-colors">
+                                <x-fas-edit class="w-4 h-4" />
+                            </a>
+                        </div>
+                    </div>
+                    <p class="text-ellipsis text-gray-600 dark:text-gray-500"><b>{{ $survey->feedback_template->title ?? 'Title' }}</b></p>
+                    <p class="text-ellipsis text-gray-500 dark:text-gray-400">Updated {{ $survey->updated_at->diffForHumans() }}</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">
+                            {{ $survey->already_answered }} / {{ $survey->limit == -1 ? '∞' : $survey->limit }} {{__('surveys.responses')}}
+                        </span>
+                        <a href="{{ route('surveys.edit', ['id' => $survey->id]) }}" class="text-blue-500 hover:text-blue-600 text-sm">
+                            {{__('surveys.edit')}} →
+                        </a>
+                    </div>
                 </div>
             @endforeach
         </div>
