@@ -7,14 +7,65 @@
 
     <div class="bg-gray-50 dark:bg-gray-800 flex flex-col gap-10 p-10">
         <div class="flex flex-row gap-2 flex-wrap just-start">
-            <x-chip chip-checked="{{$filterState['expired'] ? 'true' : 'false'}}" wire:click="filter('expired')">{{__('surveys.expired')}}</x-chip>
-            <x-chip chip-checked="{{$filterState['running'] ? 'true' : 'false'}}" wire:click="filter('running')">{{__('surveys.running')}}</x-chip>
-            <x-chip chip-checked="{{$filterState['cancelled'] ? 'true' : 'false'}}" wire:click="filter('cancelled')">{{__('surveys.cancelled')}}</x-chip>
+            <button class="filter-button" id="surveys-filter-expired" filter-type="expired">{{__('surveys.expired')}}</button>
+            <button class="filter-button" id="surveys-filter-running" filter-type="running">{{__('surveys.running')}}</button>
+            <button class="filter-button" id="surveys-filter-cancelled" filter-type="cancelled">{{__('surveys.cancelled')}}</button>
         </div>
+
+        <script>
+            const surveyButtons = document.querySelectorAll('[id^="surveys-filter-"]');
+
+            function watchSurveys() {
+                surveyButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        button.classList.toggle('active');
+                        filterSurveys();
+                    });
+                });
+            }
+
+            function filterSurveys() {
+                let activeFilters = [];
+                let surveys = document.querySelectorAll('.survey-wrapper');
+
+                surveyButtons.forEach(button => {
+                    if (button.classList.contains('active')) {
+                        activeFilters.push(button.getAttribute('filter-type'));
+                    }
+                });
+
+                surveys.forEach(survey => survey.classList.add('hidden'));
+
+                if (activeFilters.length > 0) {
+                    activeFilters.forEach(activeFilter => displaySurveys(activeFilter));
+                }
+                else {
+                    displaySurveys(null);
+                }
+            }
+
+
+            function displaySurveys(activeFilter) {
+                let surveys = document.querySelectorAll('.survey-wrapper');
+
+                surveys.forEach(survey => {
+                    if (activeFilter == null) {
+                        survey.classList.remove('hidden');
+                    }
+
+                    if (survey.getAttribute('filter-type') === activeFilter) {
+                        survey.classList.remove('hidden');
+                    }
+                });
+            }
+
+            watchSurveys();
+        </script>
 
         <div class="flex flex-row gap-10 flex-wrap justify-center">
             @foreach($items as $item)
-                <div class="flex flex-col gap-2 lg:flex-[1_0_17%] md:flex-[1_0_30%] sm:flex-[1_0_100%]">
+                <!-- filter-type="running" ist hier nur als Beispiel drinnen. "running" dann zu dem tatsächlichen Status der survey ändern. (expired, running, cancelled) -->
+                <div class="flex flex-col gap-2 lg:flex-[1_0_17%] md:flex-[1_0_30%] sm:flex-[1_0_100%] survey-wrapper" filter-type="running">
                     <img src="{{asset('img/preview.png')}}" alt="a" class="rounded-3xl" />
                     <p class="text-ellipsis text-gray-600 dark:text-gray-500"><b>Title</b></p>
                     <p class="text-ellipsis text-gray-500 dark:text-gray-400">Updated today Updated today Updated today Updated today Updated today</p>
