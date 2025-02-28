@@ -2,7 +2,7 @@
 
 return [
     'name' => 'Name',
-    'email' => 'E-Mail',
+    'email' => 'E-Mail (optional)',
     'password' => 'Passwort',
     'confirm-password' => 'Passwort bestätigen',
     'already-registered' => 'Du hast schon einen Account?',

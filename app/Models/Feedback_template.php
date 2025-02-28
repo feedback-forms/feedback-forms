@@ -7,10 +7,14 @@ use Illuminate\Database\Eloquent\Relations\{HasOne, HasMany};
 
 class Feedback_template extends Model
 {
-    public function feedbacks(): HasMany 
+    protected $fillable = [
+        'name',
+        'title'
+    ];
+    public function feedbacks(): HasMany
     {
         return $this->hasMany(Feedback::class);
-    }    
+    }
 
     public function questions(): HasMany
     {

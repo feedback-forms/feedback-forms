@@ -3,10 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasOne};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
 class Question extends Model
 {
+    protected $fillable = [
+        'feedback_template_id',
+        'question_template_id',
+        'feedback_id',
+        'question'
+    ];
+
     public function feedback_template(): BelongsTo
     {
         return $this->belongsTo(Feedback_template::class);
@@ -22,8 +29,16 @@ class Question extends Model
         return $this->belongsTo(Question_template::class);
     }
 
-    public function result(): HasOne
+    public function results(): HasMany
     {
-        return $this->hasOne(Result::class);
+        return $this->hasMany(Result::class);
+    }
+
+    /**
+     * Get the latest result for this question.
+     */
+    public function latestResult()
+    {
+        return $this->results()->latest()->first();
     }
 }
