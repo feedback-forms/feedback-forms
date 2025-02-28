@@ -16,9 +16,13 @@ class DatabaseSeeder extends Seeder
         $this->call([
             FeedbackTemplateSeeder::class,
             QuestionTemplateSeeder::class,
-            SchoolOptionsSeeder::class,
             RegisterKeySeeder::class,
-            UserSeeder::class
+            UserSeeder::class,
+            DepartmentSeeder::class,
+            GradeLevelsSeeder::class,
+            SchoolClassSeeder::class, 
+            SchoolYearSeeder::class,
+            SubjectSeeder::class,
         ]);
     }
 }
