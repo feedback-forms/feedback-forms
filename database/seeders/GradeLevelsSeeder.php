@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\GradeLevel;
 use Illuminate\Database\Seeder;
 
 class GradeLevelsSeeder extends Seeder

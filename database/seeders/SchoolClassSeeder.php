@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\SchoolClass;
 use Illuminate\Database\Seeder;
 
 class SchoolClassSeeder extends Seeder

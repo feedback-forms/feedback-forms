@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Department;
 use Illuminate\Database\Seeder;
 
 class DepartmentSeeder extends Seeder
@@ -17,7 +18,7 @@ class DepartmentSeeder extends Seeder
             ['code' => 'I', 'name' => 'Informatik'],
             ['code' => 'K', 'name' => 'Kaufleute'],
             ['code' => 'TAI', 'name' => 'Technischer Assistent'],
-            ['code' => 'BVJ' 'name' => 'Berufsvorbereitung']
+            ['code' => 'BVJ', 'name' => 'Berufsvorbereitung']
         ];
 
         foreach ($departments as $dept) {
@@ -25,6 +26,3 @@ class DepartmentSeeder extends Seeder
         }
     }
 }
-Dahinter schreiben
-Einladungscode -> gültigkeit eine Woche gültig admin festlegen 
-Sudo soll selber richtungen anlegen können
