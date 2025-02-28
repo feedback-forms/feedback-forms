@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-survey-layout>
     <style>
         path:hover {
             fill: rgba(59, 130, 246, var(--hover-opacity)) !important;
@@ -39,23 +39,39 @@
         }
     </style>
 
-    <!-- Create Survey Button -->
-    <div class="fixed bottom-8 right-8 z-50">
-        <form action="{{ route('surveys.create') }}" method="GET">
-            <input type="hidden" name="template" value="target">
-            <x-primary-button class="gap-2 text-base py-3 px-6 shadow-lg">
-                {{ __('templates.use_template') }}
-                <x-fas-arrow-right class="w-4 h-4" />
-            </x-primary-button>
-        </form>
-    </div>
-
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100" x-data="targetDiagram()">
                     <!-- Title and Instructions -->
-                    <h1 class="text-2xl font-bold text-center mb-8">Zielscheibe</h1>
+                    <h1 class="text-2xl font-bold text-center mb-8">{{ $survey->feedback_template->title ?? 'Zielscheibe' }}</h1>
+
+                    <!-- Survey Information -->
+                    <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            @if($survey->subject)
+                                <div>
+                                    <span class="font-semibold">{{ __('surveys.subject') }}:</span>
+                                    <span>{{ $survey->subject }}</span>
+                                </div>
+                            @endif
+
+                            @if($survey->grade_level)
+                                <div>
+                                    <span class="font-semibold">{{ __('surveys.grade_level') }}:</span>
+                                    <span>{{ $survey->grade_level }}</span>
+                                </div>
+                            @endif
+
+                            @if($survey->class)
+                                <div>
+                                    <span class="font-semibold">{{ __('surveys.class') }}:</span>
+                                    <span>{{ $survey->class }}</span>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
                     <p class="text-center mb-10 max-w-3xl mx-auto">
                         Bitte bewerten Sie die angegebenen Teilbereiche und setzen Sie innerhalb der einzelnen Segmente an der nach Ihrer Meinung richtigen Stelle ein Kreuzchen. Je näher das Kreuzchen in der Mitte der Zielscheibe gesetzt wird, desto positiver ist die Bewertung.
                     </p>
@@ -216,19 +232,11 @@
 
                     <!-- Submit Button -->
                     <div class="flex justify-end mt-8">
-                        <form action="{{ route('surveys.store') }}" method="POST">
+                        <form action="{{ route('surveys.submit', $survey->accesskey) }}" method="POST">
                             @csrf
-                            <input type="hidden" name="template_id" value="{{ optional(App\Models\Feedback_template::where('name', 'templates.feedback.target')->first())->id ?? '' }}">
-                            <input type="hidden" name="expire_date" value="{{ \Carbon\Carbon::now()->addDays(30)->format('Y-m-d H:i:s') }}">
-                            <input type="hidden" name="response_limit" value="30">
-                            <input type="hidden" name="school_year" value="{{ App\Models\SchoolYear::active()->first()->name ?? '2023/24' }}">
-                            <input type="hidden" name="department" value="{{ App\Models\Department::active()->first()->code ?? 'AIT' }}">
-                            <input type="hidden" name="grade_level" value="{{ App\Models\GradeLevel::active()->first()->level ?? '5' }}">
-                            <input type="hidden" name="class" value="{{ App\Models\SchoolClass::active()->first()->name ?? '5a' }}">
-                            <input type="hidden" name="subject" value="{{ App\Models\Subject::active()->first()->code ?? 'math' }}">
-                            <input type="hidden" name="survey_data" x-bind:value="JSON.stringify({ratings: marks, feedback: feedback})">
+                            <input type="hidden" name="responses" x-bind:value="JSON.stringify({ratings: marks, feedback: feedback})">
                             <x-primary-button type="submit">
-                                Absenden <x-fas-arrow-right class="w-6 h-6 ml-2" />
+                                {{ __('surveys.submit_response') }} <x-fas-arrow-right class="w-4 h-4 ml-2" />
                             </x-primary-button>
                         </form>
                     </div>
@@ -311,23 +319,9 @@
                         'Der Unterricht wird vielfältig gestaltet.'
                     ];
                     return statements[segment] || '';
-                },
-                handleSubmit() {
-                    const surveyData = {
-                        ratings: this.marks.map(mark => ({
-                            segment: mark.segment,
-                            rating: mark.rating,
-                            statement: this.getStatementForSegment(mark.segment)
-                        })),
-                        feedback: this.$refs.feedbackText?.value || ''
-                    };
-
-                    // Log the results
-                    console.log('Survey Results:', surveyData);
-                    console.table(surveyData.ratings);
                 }
             }));
         });
     </script>
     @endpush
-</x-app-layout>
+</x-survey-layout>

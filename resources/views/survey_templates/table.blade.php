@@ -1,4 +1,15 @@
 <x-app-layout>
+    <!-- Create Survey Button -->
+    <div class="fixed bottom-8 right-8 z-50">
+        <form action="{{ route('surveys.create') }}" method="GET">
+            <input type="hidden" name="template" value="table">
+            <x-primary-button class="gap-2 text-base py-3 px-6 shadow-lg">
+                {{ __('templates.use_template') }}
+                <x-fas-arrow-right class="w-4 h-4" />
+            </x-primary-button>
+        </form>
+    </div>
+
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">

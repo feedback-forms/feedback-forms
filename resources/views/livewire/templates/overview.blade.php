@@ -45,12 +45,29 @@
                 >
                     @foreach($templates as $template)
                         <div class="flex-none w-64">
-                            <div class="aspect-video bg-white dark:bg-gray-700 rounded-lg mb-2 overflow-hidden shadow-sm">
+                            <div class="aspect-video bg-white dark:bg-gray-700 rounded-lg mb-2 overflow-hidden shadow-sm relative group">
                                 <img
                                     src="{{ asset($template['image']) }}"
                                     alt="{{ $template['title'] }}"
                                     class="w-full h-full object-cover"
                                 />
+
+                                <!-- Preview and Create buttons overlay -->
+                                <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center gap-2 p-4">
+                                    @if(isset($template['route']))
+                                        <a href="{{ $template['route'] }}" class="w-full px-3 py-1.5 bg-gray-800 text-white text-sm rounded hover:bg-gray-700 transition flex items-center justify-center">
+                                            <x-fas-eye class="w-3 h-3 mr-1.5" />
+                                            {{ __('templates.preview') }}
+                                        </a>
+                                    @endif
+
+                                    @if(isset($template['create_url']))
+                                        <a href="{{ $template['create_url'] }}" class="w-full px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-500 transition flex items-center justify-center">
+                                            <x-fas-plus class="w-3 h-3 mr-1.5" />
+                                            {{ __('templates.create_survey') }}
+                                        </a>
+                                    @endif
+                                </div>
                             </div>
                             <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $template['title'] }}</p>
                         </div>
@@ -66,19 +83,47 @@
                 @foreach($featuredItems as $item)
                     <div class="flex items-start gap-4 p-4 hover:bg-white dark:hover:bg-gray-700 rounded-lg transition-colors">
                         <div class="w-16 h-16 bg-white dark:bg-gray-700 rounded overflow-hidden flex-none shadow-sm">
-                            <img
-                                src="{{ asset($item['image']) }}"
-                                alt="{{ $item['title'] }}"
-                                class="w-full h-full object-cover"
-                            />
+                            @if(isset($item['route']))
+                                <a href="{{ $item['route'] }}">
+                                    <img
+                                        src="{{ asset($item['image']) }}"
+                                        alt="{{ $item['title'] }}"
+                                        class="w-full h-full object-cover"
+                                    />
+                                </a>
+                            @else
+                                <img
+                                    src="{{ asset($item['image']) }}"
+                                    alt="{{ $item['title'] }}"
+                                    class="w-full h-full object-cover"
+                                />
+                            @endif
                         </div>
                         <div class="flex-grow">
-                            <h3 class="font-medium text-gray-900 dark:text-gray-100">{{ $item['title'] }}</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ $item['description'] }}</p>
+                            @if(isset($item['route']))
+                                <a href="{{ $item['route'] }}">
+                                    <h3 class="font-medium text-gray-900 dark:text-gray-100">{{ $item['title'] }}</h3>
+                                </a>
+                            @else
+                                <h3 class="font-medium text-gray-900 dark:text-gray-100">{{ $item['title'] }}</h3>
+                            @endif
+                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ $item['description'] ?? '' }}</p>
                         </div>
-                        <button class="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded">
-                            <x-fas-ellipsis-v class="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                        </button>
+                        <div class="flex flex-col gap-2">
+                            @if(isset($item['route']))
+                                <a href="{{ $item['route'] }}" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded flex items-center">
+                                    <x-fas-eye class="w-4 h-4 text-gray-400 dark:text-gray-500 mr-1" />
+                                    <span class="text-xs">{{ __('templates.preview') }}</span>
+                                </a>
+                            @endif
+
+                            @if(isset($item['create_url']))
+                                <a href="{{ $item['create_url'] }}" class="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded flex items-center">
+                                    <x-fas-plus class="w-4 h-4 mr-1" />
+                                    <span class="text-xs">{{ __('templates.create_survey') }}</span>
+                                </a>
+                            @endif
+                        </div>
                     </div>
                 @endforeach
             </div>

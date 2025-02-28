@@ -13,16 +13,24 @@ class FeedbackTemplateSeeder extends Seeder
      */
     public function run(): void
     {
-        Feedback_template::updateOrCreate([
-            'name' => 'templates.feedback.target'
-        ]);
+        Feedback_template::updateOrCreate(
+            ['name' => 'templates.feedback.target'],
+            ['title' => 'Target Survey']
+        );
 
-        Feedback_template::updateOrCreate([
-            'name' => 'templates.feedback.smiley'
-        ]);
+        Feedback_template::updateOrCreate(
+            ['name' => 'templates.feedback.smiley'],
+            ['title' => 'Smiley Survey']
+        );
 
-        Feedback_template::updateOrCreate([
-            'name' => 'templates.feedback.checkbox'
-        ]);
+        Feedback_template::updateOrCreate(
+            ['name' => 'templates.feedback.checkbox'],
+            ['title' => 'Checkbox Survey']
+        );
+
+        Feedback_template::updateOrCreate(
+            ['name' => 'templates.feedback.table'],
+            ['title' => 'Table Survey']
+        );
     }
 }
