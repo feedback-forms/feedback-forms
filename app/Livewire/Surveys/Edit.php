@@ -11,24 +11,25 @@ use App\Models\Subject;
 use Carbon\Carbon;
 use Livewire\Component;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\Collection;
 
 class Edit extends Component
 {
     public Feedback $survey;
-    public $schoolYears = [];
-    public $departments = [];
-    public $gradeLevels = [];
-    public $schoolClasses = [];
-    public $subjects = [];
+    public Collection $schoolYears;
+    public Collection $departments;
+    public Collection $gradeLevels;
+    public Collection $schoolClasses;
+    public Collection $subjects;
 
     // Form fields
-    public $expire_date;
-    public $response_limit;
-    public $school_year;
-    public $department;
-    public $grade_level;
-    public $class;
-    public $subject;
+    public ?string $expire_date;
+    public ?int $response_limit;
+    public ?string $school_year;
+    public ?string $department;
+    public ?string $grade_level;
+    public ?string $class;
+    public ?string $subject;
 
     protected $rules = [
         'expire_date' => 'required|date|after:now',
@@ -42,6 +43,13 @@ class Edit extends Component
 
     public function mount($id)
     {
+        // Initialize collections
+        $this->schoolYears = new Collection();
+        $this->departments = new Collection();
+        $this->gradeLevels = new Collection();
+        $this->schoolClasses = new Collection();
+        $this->subjects = new Collection();
+
         // Load the survey
         $this->survey = Feedback::findOrFail($id);
 
@@ -59,11 +67,11 @@ class Edit extends Component
 
         // Set form values from the survey
         // Handle expire_date safely, ensuring it's a Carbon instance
-        if ($this->survey->expire_date instanceof \Carbon\Carbon) {
+        if ($this->survey->expire_date instanceof Carbon) {
             $this->expire_date = $this->survey->expire_date->format('Y-m-d\TH:i');
         } else {
             // If it's a string (for existing records), convert it to Carbon
-            $this->expire_date = \Carbon\Carbon::parse($this->survey->expire_date)->format('Y-m-d\TH:i');
+            $this->expire_date = Carbon::parse($this->survey->expire_date)->format('Y-m-d\TH:i');
         }
 
         $this->response_limit = $this->survey->limit;
