@@ -23,7 +23,7 @@
                                 <h1 class="text-2xl font-bold mb-4">
                                     {{ $survey->feedback_template->title ?? 'Unterrichtsbeurteilung durch Schülerinnen und Schüler' }}
                                 </h1>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                                     @if($survey->subject)
                                         <div>
                                             <span class="font-semibold">{{ __('surveys.subject') }}:</span>

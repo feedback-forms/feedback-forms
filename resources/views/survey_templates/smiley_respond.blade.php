@@ -33,11 +33,11 @@
                     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6 text-gray-900 dark:text-gray-100 text-center">
                             <!-- Survey Information -->
-                            <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-left">
+                            <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                 <h1 class="text-2xl font-bold mb-4">
                                     {{ $survey->feedback_template->title ?? __('surveys.survey') }}
                                 </h1>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                                     @if($survey->subject)
                                         <div>
                                             <span class="font-semibold">{{ __('surveys.subject') }}:</span>
