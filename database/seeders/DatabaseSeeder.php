@@ -17,7 +17,12 @@ class DatabaseSeeder extends Seeder
             FeedbackTemplateSeeder::class,
             QuestionTemplateSeeder::class,
             RegisterKeySeeder::class,
-            UserSeeder::class
+            UserSeeder::class,
+            DepartmentSeeder::class,
+            GradeLevelsSeeder::class,
+            SchoolClassSeeder::class, 
+            SchoolYearSeeder::class,
+            SubjectSeeder::class,
         ]);
     }
 }
