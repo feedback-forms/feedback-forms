@@ -35,15 +35,17 @@
                 <!-- Password Section -->
                 <div class="flex items-center gap-2">
                     <div class="relative flex items-center">
-                        <span class="font-mono text-gray-700 dark:text-gray-300">
+                        <div class="font-mono text-gray-700 dark:text-gray-300 w-28 flex justify-end">
                             <span x-show="!showPassword">••••••••</span>
                             <span x-show="showPassword" x-cloak>password123</span>
-                        </span>
-                        <button class="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-full transition-colors ml-2"
-                                @click="showPassword = !showPassword">
-                            <x-fas-eye x-show="!showPassword" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                            <x-fas-eye-slash x-show="showPassword" x-cloak class="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                        </button>
+                        </div>
+                        <div class="w-8 h-8 flex items-center justify-center">
+                            <button class="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-full transition-colors"
+                                    @click="showPassword = !showPassword">
+                                <x-fas-eye x-show="!showPassword" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                                <x-fas-eye-slash x-show="showPassword" x-cloak class="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Settings Button -->
