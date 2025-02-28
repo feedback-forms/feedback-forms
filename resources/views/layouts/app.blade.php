@@ -13,6 +13,7 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css'])
+        @vite(['resources/css/surveys-page.css'])
         @livewireStyles
     </head>
     <body class="font-sans antialiased">
@@ -36,6 +37,7 @@
 
         @livewireScripts
         @vite(['resources/js/app.js'])
+        @vite(['resources/js/survey-filter.js'])
         @stack('scripts')
     </body>
 </html>

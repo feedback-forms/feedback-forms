@@ -35,4 +35,7 @@ Route::middleware('auth')->group(function () {
 
     Volt::route('templates', \App\Livewire\Templates\Overview::class)
         ->name('templates.list');
+
+    Volt::route('teacher-interface', \App\Livewire\TeacherInterface\Overview::class)
+    ->name('teacher.interface');
 });
