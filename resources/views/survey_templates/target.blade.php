@@ -38,6 +38,18 @@
             z-index: 50;
         }
     </style>
+
+    <!-- Create Survey Button -->
+    <div class="fixed bottom-8 right-8 z-50">
+        <form action="{{ route('surveys.create') }}" method="GET">
+            <input type="hidden" name="template" value="target">
+            <x-primary-button class="gap-2 text-base py-3 px-6 shadow-lg">
+                {{ __('templates.use_template') }}
+                <x-fas-arrow-right class="w-4 h-4" />
+            </x-primary-button>
+        </form>
+    </div>
+
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -204,9 +216,21 @@
 
                     <!-- Submit Button -->
                     <div class="flex justify-end mt-8">
-                        <x-primary-button @click="handleSubmit">
-                            Absenden <x-fas-arrow-right class="w-6 h-6 ml-2" />
-                        </x-primary-button>
+                        <form action="{{ route('surveys.store') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="template_id" value="{{ optional(App\Models\Feedback_template::where('name', 'templates.feedback.target')->first())->id ?? '' }}">
+                            <input type="hidden" name="expire_date" value="{{ \Carbon\Carbon::now()->addDays(30)->format('Y-m-d H:i:s') }}">
+                            <input type="hidden" name="response_limit" value="30">
+                            <input type="hidden" name="school_year" value="{{ App\Models\SchoolYear::active()->first()->name ?? '2023/24' }}">
+                            <input type="hidden" name="department" value="{{ App\Models\Department::active()->first()->code ?? 'AIT' }}">
+                            <input type="hidden" name="grade_level" value="{{ App\Models\GradeLevel::active()->first()->level ?? '5' }}">
+                            <input type="hidden" name="class" value="{{ App\Models\SchoolClass::active()->first()->name ?? '5a' }}">
+                            <input type="hidden" name="subject" value="{{ App\Models\Subject::active()->first()->code ?? 'math' }}">
+                            <input type="hidden" name="survey_data" x-bind:value="JSON.stringify({ratings: marks, feedback: feedback})">
+                            <x-primary-button type="submit">
+                                Absenden <x-fas-arrow-right class="w-6 h-6 ml-2" />
+                            </x-primary-button>
+                        </form>
                     </div>
                 </div>
             </div>
