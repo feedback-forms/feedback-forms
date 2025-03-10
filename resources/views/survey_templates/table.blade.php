@@ -182,7 +182,7 @@
 
                     <!-- Submit Button -->
                     <div class="flex justify-end mt-6">
-                        <x-primary-button>
+                        <x-primary-button disabled>
                             Absenden <x-fas-arrow-right class="w-6 h-6 ml-2" />
                         </x-primary-button>
                     </div>
