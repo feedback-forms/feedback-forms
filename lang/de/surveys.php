@@ -95,4 +95,11 @@ return [
     'subject' => 'Fach',
     'grade_level' => 'Jahrgangsstufe',
     'class' => 'Klasse',
+
+    // Smiley template
+    'smiley' => [
+        'positive' => 'Was hat Ihnen gefallen?',
+        'negative' => 'Was könnte verbessert werden?',
+        'button' => 'Feedback absenden'
+    ],
 ];

@@ -95,4 +95,11 @@ return [
     'subject' => 'Subject',
     'grade_level' => 'Grade Level',
     'class' => 'Class',
+
+    // Smiley template
+    'smiley' => [
+        'positive' => 'What did you like?',
+        'negative' => 'What could be improved?',
+        'button' => 'Submit Feedback'
+    ],
 ];
