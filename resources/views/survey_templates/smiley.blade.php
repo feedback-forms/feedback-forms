@@ -39,7 +39,7 @@
                         </div>
                     </div>
                     <div class="flex justify-end pr-6 pb-6">
-                        <x-primary-button type="submit">
+                        <x-primary-button disabled type="submit">
                             {{ __('surveys.smiley.button') }} <x-fas-arrow-right class="w-6 h-6" />
                         </x-primary-button>
                     </div>

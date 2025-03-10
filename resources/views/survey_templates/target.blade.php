@@ -227,7 +227,7 @@
                             <input type="hidden" name="class" value="{{ App\Models\SchoolClass::active()->first()->name ?? '5a' }}">
                             <input type="hidden" name="subject" value="{{ App\Models\Subject::active()->first()->code ?? 'math' }}">
                             <input type="hidden" name="survey_data" x-bind:value="JSON.stringify({ratings: marks, feedback: feedback})">
-                            <x-primary-button type="submit">
+                            <x-primary-button type="submit" disabled>
                                 Absenden <x-fas-arrow-right class="w-6 h-6 ml-2" />
                             </x-primary-button>
                         </form>
