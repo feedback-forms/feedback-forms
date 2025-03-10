@@ -13,12 +13,24 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::updateOrCreate([
-            'name' => 'admin',
-            'email' => 'noreply@uts-x.com',
-            'password' => Hash::make('admin'),
-            'is_admin' => 1,
-            'email_verified_at' => now(),
-        ]);
+        // First check if admin user already exists to avoid unique constraint violation
+        $adminExists = User::where('name', 'admin')->exists();
+
+        if (!$adminExists) {
+            User::create([
+                'name' => 'admin',
+                'email' => 'noreply@uts-x.com',
+                'password' => Hash::make('admin'),
+                'is_admin' => 1,
+                'email_verified_at' => now(),
+            ]);
+        } else {
+            // Optionally update existing admin user if needed
+            User::where('name', 'admin')->update([
+                'email' => 'noreply@uts-x.com',
+                'is_admin' => 1,
+                'email_verified_at' => now(),
+            ]);
+        }
     }
 }
