@@ -25,6 +25,7 @@ class SubjectSeeder extends Seeder
             ['code' => 'BGP', 'name' => 'Betriebs- und gesamtwirtschaftliche Prozesse'],
             ['code' => 'kRel', 'name' => 'Katholische Religion'],
             ['code' => 'eRel', 'name' => 'Evangelische Religion'],
+            ['code' => 'ET', 'name' => 'Ethik'],
         ];
 
         foreach ($subjects as $subject) {
