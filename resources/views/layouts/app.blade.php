@@ -37,6 +37,7 @@
 
         @livewireScripts
         @vite(['resources/js/app.js'])
+        @vite(['resources/js/survey-filter.js'])
         @stack('scripts')
     </body>
 </html>

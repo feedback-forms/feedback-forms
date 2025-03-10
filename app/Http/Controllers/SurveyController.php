@@ -5,7 +5,7 @@ use App\Http\Requests\SmileyRequest;
 use Illuminate\Support\Facades\{Log};
 
 use App\Services\SurveyService;
-use App\Models\{Feedback_template, Question_template, Feedback};
+use App\Models\{Feedback_template, Question_template, Feedback, SchoolYear, Department, GradeLevel, SchoolClass, Subject};
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -32,11 +32,11 @@ class SurveyController extends Controller
         }
 
         // Load options from database
-        $schoolYears = \App\Models\SchoolYear::active()->get();
-        $departments = \App\Models\Department::active()->get();
-        $gradeLevels = \App\Models\GradeLevel::active()->orderBy('level')->get();
-        $schoolClasses = \App\Models\SchoolClass::active()->get();
-        $subjects = \App\Models\Subject::active()->get();
+        $schoolYears = SchoolYear::active()->get();
+        $departments = Department::active()->get();
+        $gradeLevels = GradeLevel::active()->orderBy('level')->get();
+        $schoolClasses = SchoolClass::active()->get();
+        $subjects = Subject::active()->get();
 
         // Verify the template exists
         $template = $templates->where('name', 'templates.feedback.' . $selectedTemplate)->first();
@@ -139,7 +139,7 @@ class SurveyController extends Controller
     {
         try {
 
-            dd($regquest);
+            dd($request);
         } catch(\Exception $e) {
             Log::debug('Error while retrieving Data from Smiley Template: ' . $e);
         }

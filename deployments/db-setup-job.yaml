@@ -20,8 +20,7 @@ spec:
                 sleep 1
               done
               php artisan migrate --force
-              php artisan session:table
-              php artisan migrate --force
+              php artisan db:seed
           env:
             - name: DB_CONNECTION
               value: "pgsql"
