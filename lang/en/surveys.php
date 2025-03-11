@@ -57,6 +57,14 @@ return [
 
     // Survey management
     'surveys' => 'Surveys',
+    'umfragen' => 'Surveys',
+    'schuljahr' => 'School Year',
+    'abteilung' => 'Department',
+    'all_school_years' => 'All School Years',
+    'all_departments' => 'All Departments',
+    'all_grade_levels' => 'All Grade Levels',
+    'all_classes' => 'All Classes',
+    'all_subjects' => 'All Subjects',
     'expired' => 'Expired',
     'running' => 'Running',
     'cancelled' => 'Cancelled',

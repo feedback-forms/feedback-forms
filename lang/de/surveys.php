@@ -2,6 +2,14 @@
 
 return [
     'surveys' => 'Umfragen',
+    'umfragen' => 'Umfragen',
+    'schuljahr' => 'Schuljahr',
+    'abteilung' => 'Abteilung',
+    'all_school_years' => 'Alle Schuljahre',
+    'all_departments' => 'Alle Abteilungen',
+    'all_grade_levels' => 'Alle Jahrgangsstufen',
+    'all_classes' => 'Alle Klassen',
+    'all_subjects' => 'Alle Fächer',
     'expired' => 'Abgelaufen',
     'cancelled' => 'Abgebrochen',
     'running' => 'Läuft',

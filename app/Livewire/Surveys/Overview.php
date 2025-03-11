@@ -3,8 +3,11 @@
 namespace App\Livewire\Surveys;
 
 use App\Models\Feedback;
+use App\Models\SchoolYear;
+use App\Models\Department;
 use Carbon\Carbon;
 use Livewire\Component;
+use Illuminate\Support\Facades\DB;
 
 class Overview extends Component
 {
@@ -15,10 +18,28 @@ class Overview extends Component
     ];
 
     public $surveys = [];
+    public $schoolYears = [];
+    public $departments = [];
+    public $selectedSchoolYear = '';
+    public $selectedDepartment = '';
 
     public function mount()
     {
+        $this->loadSchoolYears();
+        $this->loadDepartments();
         $this->loadSurveys();
+    }
+
+    public function loadSchoolYears()
+    {
+        // Get active school years from the SchoolYear model
+        $this->schoolYears = SchoolYear::active()->orderBy('name', 'desc')->get();
+    }
+
+    public function loadDepartments()
+    {
+        // Get active departments from the Department model
+        $this->departments = Department::active()->orderBy('name')->get();
     }
 
     public function filter(string $filter): void
@@ -27,11 +48,52 @@ class Overview extends Component
         $this->loadSurveys();
     }
 
+    public function filterBySchoolYear($schoolYear)
+    {
+        $this->selectedSchoolYear = $schoolYear;
+        $this->loadSurveys();
+    }
+
+    public function filterByDepartment($department)
+    {
+        $this->selectedDepartment = $department;
+        $this->loadSurveys();
+    }
+
+    public function clearSchoolYearFilter()
+    {
+        $this->selectedSchoolYear = '';
+        $this->loadSurveys();
+    }
+
+    public function clearDepartmentFilter()
+    {
+        $this->selectedDepartment = '';
+        $this->loadSurveys();
+    }
+
+    public function clearFilters()
+    {
+        $this->selectedSchoolYear = '';
+        $this->selectedDepartment = '';
+        $this->loadSurveys();
+    }
+
     protected function loadSurveys()
     {
         // Start with a base query for the authenticated user
         $query = Feedback::with(['feedback_template', 'user'])
             ->where('user_id', auth()->id());
+
+        // Apply school year filter if selected
+        if ($this->selectedSchoolYear) {
+            $query->where('school_year', $this->selectedSchoolYear);
+        }
+
+        // Apply department filter if selected
+        if ($this->selectedDepartment) {
+            $query->where('department', $this->selectedDepartment);
+        }
 
         // Use a separate array to track conditions
         $conditions = [];
@@ -80,7 +142,9 @@ class Overview extends Component
     public function render()
     {
         return view('livewire.surveys.overview', [
-            'surveys' => $this->surveys
+            'surveys' => $this->surveys,
+            'schoolYears' => $this->schoolYears,
+            'departments' => $this->departments,
         ]);
     }
 }

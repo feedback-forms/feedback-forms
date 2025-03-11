@@ -6,6 +6,67 @@
     </a>
 
     <div class="bg-gray-50 dark:bg-gray-800 flex flex-col gap-10 p-10">
+        <div class="flex flex-col gap-4">
+            <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">{{__('surveys.umfragen')}}</h2>
+
+            <!-- Filter dropdowns -->
+            <div class="flex flex-row gap-4 flex-wrap">
+                <div class="flex flex-col gap-1 min-w-60">
+                    <label for="school-year" class="text-sm text-gray-600 dark:text-gray-400">{{__('surveys.schuljahr')}}</label>
+                    <div class="relative">
+                        <select
+                            id="school-year"
+                            wire:model="selectedSchoolYear"
+                            class="w-full border border-gray-300 dark:border-gray-700 rounded-md p-2 pr-8 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                            <option value="">{{__('surveys.all_school_years')}}</option>
+                            @foreach($schoolYears as $schoolYear)
+                                <option value="{{ $schoolYear->name }}">{{ $schoolYear->name }}</option>
+                            @endforeach
+                        </select>
+                        @if($selectedSchoolYear !== '')
+                            <button
+                                type="button"
+                                class="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                                wire:click="clearSchoolYearFilter"
+                            >
+                                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1 min-w-60">
+                    <label for="department" class="text-sm text-gray-600 dark:text-gray-400">{{__('surveys.abteilung')}}</label>
+                    <div class="relative">
+                        <select
+                            id="department"
+                            wire:model="selectedDepartment"
+                            class="w-full border border-gray-300 dark:border-gray-700 rounded-md p-2 pr-8 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                            <option value="">{{__('surveys.all_departments')}}</option>
+                            @foreach($departments as $department)
+                                <option value="{{ $department->name }}">{{ $department->name }}</option>
+                            @endforeach
+                        </select>
+                        @if($selectedDepartment !== '')
+                            <button
+                                type="button"
+                                class="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                                wire:click="clearDepartmentFilter"
+                            >
+                                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="flex flex-row gap-2 flex-wrap just-start">
             <button class="filter-button" id="surveys-filter-expired" filter-type="expired">{{__('surveys.expired')}}</button>
             <button class="filter-button" id="surveys-filter-running" filter-type="running">{{__('surveys.running')}}</button>
