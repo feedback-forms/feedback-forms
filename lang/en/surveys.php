@@ -95,4 +95,11 @@ return [
     'subject' => 'Subject',
     'grade_level' => 'Grade Level',
     'class' => 'Class',
+
+    // QR Code
+    'show_qr' => 'Show QR',
+    'qr_code_title' => 'Survey QR Code',
+    'scan_to_access' => 'Scan this QR code to access the survey',
+    'close' => 'Close',
+    'qr_code_error' => 'Failed to generate QR code. Please try again.',
 ];

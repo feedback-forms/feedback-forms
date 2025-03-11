@@ -95,4 +95,11 @@ return [
     'subject' => 'Fach',
     'grade_level' => 'Jahrgangsstufe',
     'class' => 'Klasse',
+
+    // QR Code
+    'show_qr' => 'QR anzeigen',
+    'qr_code_title' => 'Umfrage QR-Code',
+    'scan_to_access' => 'Scannen Sie diesen QR-Code, um auf die Umfrage zuzugreifen',
+    'close' => 'Schließen',
+    'qr_code_error' => 'QR-Code konnte nicht generiert werden. Bitte versuchen Sie es erneut.',
 ];

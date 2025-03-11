@@ -25,6 +25,32 @@ class WelcomeController extends Controller
     }
 
     /**
+     * Access a survey through QR code scanning
+     */
+    public function scanQrAccess(Request $request): RedirectResponse
+    {
+        // Get the token from the URL query parameter
+        $token = $request->query('token');
+
+        Log::info("QR Code scan request received", [
+            'token_exists' => !empty($token),
+            'token_length' => !empty($token) ? strlen($token) : 0,
+            'request_url' => $request->fullUrl(),
+            'user_agent' => $request->userAgent()
+        ]);
+
+        if (empty($token)) {
+            Log::warning("QR code scan missing token parameter");
+            return redirect()->route('welcome')
+                ->with('error', __('surveys.invalid_access_key'));
+        }
+
+        // Redirect to welcome page with the token
+        // The welcome page will handle form submission with the token
+        return redirect()->route('welcome', ['token' => $token]);
+    }
+
+    /**
      * Access a survey using an access key
      */
     public function accessSurvey(Request $request): View|RedirectResponse
