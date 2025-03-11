@@ -1,66 +1,221 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Feedback Forms
+
+<div align="center">
+
+<img src="public/images/logo.png" alt="Feedback Forms Logo" width="200"/>
+
+[![Production Status](https://img.shields.io/badge/status-production-green)](https://feedback-forms.uts-x.com)
+[![Test Environment](https://img.shields.io/badge/status-testing-yellow)](https://feedback-forms-test.uts-x.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Laravel](https://img.shields.io/badge/Laravel-11.x-FF2D20?logo=laravel)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.x-777BB4?logo=php)](https://php.net)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13.x-336791?logo=postgresql)](https://postgresql.org)
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+A comprehensive Laravel-based web application for creating and managing educational feedback surveys. This platform enables teachers to easily create, distribute, and collect feedback through customizable survey templates.
 </p>
+</div>
 
-## About Laravel
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🌐 Environments
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Environment | URL | Status |
+|------------|-----|--------|
+| Production | [feedback-forms.uts-x.com](https://feedback-forms.uts-x.com) | [![Production](https://img.shields.io/website?url=https://feedback-forms.uts-x.com)](https://feedback-forms.uts-x.com) |
+| Test/Staging | [feedback-forms-test.uts-x.com](https://feedback-forms-test.uts-x.com) | [![Staging](https://img.shields.io/website?url=https://feedback-forms-test.uts-x.com)](https://feedback-forms-test.uts-x.com) |
+| Local Development | [localhost:8000](http://localhost:8000) | - |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🚀 Quick Start
 
-## Learning Laravel
+```bash
+# Clone and setup the project
+git clone [repository-url] && cd feedback-forms
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+# Install dependencies and setup environment
+make install
+make key
+make npm-install
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+# Start the application
+make up
+make migrate
+make seed
+make npm-build
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+# Visit http://localhost:8000
+```
 
-## Laravel Sponsors
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 🛠 Tech Stack
 
-### Premium Partners
+This application is built using a modern and robust technology stack, focusing on maintainability, scalability, and developer experience:
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+**Backend**
+* **Laravel 11.x (PHP)** - The application's core framework
+* **PostgreSQL** - Robust and reliable database
+* **Laravel Queue System** - For background task processing
 
-## Contributing
+**Frontend**
+* **Blade Templates** - Laravel's powerful templating engine
+* **Livewire 3.x** - For dynamic interfaces
+* **Tailwind CSS** - Utility-first styling
+* **Alpine.js** - Lightweight JavaScript framework
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+**Infrastructure**
+* **Docker** - Containerization for development and deployment
+* **Kubernetes** - Container orchestration and scaling
+* **Laravel Sail** - Local development environment
 
-## Code of Conduct
+## 📦 Installation
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+<details>
+<summary><strong>Available Make Commands</strong></summary>
 
-## Security Vulnerabilities
+| Command | Description |
+|---------|------------|
+| `make up` | Start the application |
+| `make down` | Stop the application |
+| `make build` | Build containers |
+| `make install` | Install composer dependencies |
+| `make migrate` | Run database migrations |
+| `make refresh` | Refresh database (migrate:fresh) |
+| `make clear` | Clear application cache |
+| `make npm-install` | Install npm dependencies |
+| `make npm-build` | Build frontend assets |
+| `make npm-dev` | Run npm in dev mode |
+| `make logs` | View application logs |
+| `make ps` | List containers |
+| `make key` | Generate application key |
+| `make seed` | Seed the database |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+</details>
 
-## License
+<details>
+<summary><strong>1. Clone and Setup</strong></summary>
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+# Clone the repository
+git clone [repository-url]
+cd feedback-forms
+
+# Install dependencies
+make install
+make npm-install
+
+# Configure environment
+cp .env.example .env
+make key
+```
+</details>
+
+<details>
+<summary><strong>2. Database Setup</strong></summary>
+
+```bash
+# Start the application
+make up
+
+# Setup database
+make migrate
+make seed
+```
+</details>
+
+<details>
+<summary><strong>3. Frontend Build</strong></summary>
+
+```bash
+# Build assets
+make npm-build
+
+# For development with hot reload
+make npm-dev
+```
+</details>
+
+<details>
+<summary><strong>4. Development Commands</strong></summary>
+
+```bash
+# View logs
+make logs
+
+# List running containers
+make ps
+
+# Stop the application
+make down
+
+# Clear application cache
+make clear
+
+# Refresh database
+make refresh
+```
+</details>
+
+## 🔧 Configuration
+
+<details>
+<summary><strong>Environment Variables</strong></summary>
+
+```env
+# Database Configuration
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=feedback_forms
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+
+# Mail Configuration
+MAIL_MAILER=smtp
+MAIL_HOST=your_mail_host
+MAIL_PORT=587
+MAIL_USERNAME=your_mail_username
+MAIL_PASSWORD=your_mail_password
+
+# Application URL
+APP_URL=http://localhost:8000
+```
+</details>
+
+
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+
+
+
+## 🔐 Security
+
+If you discover any security vulnerabilities, please report them via email to [security@feedback-forms.uts-x.com](mailto:security@feedback-forms.uts-x.com). All security vulnerabilities will be promptly addressed.
+
+## 📚 Documentation
+
+- [User Guide](docs/user-guide.md)
+- [Development Guide](docs/development.md)
+- [Deployment Guide](docs/deployment.md)
+
+## 🙏 Acknowledgments
+
+- [Laravel Framework](https://laravel.com) and its community
+- All [contributors](https://github.com/feedback-forms/feedback-forms/graphs/contributors) who have helped shape this project
+- Educational institutions using and providing feedback on the platform
+
+
+
+
+
+
+<br/>
+
+Made with ❤️ for education
