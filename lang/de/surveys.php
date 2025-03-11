@@ -102,4 +102,11 @@ return [
     'scan_to_access' => 'Scannen Sie diesen QR-Code, um auf die Umfrage zuzugreifen',
     'close' => 'Schließen',
     'qr_code_error' => 'QR-Code konnte nicht generiert werden. Bitte versuchen Sie es erneut.',
+  
+    // Smiley template
+    'smiley' => [
+        'positive' => 'Was hat Ihnen gefallen?',
+        'negative' => 'Was könnte verbessert werden?',
+        'button' => 'Feedback absenden'
+    ],
 ];

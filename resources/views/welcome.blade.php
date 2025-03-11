@@ -31,30 +31,45 @@
 
                         <!-- Validation Errors -->
                         @if ($errors->any())
-                            <div class="mb-4">
-                                <div class="font-medium text-red-600 dark:text-red-400">
+                            <div class="mb-4 text-center">
+                                <div class="font-medium text-red-600 dark:text-red-400 mb-2">
                                     {{ __('surveys.whoops') }}
                                 </div>
 
-                                <ul class="mt-3 list-disc list-inside text-sm text-red-600 dark:text-red-400">
+                                <div class="mt-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-4 rounded-lg shadow-sm">
                                     @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
+                                        <p class="mb-1 flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                            </svg>
+                                            {{ $error }}
+                                        </p>
                                     @endforeach
-                                </ul>
+                                </div>
                             </div>
                         @endif
 
                         <!-- Success Message -->
                         @if (session('success'))
-                            <div class="mb-4 font-medium text-sm text-green-600 dark:text-green-400">
-                                {{ session('success') }}
+                            <div class="mb-4 text-center">
+                                <div class="font-medium text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 p-4 rounded-lg shadow-sm flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    {{ session('success') }}
+                                </div>
                             </div>
                         @endif
 
                         <!-- Error Message -->
                         @if (session('error'))
-                            <div class="mb-4 font-medium text-sm text-red-600 dark:text-red-400">
-                                {{ session('error') }}
+                            <div class="mb-4 text-center">
+                                <div class="font-medium text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-4 rounded-lg shadow-sm flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                    {{ session('error') }}
+                                </div>
                             </div>
                         @endif
 

@@ -102,4 +102,11 @@ return [
     'scan_to_access' => 'Scan this QR code to access the survey',
     'close' => 'Close',
     'qr_code_error' => 'Failed to generate QR code. Please try again.',
+
+    // Smiley template
+    'smiley' => [
+        'positive' => 'What did you like?',
+        'negative' => 'What could be improved?',
+        'button' => 'Submit Feedback'
+    ],
 ];
