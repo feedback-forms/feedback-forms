@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\{Feedback, Question, Result, Feedback_template, Question_template};
+use App\Models\{Feedback, Question, Result, ResponseValue, Feedback_template, Question_template};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -136,17 +136,25 @@ class SurveyService
                 // Handle regular question-by-question responses
                 foreach ($responses as $questionId => $value) {
                     // Skip non-numeric keys (like 'feedback' from the form)
+                    // Non-numeric keys are typically form metadata or special fields that are not directly tied to questions
+                    // 'feedback' is handled separately as a special case for general survey feedback
                     if (!is_numeric($questionId) && $questionId !== 'feedback') {
                         continue;
                     }
 
                     // Special handling for feedback
                     if ($questionId === 'feedback' && !empty($value)) {
-                        Result::create([
+                        $result = Result::create([
                             'question_id' => $questions->first()->id ?? null,
                             'submission_id' => $submissionId,
-                            'value' => ['feedback' => $value]
                         ]);
+
+                        ResponseValue::create([
+                            'result_id' => $result->id,
+                            'question_template_type' => 'textarea', // Assuming 'textarea' for general feedback
+                            'text_value' => $value,
+                        ]);
+
                         $responseCount++;
                         continue;
                     }
@@ -170,11 +178,43 @@ class SurveyService
                     }
 
                     // Create a new result for each response
-                    Result::create([
+                    $result = Result::create([
                         'question_id' => $question->id,
                         'submission_id' => $submissionId,
-                        'value' => $value
                     ]);
+
+                    $questionTemplateType = $question->question_template->type ?? 'text'; // Default to 'text'
+
+                    switch ($questionTemplateType) {
+                        case 'range':
+                            ResponseValue::create([
+                                'result_id' => $result->id,
+                                'question_template_type' => 'range',
+                                'range_value' => intval($value), // Assuming range value is an integer
+                            ]);
+                            break;
+                        case 'checkboxes':
+                            ResponseValue::create([
+                                'result_id' => $result->id,
+                                'question_template_type' => 'checkboxes',
+                                'json_value' => is_array($value) ? $value : [$value], // Store checkboxes as JSON array
+                            ]);
+                            break;
+                        case 'textarea':
+                            ResponseValue::create([
+                                'result_id' => $result->id,
+                                'question_template_type' => 'textarea',
+                                'text_value' => $value,
+                            ]);
+                            break;
+                        default: // Default case, e.g., 'text' or unknown types
+                            ResponseValue::create([
+                                'result_id' => $result->id,
+                                'question_template_type' => $questionTemplateType,
+                                'text_value' => $value, // Store as text by default
+                            ]);
+                            break;
+                    }
 
                     $responseCount++;
                 }
@@ -200,7 +240,10 @@ class SurveyService
         } catch (\Exception $e) {
             Log::error('Error storing survey responses: ' . $e->getMessage(), [
                 'survey_id' => $survey->id,
-                'exception' => $e
+                'exception' => $e,
+                'exception_class' => get_class($e),
+                'exception_trace' => $e->getTraceAsString(),
+                'responses' => $responses
             ]);
             return false;
         }
@@ -225,14 +268,23 @@ class SurveyService
             'submission_id' => $submissionId
         ]);
 
-        // Store the entire response as JSON for future reference
-        $responseJson = json_encode($jsonData);
+        // Get the first question of the survey to associate the result with
+        // Template-specific responses are often survey-level data rather than question-specific
+        // We associate them with the first question as a convention, but this could be enhanced
+        // in the future to use a more specific question association strategy if needed
+        $firstQuestion = $survey->questions->first();
 
-        // Create a single result record with the JSON data
-        Result::create([
-            'question_id' => $survey->questions->first()->id ?? null,
+        // Create a single result record for the entire template response
+        $result = Result::create([
+            'question_id' => $firstQuestion->id ?? null,
             'submission_id' => $submissionId,
-            'value' => $responseJson
+        ]);
+
+        // Store the entire JSON data in the json_value column of response_values
+        ResponseValue::create([
+            'result_id' => $result->id,
+            'question_template_type' => $templateType, // Store template type for context
+            'json_value' => $jsonData, // Store the entire JSON response
         ]);
 
         // Increment the response count
