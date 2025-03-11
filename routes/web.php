@@ -8,6 +8,9 @@ use Livewire\Volt\Volt;
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
 Route::post('/', [WelcomeController::class, 'accessSurvey'])->name('surveys.access.submit');
 
+// Direct QR code access route
+Route::get('/survey/scan', [WelcomeController::class, 'scanQrAccess'])->name('surveys.scan');
+
 Route::middleware(['auth'])->group(function () {
     Route::view('dashboard', 'dashboard')
         ->name('dashboard');
