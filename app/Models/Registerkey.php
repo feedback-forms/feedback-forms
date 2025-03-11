@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Registerkey extends Model
 {
-    protected $fillable = [];
+    protected $fillable = ['code'];
 
     public function user(): BelongsTo
     {

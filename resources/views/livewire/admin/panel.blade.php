@@ -60,15 +60,44 @@
         <!-- Invite Tokens Section -->
         <section class="mt-8">
             <h2 class="text-xl font-bold mb-4 text-gray-700 dark:text-gray-200">{{ __('admin.invite_tokens') }}</h2>
+
+            <!-- Success Message -->
+            @if($successMessage)
+                <div class="mb-4 p-3 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 rounded-lg relative">
+                    {{ $successMessage }}
+                    <button wire:click="clearMessage" class="absolute top-3 right-3 text-green-700 dark:text-green-300 hover:text-green-900 dark:hover:text-green-100">
+                        <x-fas-times class="w-4 h-4" />
+                    </button>
+                </div>
+            @endif
+
+            <!-- Create Token Button -->
+            <div class="mb-4">
+                <button
+                    wire:click="createToken"
+                    wire:loading.attr="disabled"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                >
+                    <x-fas-plus class="w-4 h-4" />
+                    <span>{{ __('admin.create_new_token') }}</span>
+                    <span wire:loading wire:target="createToken" class="ml-2">
+                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </span>
+                </button>
+            </div>
+
             <div class="flex flex-col gap-4">
-                @for($i = 0; $i < 3; $i++)
+                @forelse($registerkeys as $registerkey)
                     <div class="flex items-center justify-between p-4 hover:bg-white dark:hover:bg-gray-700 rounded-lg transition-colors"
-                         x-data="{ showToken: false }">
+                         x-data="{ showToken: false, showOptions: false }">
                         <div class="flex flex-col gap-1">
                             <div class="flex items-center gap-2">
                                 <div class="font-mono text-gray-700 dark:text-gray-300 w-36 flex justify-end">
                                     <span x-show="!showToken">••••••••••</span>
-                                    <span x-show="showToken" x-cloak>EXAMPLE-TOKEN-{{ $i }}</span>
+                                    <span x-show="showToken" x-cloak>{{ $registerkey->code }}</span>
                                 </div>
                                 <div class="w-8 h-8 flex items-center justify-center">
                                     <button class="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-full transition-colors"
@@ -79,14 +108,44 @@
                                 </div>
                             </div>
                             <span class="text-sm text-gray-500 dark:text-gray-400">
-                                {{ __('admin.created_days_ago', ['days' => rand(1, 10)]) }}
+                                {{ __('admin.created_at', ['date' => $registerkey->created_at->diffForHumans()]) }}
                             </span>
                         </div>
-                        <button class="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded">
-                            <x-fas-ellipsis-v class="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                        </button>
+                        <div class="relative">
+                            <button @click="showOptions = !showOptions" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded">
+                                <x-fas-ellipsis-v class="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                            </button>
+
+                            <!-- Dropdown Menu -->
+                            <div x-show="showOptions"
+                                 @click.away="showOptions = false"
+                                 x-cloak
+                                 class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 shadow-lg rounded-lg py-1 z-10"
+                            >
+                                <button
+                                    wire:click="revokeToken({{ $registerkey->id }})"
+                                    wire:loading.attr="disabled"
+                                    wire:target="revokeToken({{ $registerkey->id }})"
+                                    @click="showOptions = false"
+                                    class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center gap-2"
+                                >
+                                    <x-fas-trash-alt class="w-4 h-4" />
+                                    <span>{{ __('admin.revoke_token') }}</span>
+                                    <span wire:loading wire:target="revokeToken({{ $registerkey->id }})" class="ml-2">
+                                        <svg class="animate-spin h-3 w-3 text-red-600 dark:text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                @endfor
+                @empty
+                    <div class="p-4 text-gray-500 dark:text-gray-400 text-center">
+                        {{ __('admin.no_tokens_available') }}
+                    </div>
+                @endforelse
             </div>
         </section>
     </div>

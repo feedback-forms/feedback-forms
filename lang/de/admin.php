@@ -5,6 +5,7 @@ return [
     'users' => 'Benutzer',
     'invite_tokens' => 'Einladungs-Tokens',
     'created_days_ago' => 'vor :days Tagen erstellt',
+    'created_at' => 'Erstellt :date',
     'created_month_ago' => 'vor :count Monat erstellt',
     'created_months_ago' => 'vor :count Monaten erstellt',
     'users_management' => 'Benutzerverwaltung',
@@ -19,5 +20,12 @@ return [
     'temporary_password_generated' => 'Temporäres Passwort generiert',
     'temporary_password_for_user' => 'Temporäres Passwort für :name',
     'temporary_password_notice' => 'Bitte teilen Sie dieses Passwort dem Benutzer sicher mit. Das Passwort wird nur einmal angezeigt.',
-    'temporary_password_one_time_use' => 'Wichtig: Dies ist ein einmaliges temporäres Passwort. Der Benutzer sollte es nach der ersten erfolgreichen Anmeldung ändern.'
+    'temporary_password_one_time_use' => 'Wichtig: Dies ist ein einmaliges temporäres Passwort. Der Benutzer sollte es nach der ersten erfolgreichen Anmeldung ändern.',
+
+    // Invite token management
+    'create_new_token' => 'Neues Token erstellen',
+    'revoke_token' => 'Token widerrufen',
+    'token_created_successfully' => 'Einladungs-Token erfolgreich erstellt',
+    'token_revoked_successfully' => 'Einladungs-Token erfolgreich widerrufen',
+    'no_tokens_available' => 'Keine Einladungs-Tokens verfügbar'
 ];
