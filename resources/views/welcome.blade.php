@@ -143,5 +143,45 @@
                 </div>
             </main>
         </div>
+
+        @php
+            // Consider both feedback-forms-test and localhost as test environments
+            $appUrl = config('app.url');
+            $isTestEnv = str_contains($appUrl, 'feedback-forms-test') || str_contains($appUrl, 'localhost');
+
+            // Get SHA from environment variable (set during container build)
+            $gitSha = env('GIT_SHA');
+
+            // If we have a full SHA, trim it to short format (7 characters)
+            if ($gitSha && strlen($gitSha) > 7) {
+                $gitSha = substr($gitSha, 0, 7);
+            }
+
+            // Fallback to reading from .git directory only in local development
+            if (!$gitSha && str_contains($appUrl, 'localhost')) {
+                $gitHeadPath = base_path('.git/HEAD');
+                if (file_exists($gitHeadPath)) {
+                    $gitHead = file_get_contents($gitHeadPath);
+                    if (strpos($gitHead, 'ref:') === 0) {
+                        $ref = trim(substr($gitHead, 5));
+                        $gitRefPath = base_path('.git/' . $ref);
+                        if (file_exists($gitRefPath)) {
+                            $gitSha = trim(file_get_contents($gitRefPath));
+                        }
+                    } else {
+                        $gitSha = trim($gitHead);
+                    }
+                    if ($gitSha) {
+                        $gitSha = substr($gitSha, 0, 7); // Short SHA
+                    }
+                }
+            }
+        @endphp
+
+        @if ($isTestEnv && $gitSha)
+            <div class="fixed bottom-2 right-2 bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs px-2 py-1 rounded-md opacity-70">
+                SHA: {{ $gitSha }}
+            </div>
+        @endif
     </body>
 </html>
