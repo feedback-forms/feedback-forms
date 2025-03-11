@@ -9,7 +9,7 @@
 
                     <!-- Survey Information -->
                     <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                             @if($survey->subject)
                                 <div>
                                     <span class="font-semibold">{{ __('surveys.subject') }}:</span>
