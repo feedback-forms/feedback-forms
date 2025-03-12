@@ -199,12 +199,6 @@ We welcome contributions! Please follow these steps:
 
 If you discover any security vulnerabilities, please report them via email to [security@feedback-forms.uts-x.com](mailto:security@feedback-forms.uts-x.com). All security vulnerabilities will be promptly addressed.
 
-## 📚 Documentation
-
-- [User Guide](docs/user-guide.md)
-- [Development Guide](docs/development.md)
-- [Deployment Guide](docs/deployment.md)
-
 ## 🙏 Acknowledgments
 
 - [Laravel Framework](https://laravel.com) and its community
