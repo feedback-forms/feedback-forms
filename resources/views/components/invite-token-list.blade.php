@@ -8,7 +8,7 @@
              x-data="{ showToken: false }">
             <div class="flex flex-col gap-1">
                 <div class="flex items-center gap-2">
-                    <div class="font-mono text-gray-700 dark:text-gray-300 w-20 flex">
+                    <div class="font-mono text-gray-700 dark:text-gray-300 w-28 flex">
                         <span x-show="!showToken">•••••••••</span>
                         <span x-show="showToken" x-cloak>{{ $item->code }}</span>
                     </div>
