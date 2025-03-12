@@ -1,7 +1,9 @@
 <?php
 
 use App\Livewire\Forms\RegisterForm;
+use App\Models\Registerkey;
 use App\Models\User;
+use App\Rules\RegisterKeyExpired;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -26,7 +28,7 @@ new #[Layout('layouts.guest')] class extends Component {
             'name' => ['required', 'string', 'max:255'],
             'email' => ['string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
-            'register_key' => ['required', 'string', 'max:9', 'min:9', 'exists:registerkeys,code', 'regex:/^[A-Z-0-9]{4}-[A-Z-0-9]{4}$/']
+            'register_key' => ['required', 'string', 'max:9', 'min:9', 'exists:registerkeys,code', 'regex:' . Registerkey::KEY_REGEX, new RegisterKeyExpired()]
         ], [
             'register_key.regex' => __('register.invalid_code_format'),
             'register_key.exists' => __('register.invalid_code'),

@@ -15,5 +15,10 @@ class RegisterKeySeeder extends Seeder
         Registerkey::updateOrCreate([
             'code' => 'ABCD-EFGH'
         ]);
+
+        Registerkey::updateOrCreate([
+            'code' => 'XYZ1-2345',
+            'expire_at' => '2020-01-01 12:00:00'
+        ]);
     }
 }
