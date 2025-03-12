@@ -13,7 +13,7 @@ use Livewire\Volt\Component;
 
 new #[Layout('layouts.guest')] class extends Component {
     public string $name = '';
-    public string $email = '';
+    public ?string $email = null;
     public string $password = '';
     public string $password_confirmation = '';
     public string $register_key = '';
@@ -26,7 +26,7 @@ new #[Layout('layouts.guest')] class extends Component {
     {
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'email' => ['string', 'lowercase', 'email', 'max:255', 'unique:' . User::class, 'nullable'],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
             'register_key' => ['required', 'string', 'max:9', 'min:9', 'exists:registerkeys,code', 'regex:' . Registerkey::KEY_REGEX, new RegisterKeyExpired()]
         ], [
