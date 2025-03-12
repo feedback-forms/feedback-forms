@@ -61,17 +61,12 @@ class SurveyServiceTest extends TestCase
         ]);
 
         // Create some results with different ratings
-        $ratings = [3, 4, 5];
-        foreach ($ratings as $index => $rating) {
+        for ($i = 1; $i <= 5; $i++) {
             $result = Result::create([
                 'question_id' => $question->id,
-                'submission_id' => '123e4567-e89b-12d3-a456-42661417400' . $index,
-            ]);
-
-            ResponseValue::create([
-                'result_id' => $result->id,
-                'question_template_type' => 'range',
-                'range_value' => $rating,
+                'submission_id' => (string) \Illuminate\Support\Str::uuid(),
+                'value_type' => 'number',
+                'rating_value' => $i
             ]);
         }
 
@@ -83,14 +78,16 @@ class SurveyServiceTest extends TestCase
         $this->assertEquals($question->id, $statistics[0]['question']->id);
         $this->assertEquals('range', $statistics[0]['template_type']);
 
-        // Check average rating (3 + 4 + 5) / 3 = 4
-        $this->assertEquals(4, $statistics[0]['data']['average_rating']);
+        // Check average rating (1 + 2 + 3 + 4 + 5) / 5 = 3
+        $this->assertEquals(3, $statistics[0]['data']['average_rating']);
 
-        // Check median rating (sorted: 3, 4, 5) -> median is 4
-        $this->assertEquals(4, $statistics[0]['data']['median_rating']);
+        // Check median rating (sorted: 1, 2, 3, 4, 5) -> median is 3
+        $this->assertEquals(3, $statistics[0]['data']['median_rating']);
 
         // Check rating counts
-        $this->assertCount(3, $statistics[0]['data']['rating_counts']);
+        $this->assertCount(5, $statistics[0]['data']['rating_counts']);
+        $this->assertEquals(1, $statistics[0]['data']['rating_counts'][1]);
+        $this->assertEquals(1, $statistics[0]['data']['rating_counts'][2]);
         $this->assertEquals(1, $statistics[0]['data']['rating_counts'][3]);
         $this->assertEquals(1, $statistics[0]['data']['rating_counts'][4]);
         $this->assertEquals(1, $statistics[0]['data']['rating_counts'][5]);
@@ -131,16 +128,12 @@ class SurveyServiceTest extends TestCase
         ]);
 
         // Create some results with text responses
-        for ($i = 0; $i < 2; $i++) {
+        for ($i = 1; $i <= 3; $i++) {
             $result = Result::create([
                 'question_id' => $question->id,
-                'submission_id' => '123e4567-e89b-12d3-a456-42661417500' . $i,
-            ]);
-
-            ResponseValue::create([
-                'result_id' => $result->id,
-                'question_template_type' => 'text',
-                'text_value' => 'This is response ' . ($i + 1),
+                'submission_id' => (string) \Illuminate\Support\Str::uuid(),
+                'value_type' => 'text',
+                'rating_value' => "Sample text response $i"
             ]);
         }
 
@@ -153,7 +146,7 @@ class SurveyServiceTest extends TestCase
         $this->assertEquals('text', $statistics[0]['template_type']);
 
         // Check response count
-        $this->assertEquals(2, $statistics[0]['data']['response_count']);
+        $this->assertEquals(3, $statistics[0]['data']['response_count']);
     }
 
     /**
