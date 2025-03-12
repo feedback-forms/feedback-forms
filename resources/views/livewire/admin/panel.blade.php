@@ -58,35 +58,12 @@
 
         <!-- Invite Tokens Section -->
         <section class="mt-8">
-            <h2 class="text-xl font-bold mb-4 text-gray-700 dark:text-gray-200">{{ __('admin.invite_tokens') }}</h2>
-            <div class="flex flex-col gap-4">
-                @for($i = 0; $i < 3; $i++)
-                    <div class="flex items-center justify-between p-4 hover:bg-white dark:hover:bg-gray-700 rounded-lg transition-colors"
-                         x-data="{ showToken: false }">
-                        <div class="flex flex-col gap-1">
-                            <div class="flex items-center gap-2">
-                                <div class="font-mono text-gray-700 dark:text-gray-300 w-36 flex justify-end">
-                                    <span x-show="!showToken">••••••••••</span>
-                                    <span x-show="showToken" x-cloak>EXAMPLE-TOKEN-{{ $i }}</span>
-                                </div>
-                                <div class="w-8 h-8 flex items-center justify-center">
-                                    <button class="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-full transition-colors"
-                                            @click="showToken = !showToken">
-                                        <x-fas-eye x-show="!showToken" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                                        <x-fas-eye-slash x-show="showToken" x-cloak class="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                                    </button>
-                                </div>
-                            </div>
-                            <span class="text-sm text-gray-500 dark:text-gray-400">
-                                {{ __('admin.created_days_ago', ['days' => rand(1, 10)]) }}
-                            </span>
-                        </div>
-                        <button class="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded">
-                            <x-fas-ellipsis-v class="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                        </button>
-                    </div>
-                @endfor
-            </div>
+            <a href="{{ route('admin.invite-token') }}" class="flex flex-row gap-2 items-center text-gray-700 dark:text-gray-200 mb-4">
+                <h2 class="text-xl font-bold">{{ __('admin.invite_tokens') }}</h2>
+                <x-fas-arrow-right class="w-4 h-4"/>
+            </a>
+
+            <x-invite-token-list :items="$registerKeys" />
         </section>
     </div>
 </div>

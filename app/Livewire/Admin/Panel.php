@@ -2,11 +2,12 @@
 
 namespace App\Livewire\Admin;
 
+use App\Services\RegisterKeyService;
 use Livewire\Component;
 
 class Panel extends Component
 {
-    public function render()
+    public function render(RegisterKeyService $keyService)
     {
         // Mock data for frontend development
         $users = collect([
@@ -18,6 +19,7 @@ class Panel extends Component
 
         return view('livewire/admin/panel', [
             'users' => $users,
+            'registerKeys' => $keyService->getLatestRegisterKeys(),
         ]);
     }
 }
