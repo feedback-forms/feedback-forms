@@ -18,6 +18,7 @@ class SurveyService
         return DB::transaction(function () use ($data, $userId) {
             // Create the feedback/survey
             $survey = Feedback::create([
+                'name' => $data['name'] ?? null,
                 'user_id' => $userId,
                 'feedback_template_id' => $data['template_id'],
                 'accesskey' => $this->generateUniqueAccessKey(),

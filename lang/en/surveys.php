@@ -2,6 +2,7 @@
 
 return [
     'create_new_survey' => 'Create New Survey',
+    'survey_name' => 'Survey Name',
     'select_school_year' => 'Select School Year',
     'select_school_year_placeholder' => 'Choose a school year...',
     'select_department' => 'Select Department',

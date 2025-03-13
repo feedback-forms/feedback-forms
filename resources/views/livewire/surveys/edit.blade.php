@@ -20,6 +20,13 @@
         @endif
 
         <form wire:submit.prevent="save" class="flex flex-col gap-6">
+            <!-- Survey Name -->
+            <div class="flex flex-col gap-2">
+                <label for="name" class="text-gray-700 dark:text-gray-300">{{__('surveys.survey_name')}}</label>
+                <input type="text" id="name" wire:model="name" class="form-input rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                @error('name') <span class="text-red-500">{{ $message }}</span> @enderror
+            </div>
+
             <!-- Template Information -->
             <div class="flex flex-col gap-2">
                 <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">{{__('surveys.template_information')}}</h2>

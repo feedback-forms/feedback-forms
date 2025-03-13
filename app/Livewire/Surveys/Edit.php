@@ -23,6 +23,7 @@ class Edit extends Component
     public Collection $subjects;
 
     // Form fields
+    public ?string $name;
     public ?string $expire_date;
     public ?int $response_limit;
     public ?string $school_year;
@@ -32,6 +33,7 @@ class Edit extends Component
     public ?string $subject;
 
     protected $rules = [
+        'name' => 'required|string|max:255',
         'expire_date' => 'required|date|after:now',
         'response_limit' => 'nullable|integer|min:-1',
         'school_year' => 'required|string',
@@ -67,6 +69,7 @@ class Edit extends Component
 
         // Set form values from the survey
         // Handle expire_date safely, ensuring it's a Carbon instance
+        $this->name = $this->survey->name;
         if ($this->survey->expire_date instanceof Carbon) {
             $this->expire_date = $this->survey->expire_date->format('Y-m-d\TH:i');
         } else {
@@ -88,6 +91,7 @@ class Edit extends Component
 
         try {
             $this->survey->update([
+                'name' => $this->name,
                 'expire_date' => Carbon::parse($this->expire_date),
                 'limit' => $this->response_limit,
                 'school_year' => $this->school_year,
