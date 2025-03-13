@@ -71,6 +71,11 @@ new class extends Component
                                                      :active="request()->routeIs('admin.users')">
                                         {{ __('admin.users') }}
                                     </x-dropdown-link>
+
+                                    <x-dropdown-link :href="route('admin.invite-token')" wire:navigate
+                                                     :active="request()->routeIs('admin.invite-token')">
+                                        {{ __('admin.invite_tokens') }}
+                                    </x-dropdown-link>
                                 </x-slot>
                             </x-dropdown>
                         </div>
@@ -155,6 +160,10 @@ new class extends Component
                     <x-responsive-nav-link :href="route('admin.users')" wire:navigate :active="request()->routeIs('admin.users')">
                         {{ __('admin.users') }}
                     </x-responsive-nav-link>
+
+                    <x-responsive-nav-link :href="route('admin.invite-token')" wire:navigate :active="request()->routeIs('admin.invite-token')">
+                        {{ __('admin.invite_tokens') }}
+                    </x-responsive-nav-link>
                 </details>
             @endcan
         </div>
@@ -167,22 +176,23 @@ new class extends Component
                     <div class="font-medium text-sm text-gray-500">{{ auth()->user()->email }}</div>
                 </div>
 
-            <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile')" wire:navigate>
-                    {{ __('navigation.profile') }}
-                </x-responsive-nav-link>
-
-                <!-- Authentication -->
-                <button wire:click="logout" class="w-full text-start">
-                    <x-responsive-nav-link>
-                        {{ __('navigation.logout') }}
+                <div class="mt-3 space-y-1">
+                    <x-responsive-nav-link :href="route('profile')" wire:navigate>
+                        {{ __('navigation.profile') }}
                     </x-responsive-nav-link>
 
                     <!-- Authentication -->
                     <button wire:click="logout" class="w-full text-start">
                         <x-responsive-nav-link>
-                            {{ __('Log Out') }}
+                            {{ __('navigation.logout') }}
                         </x-responsive-nav-link>
+
+                        <!-- Authentication -->
+                        <button wire:click="logout" class="w-full text-start">
+                            <x-responsive-nav-link>
+                                {{ __('Log Out') }}
+                            </x-responsive-nav-link>
+                        </button>
                     </button>
                 </div>
             </div>
