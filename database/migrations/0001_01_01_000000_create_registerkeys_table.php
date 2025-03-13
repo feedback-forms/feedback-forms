@@ -15,6 +15,7 @@ return new class extends Migration
         Schema::create('registerkeys', function (Blueprint $table) {
             $table->id();
             $table->char('code', 9)->unique();
+            $table->dateTime('expire_at')->nullable();
             $table->timestamps();
         });
     }

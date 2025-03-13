@@ -10,4 +10,5 @@ return [
     'register_key' => 'Einladungscode',
     'invalid_code_format' => 'Einladungscode Format falsch: xxxx-xxxx (alphanumerisch)',
     'invalid_code' => 'Einladungscode ungültig',
+    'expired_code' => 'Einladungscode ist abgelaufen'
 ];

@@ -68,4 +68,7 @@ Route::get('/admin/users', App\Livewire\Admin\Users::class)
     ->middleware(['auth', 'can:admin'])
     ->name('admin.users');
 
+Route::get('/admin/invite-token', App\Livewire\Admin\InviteToken::class)
+    ->name('admin.invite-token');
+
 require __DIR__.'/auth.php';

@@ -2,15 +2,15 @@
 
 namespace App\Livewire\Admin;
 
+use App\Services\RegisterKeyService;
 use Livewire\Component;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 
 class Panel extends Component
 {
-    public Collection $users;
+    public function render(RegisterKeyService $keyService)
 
-    public function mount(): void
     {
         $this->users = User::all();
     }
@@ -19,6 +19,7 @@ class Panel extends Component
     {
         return view('livewire/admin/panel', [
             'users' => $this->users,
+            'registerKeys' => $keyService->getLatestRegisterKeys(),
         ]);
     }
 }
