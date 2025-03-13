@@ -48,7 +48,8 @@
                                 <div class="w-16 h-16 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center shadow-sm">
                                     <x-fas-user class="w-8 h-8 text-gray-400 dark:text-gray-500" />
                                 </div>
-                                <span class="text-sm text-gray-600 dark:text-gray-400">{{ $user['name'] }}</span>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">{{ $user->name }}</span>
+                                <span class="text-sm text-gray-500 dark:text-gray-400">{{ $user->email }}</span>
                             </div>
                         </div>
                     @endforeach
