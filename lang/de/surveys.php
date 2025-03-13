@@ -138,4 +138,18 @@ return [
         'negative' => 'Was könnte verbessert werden?',
         'button' => 'Feedback absenden'
     ],
+
+    // Filter options
+    'filter_options' => 'Filteroptionen',
+    'school_year' => 'Schuljahr',
+    'department' => 'Abteilung',
+    'grade_level' => 'Jahrgangsstufe',
+    'class' => 'Klasse',
+    'subject' => 'Fach',
+    'all' => 'Alle',
+    'all_school_years' => 'Alle Schuljahre',
+    'all_departments' => 'Alle Abteilungen',
+    'all_grade_levels' => 'Alle Jahrgangsstufen',
+    'all_classes' => 'Alle Klassen',
+    'all_subjects' => 'Alle Fächer',
 ];
