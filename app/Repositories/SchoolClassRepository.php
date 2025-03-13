@@ -21,8 +21,7 @@ class SchoolClassRepository {
     {
         return $this->school_class->create([
             'name' => $data['name'],
-            'grade_level_id' => $data['grade_level_id'],
-            'is_active' => true
+            'grade_level_id' => $data['grade_level_id']
         ]);
     }
 

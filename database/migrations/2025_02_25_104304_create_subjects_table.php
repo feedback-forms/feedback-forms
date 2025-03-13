@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('code');
             $table->string('name');
             $table->foreignId('department_id')->nullable()->constrained();
-            $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();
         });

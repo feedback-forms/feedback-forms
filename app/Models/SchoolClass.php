@@ -10,12 +10,7 @@ class SchoolClass extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['name', 'grade_level_id', 'is_active'];
-
-    public function scopeActive($query)
-    {
-        return $query->where('is_active', true);
-    }
+    protected $fillable = ['name', 'grade_level_id'];
 
     public function gradeLevel(): BelongsTo
     {

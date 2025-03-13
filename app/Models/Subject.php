@@ -11,12 +11,7 @@ class Subject extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['code', 'name', 'department_id', 'is_active'];
-
-    public function scopeActive($query)
-    {
-        return $query->where('is_active', true);
-    }
+    protected $fillable = ['code', 'name', 'department_id'];
 
     public function department(): BelongsTo
     {
