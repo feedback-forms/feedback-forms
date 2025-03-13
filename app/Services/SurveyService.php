@@ -877,6 +877,15 @@ class SurveyService
         $statistics = [];
 
         try {
+            // Ensure all needed relationships are loaded
+            if (!$survey->relationLoaded('questions')) {
+                $survey->load('questions');
+            }
+
+            if (!$survey->relationLoaded('feedback_template')) {
+                $survey->load('feedback_template');
+            }
+
             $submissionCount = $survey->submissions()->count();
 
             // Log survey processing for debugging
@@ -888,11 +897,13 @@ class SurveyService
 
             if ($submissionCount == 0) {
                 // If there are no submissions, return empty statistics
+                \Log::debug('No submissions found for survey', ['survey_id' => $survey->id]);
                 return $statistics;
             }
 
             // Get the feedback template name (used to determine special processing)
             $templateName = $survey->feedback_template->name ?? '';
+            $isTableSurvey = str_contains($templateName, 'templates.feedback.table');
 
             // Special handling for certain template types
             if (str_contains($templateName, 'templates.feedback.smiley')) {
@@ -904,11 +915,35 @@ class SurveyService
             }
             else if (str_contains($templateName, 'templates.feedback.target')) {
                 // For target template, we need to calculate statistics for each segment
+                \Log::debug('Processing target survey statistics', [
+                    'survey_id' => $survey->id,
+                    'questions_count' => $survey->questions->count()
+                ]);
 
-                // ... [existing code for target template]
+                // Eager load all question templates and results for better performance
+                if (!$survey->questions->isEmpty() &&
+                    (!$survey->questions->first()->relationLoaded('question_template') ||
+                     !$survey->questions->first()->relationLoaded('results'))) {
+                    $survey->load('questions.question_template', 'questions.results');
+                }
 
+                // Calculate target-specific statistics
+                $segmentStatisticsData = $this->calculateTargetStatistics($survey);
+
+                // Add a marker with target diagram data
+                $statistics[] = [
+                    'question' => null,
+                    'template_type' => 'target',
+                    'data' => [
+                        'submission_count' => $submissionCount,
+                        'segment_statistics' => $segmentStatisticsData,
+                    ],
+                ];
+
+                // We'll still process individual questions below in the generic loop,
+                // but the template-specific display will use the segment_statistics data
             }
-            else if (str_contains($templateName, 'templates.feedback.table')) {
+            else if ($isTableSurvey) {
                 // For table templates, we need to calculate statistics for each question,
                 // as table templates are composed of multiple range-type questions
 
@@ -917,12 +952,11 @@ class SurveyService
                     'questions_count' => $survey->questions->count()
                 ]);
 
-                // Pre-process all questions to ensure they have the correct template type
-                foreach ($survey->questions as $question) {
-                    // Make sure question_template is loaded
-                    if (!$question->relationLoaded('question_template') && $question->question_template_id) {
-                        $question->load('question_template');
-                    }
+                // Eager load all question templates and results for better performance
+                if (!$survey->questions->isEmpty() &&
+                    (!$survey->questions->first()->relationLoaded('question_template') ||
+                     !$survey->questions->first()->relationLoaded('results'))) {
+                    $survey->load('questions.question_template', 'questions.results');
                 }
 
                 // Process individual questions before generating the marker so we can pass categories
@@ -937,6 +971,7 @@ class SurveyService
 
                     // Log question statistics for debugging
                     \Log::debug('Question statistics', [
+                        'question_id' => $question->id,
                         'question' => $question->question,
                         'template_type' => $questionTemplateType,
                         'has_results' => $question->results->count() > 0,
@@ -1186,27 +1221,35 @@ class SurveyService
      */
     public function categorizeTableSurveyQuestions(array $statistics): array
     {
-        // Define categories structure
+        // Set to true for verbose logging of categorization decisions
+        $verboseLogging = config('app.debug', false);
+
+        // Define categories structure with the correct German category names
         $tableCategories = [
             'behavior' => [
                 'title' => 'Verhalten des Lehrers',
                 'questions' => [],
+                'hasResponses' => false,
             ],
-            'fairness' => [
-                'title' => 'Fairness und Umgang mit Schülern',
+            'statements' => [
+                'title' => 'Bewerten Sie folgende Aussagen',
                 'questions' => [],
+                'hasResponses' => false,
             ],
             'quality' => [
-                'title' => 'Unterrichtsqualität',
+                'title' => 'Wie ist der Unterricht?',
                 'questions' => [],
+                'hasResponses' => false,
             ],
-            'evaluation' => [
-                'title' => 'Bewertung',
+            'claims' => [
+                'title' => 'Bewerten Sie folgende Behauptungen',
                 'questions' => [],
+                'hasResponses' => false,
             ],
             'feedback' => [
                 'title' => 'Offenes Feedback',
                 'questions' => [],
+                'hasResponses' => false,
             ],
         ];
 
@@ -1214,113 +1257,212 @@ class SurveyService
             'stats_count' => count($statistics)
         ]);
 
+        // Enable extra debug logging temporarily
+        \Log::debug('Looking for potential statements category questions', [
+            'questions' => collect($statistics)
+                ->filter(function($stat) {
+                    return isset($stat['question']) && isset($stat['question']->question);
+                })
+                ->map(function($stat) {
+                    return [
+                        'id' => $stat['question']->id ?? 'unknown',
+                        'text' => $stat['question']->question ?? 'unknown',
+                        'has_responses' => isset($stat['data']['submission_count']) && $stat['data']['submission_count'] > 0
+                    ];
+                })
+                ->values()
+                ->toArray()
+        ]);
+
         $uncategorizedQuestions = [];
+        $categoryPrefixes = [
+            'behavior' => [
+                // Teacher behavior related prefixes
+                '... hält',
+                '... ist motiviert',
+                '... erklärt',
+                '... spricht',
+                '... reagiert',
+                '... ist fachlich',
+                '... ist',
+                '... wirkt',
+                '... fördert',
+                '... unterrichtet',
+                '... zeigt',
+                '... freundlich',
+                '... energisch',
+                '... tatkräftig',
+                '... aufgeschlossen',
+                '... ungeduldig',
+                '... sicher',
+                'Der Lehrer achtet auf Ruhe',
+            ],
+            'statements' => [
+                // Statement evaluation prefixes
+                'Ich lerne',
+                'Die Lehrkraft hat',
+                'Die Lehrkraft ist',
+                'Die Lehrkraft zeigt',
+                'Die Lehrkraft sorgt',
+                'Die Notengebung ist',
+                'Ich konnte',
+                'Der Unterricht wird',
+                'Die Fragen und Beiträge',
+                '... bevorzugt',
+                '... nimmt',
+                '... ermutigt',
+                '... entscheidet',
+                '... gesteht',
+            ],
+            'quality' => [
+                // Teaching quality related prefixes
+                'Der Unterricht',
+                'Die Unterrichtsgestaltung',
+                'Die Unterrichtsinhalte',
+                'Die Lernatmosphäre',
+                'Das Unterrichtstempo',
+                'Das Lernklima',
+                'Der Lehrer redet',
+                'Der Lehrer schweift',
+                'Die Sprache des Lehrers',
+                'Die Ziele des Unterrichts',
+                'Unterrichtsmaterialien',
+                'Der Stoff wird',
+            ],
+            'claims' => [
+                // Claim evaluation prefixes
+                'Die Themen der Schulaufgaben',
+                'Der Schwierigkeitsgrad',
+                'Die Bewertungen sind',
+                'Tests und Schulaufgaben',
+                'Die Leistungsanforderungen',
+                'Die Beurteilung',
+            ],
+            'feedback' => [
+                // Open feedback prefixes
+                'Was gefällt dir',
+                'Was gefällt dir nicht',
+                'Was würdest du',
+                'Das hat mir besonders',
+                'Das hat mir nicht',
+                'Verbesserungsvorschläge',
+                'Feedback',
+                'Anmerkungen',
+                'Kommentare',
+            ],
+        ];
 
         // Loop through statistics and categorize questions
         foreach ($statistics as $stat) {
-            if (!isset($stat['question'])) {
-                \Log::debug('Skipping stat without question');
+            if (!isset($stat['question']) || !isset($stat['question']->question)) {
+                \Log::debug('Skipping stat without question data', [
+                    'stat_keys' => array_keys($stat)
+                ]);
                 continue;
             }
 
             $question = $stat['question']->question ?? '';
+            $questionId = $stat['question']->id ?? 'unknown';
             $categoryAssigned = false;
 
-            // Behavior category
-            if (Str::startsWith($question, '...') &&
-                !Str::startsWith($question, '... bevorzugt') &&
-                !Str::startsWith($question, '... nimmt') &&
-                !Str::startsWith($question, '... ermutigt') &&
-                !Str::startsWith($question, '... entscheidet') &&
-                !Str::startsWith($question, '... gesteht')) {
-                $tableCategories['behavior']['questions'][] = $stat;
-                $categoryAssigned = true;
-                \Log::debug("Assigned to 'behavior': $question");
-            }
-            // Fairness category
-            elseif (Str::startsWith($question, '...')) {
-                $tableCategories['fairness']['questions'][] = $stat;
-                $categoryAssigned = true;
-                \Log::debug("Assigned to 'fairness': $question");
-            }
-            // Evaluation category
-            elseif (Str::startsWith($question, 'Die Themen der Schulaufgaben') ||
-                   Str::startsWith($question, 'Der Schwierigkeitsgrad') ||
-                   Str::startsWith($question, 'Die Bewertungen sind')) {
-                $tableCategories['evaluation']['questions'][] = $stat;
-                $categoryAssigned = true;
-                \Log::debug("Assigned to 'evaluation': $question");
-            }
-            // Feedback category
-            elseif (Str::startsWith($question, 'Das hat mir') ||
-                   Str::startsWith($question, 'Verbesserungsvorschläge')) {
-                $tableCategories['feedback']['questions'][] = $stat;
-                $categoryAssigned = true;
-                \Log::debug("Assigned to 'feedback': $question");
-            }
-            // Quality category (default)
-            else {
-                $tableCategories['quality']['questions'][] = $stat;
-                $categoryAssigned = true;
-                \Log::debug("Assigned to 'quality' (default): $question");
+            // Check if this question has responses
+            $hasResponses = false;
+            if (isset($stat['data']['submission_count']) && $stat['data']['submission_count'] > 0) {
+                $hasResponses = true;
             }
 
-            // If any stat wasn't categorized (shouldn't happen with current logic)
+            // Try to categorize the question based on prefixes
+            foreach ($categoryPrefixes as $category => $prefixes) {
+                foreach ($prefixes as $prefix) {
+                    if (Str::startsWith($question, $prefix)) {
+                        $tableCategories[$category]['questions'][] = $stat;
+                        if ($hasResponses) {
+                            $tableCategories[$category]['hasResponses'] = true;
+                        }
+                        $categoryAssigned = true;
+                        if ($verboseLogging) {
+                            \Log::debug("Assigned question to category '$category'", [
+                                'question' => $question,
+                                'id' => $questionId,
+                                'matched_prefix' => $prefix
+                            ]);
+                        }
+                        break 2; // Break out of both loops
+                    }
+                }
+            }
+
+            // Special case: If not assigned and starts with '...' assign to behavior
+            if (!$categoryAssigned && Str::startsWith($question, '...')) {
+                $tableCategories['behavior']['questions'][] = $stat;
+                if ($hasResponses) {
+                    $tableCategories['behavior']['hasResponses'] = true;
+                }
+                $categoryAssigned = true;
+                if ($verboseLogging) {
+                    \Log::debug("Assigned '...' question to default 'behavior' category", [
+                        'question' => $question,
+                        'id' => $questionId
+                    ]);
+                }
+            }
+
+            // If still not categorized, add to uncategorized list and log
             if (!$categoryAssigned) {
-                $uncategorizedQuestions[] = $stat;
-                \Log::warning("Uncategorized question: $question");
+                $uncategorizedQuestions[] = [
+                    'id' => $questionId,
+                    'text' => $question
+                ];
+                // As a fallback, put uncategorized questions in feedback
+                $tableCategories['feedback']['questions'][] = $stat;
+                if ($hasResponses) {
+                    $tableCategories['feedback']['hasResponses'] = true;
+                }
+                \Log::warning("Question not categorized, added to feedback category", [
+                    'question' => $question,
+                    'id' => $questionId
+                ]);
             }
         }
 
-        // Add any uncategorized questions to quality as a fallback
+        // Log uncategorized questions
         if (!empty($uncategorizedQuestions)) {
-            $tableCategories['quality']['questions'] = array_merge(
-                $tableCategories['quality']['questions'],
-                $uncategorizedQuestions
-            );
-            \Log::debug('Added uncategorized questions to quality', [
-                'count' => count($uncategorizedQuestions)
+            \Log::warning('Uncategorized questions found', [
+                'count' => count($uncategorizedQuestions),
+                'questions' => $uncategorizedQuestions
             ]);
         }
 
-        // Calculate if each category has responses
-        $categoryHasResponses = [];
-        foreach ($tableCategories as $catKey => $category) {
-            $categoryHasResponses[$catKey] = false;
+        // Collect category summary for logging
+        $categorySummary = [];
+        foreach ($tableCategories as $key => $category) {
+            $categorySummary[$key] = [
+                'title' => $category['title'],
+                'question_count' => count($category['questions']),
+                'has_responses' => $category['hasResponses']
+            ];
+        }
+
+        if ($verboseLogging) {
+            \Log::debug('Category summary before filtering empty categories', [
+                'categories' => $categorySummary
+            ]);
+        }
+
+        // Remove empty categories or ones without responses
+        foreach ($tableCategories as $key => $category) {
             if (empty($category['questions'])) {
-                \Log::debug("Category $catKey has no questions");
-                continue; // Skip if no questions in this category
-            }
-
-            foreach ($category['questions'] as $stat) {
-                // Check for range questions with numeric responses
-                if ($stat['template_type'] === 'range' &&
-                    isset($stat['data']['average_rating']) &&
-                    is_numeric($stat['data']['average_rating'])) {
-                    $categoryHasResponses[$catKey] = true;
-                    \Log::debug("Category $catKey has responses (range question)");
-                    break;
-                }
-                // Check for text questions with responses
-                elseif (($stat['template_type'] === 'text' || $stat['template_type'] === 'textarea') &&
-                       isset($stat['data']['response_count']) &&
-                       $stat['data']['response_count'] > 0) {
-                    $categoryHasResponses[$catKey] = true;
-                    \Log::debug("Category $catKey has responses (text question)");
-                    break;
-                }
+                \Log::debug("Removing empty category: $key");
+                unset($tableCategories[$key]);
             }
         }
 
-        // Add hasResponses flag to each category
-        foreach ($tableCategories as $catKey => $category) {
-            $tableCategories[$catKey]['hasResponses'] = $categoryHasResponses[$catKey] ?? false;
+        if ($verboseLogging) {
+            \Log::debug('Table survey categorization complete', [
+                'final_category_count' => count($tableCategories),
+                'categories' => array_keys($tableCategories)
+            ]);
         }
-
-        \Log::debug('Completed table survey categorization', [
-            'category_count' => count($tableCategories),
-            'categories_with_responses' => collect($categoryHasResponses)->filter()->keys()->toArray()
-        ]);
 
         return $tableCategories;
     }
