@@ -61,11 +61,11 @@ class Edit extends Component
         }
 
         // Load options from database
-        $this->schoolYears = SchoolYear::active()->get();
-        $this->departments = Department::active()->get();
-        $this->gradeLevels = GradeLevel::active()->orderBy('level')->get();
-        $this->schoolClasses = SchoolClass::active()->get();
-        $this->subjects = Subject::active()->get();
+        $this->schoolYears = SchoolYear::get();
+        $this->departments = Department::get();
+        $this->gradeLevels = GradeLevel::orderBy('id')->get();
+        $this->schoolClasses = SchoolClass::get();
+        $this->subjects = Subject::get();
 
         // Set form values from the survey
         // Handle expire_date safely, ensuring it's a Carbon instance

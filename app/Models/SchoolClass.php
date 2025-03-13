@@ -4,15 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SchoolClass extends Model
 {
-    protected $fillable = ['name', 'grade_level_id', 'is_active'];
+    use SoftDeletes;
 
-    public function scopeActive($query)
-    {
-        return $query->where('is_active', true);
-    }
+    protected $fillable = ['name', 'grade_level_id'];
 
     public function gradeLevel(): BelongsTo
     {

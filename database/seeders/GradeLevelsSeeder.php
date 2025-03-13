@@ -14,10 +14,10 @@ class GradeLevelsSeeder extends Seeder
     public function run(): void
     {
         $gradeLevels = [
-            ['name' => '10. Jahrgang', 'level' => 1],
-            ['name' => '11. Jahrgang', 'level' => 2],
-            ['name' => '12. Jahrgang', 'level' => 3],
-            ['name' => '13. Jahrgang', 'level' => 4]
+            ['name' => '10. Jahrgang'],
+            ['name' => '11. Jahrgang'],
+            ['name' => '12. Jahrgang'],
+            ['name' => '13. Jahrgang']
         ];
 
         foreach ($gradeLevels as $grade) {
