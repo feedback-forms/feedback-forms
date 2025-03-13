@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('department_id')->nullable()->constrained();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

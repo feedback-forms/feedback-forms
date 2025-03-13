@@ -7,7 +7,12 @@
     <div class="bg-gray-50 dark:bg-gray-800 flex flex-col gap-10 p-10">
         <!-- Users Section -->
         <section>
-            <h2 class="text-xl font-bold mb-4 text-gray-700 dark:text-gray-200">{{ __('admin.users') }}</h2>
+            <a href="admin/users">
+                <div class="flex items-center gap-2 mb-4">
+                    <h2 class="text-xl font-bold text-gray-700 dark:text-gray-200">{{ __('admin.users') }}</h2>
+                    <x-fas-arrow-right class="w-4 h-4" />
+                </div>
+            </a> 
             <div class="relative group" x-data="{
                 scroll: 0,
                 maxScroll: 0,
@@ -58,7 +63,12 @@
 
         <!-- Invite Tokens Section -->
         <section class="mt-8">
-            <h2 class="text-xl font-bold mb-4 text-gray-700 dark:text-gray-200">{{ __('admin.invite_tokens') }}</h2>
+            <a href="#">
+                <div class="flex items-center gap-2 mb-4">
+                    <h2 class="text-xl font-bold text-gray-700 dark:text-gray-200">{{ __('admin.invite_tokens') }}</h2>
+                    <x-fas-arrow-right class="w-4 h-4" />
+                </div>
+            </a> 
             <div class="flex flex-col gap-4">
                 @for($i = 0; $i < 3; $i++)
                     <div class="flex items-center justify-between p-4 hover:bg-white dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -85,6 +95,16 @@
                     </div>
                 @endfor
             </div>
+        </section>
+
+        <!-- Add Subjects Section -->
+        <section class="mt-8">
+            <a href="{{ route('admin.options') }}">
+                <div class="flex items-center gap-2 mb-4">
+                    <h2 class="text-xl font-bold text-gray-700 dark:text-gray-200">{{ __('admin.edit_options') }}</h2>
+                    <x-fas-arrow-right class="w-4 h-4" />
+                </div>
+            </a>            
         </section>
     </div>
 </div>

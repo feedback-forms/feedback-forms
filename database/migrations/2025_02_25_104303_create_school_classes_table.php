@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('grade_level_id')->constrained();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
