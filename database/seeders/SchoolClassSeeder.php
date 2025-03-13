@@ -14,10 +14,10 @@ class SchoolClassSeeder extends Seeder
     public function run(): void
     {
         $schoolClasses = [
-            ['name' => '5a', 'grade_level_id' => 3],
-            ['name' => '5b', 'grade_level_id' => 3],
-            ['name' => '6a', 'grade_level_id' => 3],
-            ['name' => '6b', 'grade_level_id' => 3],
+            ['name' => 'IFA 12 B', 'grade_level_id' => 3],
+            ['name' => 'IFA 12 A', 'grade_level_id' => 3],
+            ['name' => 'ITT 11 E', 'grade_level_id' => 2],
+            ['name' => 'ITT 10 C', 'grade_level_id' => 1],
         ];
 
         foreach ($schoolClasses as $class) {

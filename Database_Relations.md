@@ -1,3 +1,65 @@
+```mermaid
+erDiagram
+    USERS ||--o{ FEEDBACKS : creates
+    REGISTERKEYS ||--o{ USERS : registers
+    FEEDBACK_TEMPLATES ||--o{ FEEDBACKS : defines
+    FEEDBACKS ||--o{ QUESTIONS : contains
+    QUESTION_TEMPLATES ||--o{ QUESTIONS : formats
+    QUESTIONS ||--o{ RESULTS : receives
+    USERS {
+        int id PK
+        int registerkey_id FK
+        string name
+        string password
+        boolean is_admin
+        string email
+    }
+    REGISTERKEYS {
+        int id PK
+        string code
+    }
+    FEEDBACKS {
+        int id PK
+        int user_id FK
+        int feedback_template_id FK
+        string accesskey
+        int limit
+        date expire_date
+        string status
+        string school_year
+        string department
+        string grade_level
+        string class
+        string subject
+    }
+    FEEDBACK_TEMPLATES {
+        int id PK
+        string name
+    }
+    QUESTIONS {
+        int id PK
+        int feedback_template_id FK
+        int question_template_id FK
+        int feedback_id FK
+        string question
+        int order
+    }
+    QUESTION_TEMPLATES {
+        int id PK
+        string type
+        int max_value
+        int min_value
+    }
+    RESULTS {
+        int id PK
+        int question_id FK
+        string submission_id
+        string value_type
+        string rating_value
+    }
+```
+
+
 ### **Entities and Attributes:**
 
 #### **1. users**

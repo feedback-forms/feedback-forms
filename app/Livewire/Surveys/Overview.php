@@ -3,6 +3,11 @@
 namespace App\Livewire\Surveys;
 
 use App\Models\Feedback;
+use App\Models\SchoolYear;
+use App\Models\Department;
+use App\Models\GradeLevel;
+use App\Models\SchoolClass;
+use App\Models\Subject;
 use Carbon\Carbon;
 use Livewire\Component;
 
@@ -11,70 +16,75 @@ class Overview extends Component
     public array $filterState = [
         'expired' => false,
         'running' => true,
-        'cancelled' => false,
     ];
 
     public $surveys = [];
+    public $schoolYears = [];
+    public $departments = [];
+    public $gradeLevels = [];
+    public $schoolClasses = [];
+    public $subjects = [];
+
+    // Selected filter values
+    public $selectedSchoolYear = null;
+    public $selectedDepartment = null;
+    public $selectedGradeLevel = null;
+    public $selectedClass = null;
+    public $selectedSubject = null;
 
     public function mount()
     {
+        $this->loadFilterOptions();
         $this->loadSurveys();
+    }
+
+    protected function loadFilterOptions()
+    {
+        // Load all filter options from database
+        $this->schoolYears = SchoolYear::orderBy('name', 'desc')->get();
+        $this->departments = Department::orderBy('name')->get();
+        $this->gradeLevels = GradeLevel::orderBy('name')->get();
+        $this->schoolClasses = SchoolClass::orderBy('name')->get();
+        $this->subjects = Subject::orderBy('name')->get();
     }
 
     public function filter(string $filter): void
     {
         $this->filterState[$filter] = !$this->filterState[$filter];
-        $this->loadSurveys();
+        // No need to reload surveys, as filtering is now done on the frontend
+    }
+
+    public function updateFilter(): void
+    {
+        // No need to reload surveys, as filtering is now done on the frontend
     }
 
     protected function loadSurveys()
     {
         // Start with a base query for the authenticated user
         $query = Feedback::with(['feedback_template', 'user'])
-            ->where('user_id', auth()->id());
-
-        // Use a separate array to track conditions
-        $conditions = [];
-
-        // Add filter conditions
-        if ($this->filterState['expired']) {
-            $conditions[] = function($query) {
-                $query->where('expire_date', '<', Carbon::now());
-            };
-        }
-
-        if ($this->filterState['running']) {
-            $conditions[] = function($query) {
-                $query->where('expire_date', '>=', Carbon::now())
-                      ->where(function($q) {
-                          $q->where('limit', -1)
-                            ->orWhereColumn('already_answered', '<', 'limit');
-                      });
-            };
-        }
-
-        // Apply conditions with orWhere if any exist
-        if (count($conditions) > 0) {
-            $query->where(function($q) use ($conditions) {
-                foreach ($conditions as $index => $condition) {
-                    if ($index === 0) {
-                        $q->where(function($subQ) use ($condition) {
-                            $condition($subQ);
-                        });
-                    } else {
-                        $q->orWhere(function($subQ) use ($condition) {
-                            $condition($subQ);
-                        });
-                    }
-                }
-            });
-        }
-
-        // Order by creation date
-        $query->orderBy('created_at', 'desc');
+            ->where('user_id', auth()->id())
+            ->orderBy('created_at', 'desc');
 
         // Execute query and store results
-        $this->surveys = $query->get();
+        $surveys = $query->get();
+
+        // Add computed properties for frontend filtering
+        $now = Carbon::now();
+        foreach ($surveys as $survey) {
+            // Add isExpired flag
+            $survey->isExpired = $survey->expire_date < $now;
+
+            // Add isRunning flag
+            $survey->isRunning =
+                $survey->expire_date >= $now &&
+                ($survey->limit == -1 || $survey->already_answered < $survey->limit);
+
+            // Add formatted updated_at for display
+            $survey->updated_at_diff = $survey->updated_at->diffForHumans();
+        }
+
+        $this->surveys = $surveys;
     }
 
     public function render()
