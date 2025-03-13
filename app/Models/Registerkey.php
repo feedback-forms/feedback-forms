@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Registerkey extends Model
 {
-    protected $fillable = ['code'];
+    protected $fillable = [];
 
     public function users(): HasMany
     {
