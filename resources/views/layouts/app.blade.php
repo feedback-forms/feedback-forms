@@ -17,8 +17,9 @@
         </style>
 
         <!-- Scripts -->
-        @vite(['resources/css/app.css'])
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
         @vite(['resources/css/surveys-page.css'])
+        <style>[x-cloak] { display: none !important; }</style>
         @livewireStyles
     </head>
     <body class="font-sans antialiased">
@@ -41,7 +42,6 @@
         </div>
 
         @livewireScripts
-        @vite(['resources/js/app.js'])
         @vite(['resources/js/survey-filter.js'])
         @stack('scripts')
     </body>
