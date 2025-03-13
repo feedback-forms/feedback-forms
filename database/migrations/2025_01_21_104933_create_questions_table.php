@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(Feedback_template::class);
             $table->foreignIdFor(Question_template::class);
-            $table->foreignIdFor(Feedback::class);
+            $table->foreignIdFor(Feedback::class)->nullable();
             $table->string('question');
             $table->timestamps();
         });

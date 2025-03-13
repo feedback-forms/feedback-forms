@@ -20,9 +20,10 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             DepartmentSeeder::class,
             GradeLevelsSeeder::class,
-            SchoolClassSeeder::class, 
+            SchoolClassSeeder::class,
             SchoolYearSeeder::class,
             SubjectSeeder::class,
+            QuestionSeeder::class,
         ]);
     }
 }

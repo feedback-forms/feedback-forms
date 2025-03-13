@@ -31,6 +31,7 @@ jobs:
         id: set-tag
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
           TAG1="dev"
           TAG2="commit-$SHORT_SHA"
 
@@ -74,3 +75,5 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            GIT_SHA=${{ env.SHORT_SHA }}

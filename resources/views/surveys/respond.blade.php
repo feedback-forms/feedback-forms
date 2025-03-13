@@ -37,7 +37,10 @@
 
                         <!-- Survey Information -->
                         <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <h1 class="text-2xl font-bold mb-4 text-center">
+                                {{ $survey->feedback_template->title ?? __('surveys.survey') }}
+                            </h1>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                                 @if($survey->subject)
                                     <div>
                                         <span class="font-semibold">{{ __('surveys.subject') }}:</span>
@@ -63,9 +66,9 @@
 
                         <!-- Survey Questions -->
                         <div class="space-y-8">
-                            @foreach($survey->questions as $question)
+                            @foreach($survey->questions->sortBy('order') as $question)
                                 <div class="p-4 border rounded-lg">
-                                    <h3 class="font-semibold mb-3">{{ $question->question }}</h3>
+                                    <h3 class="font-semibold mb-3">{{ $question->order }}. {{ $question->question }}</h3>
 
                                     @php
                                         $templateType = $question->question_template->type ?? 'text';

@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('results', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Question::class);
-            $table->string('value');
+            $table->string('rating_value');
             $table->timestamps();
         });
     }

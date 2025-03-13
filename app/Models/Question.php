@@ -11,7 +11,17 @@ class Question extends Model
         'feedback_template_id',
         'question_template_id',
         'feedback_id',
-        'question'
+        'question',
+        'order'
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'order' => 'integer',
     ];
 
     public function feedback_template(): BelongsTo
@@ -40,5 +50,13 @@ class Question extends Model
     public function latestResult()
     {
         return $this->results()->latest()->first();
+    }
+
+    /**
+     * Get all results for a specific submission.
+     */
+    public function submissionResults($submissionId)
+    {
+        return $this->results()->where('submission_id', $submissionId)->get();
     }
 }

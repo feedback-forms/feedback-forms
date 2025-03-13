@@ -8,6 +8,18 @@
                     <form method="POST" action="{{ route('surveys.store') }}">
                         @csrf
 
+                        <!-- Survey Name -->
+                        <div class="mb-6">
+                            <x-input-label for="name" :value="__('surveys.survey_name')" />
+                            <x-text-input id="name"
+                                         name="name"
+                                         type="text"
+                                         class="mt-1 block w-full"
+                                         required
+                                         autofocus />
+                            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                        </div>
+
                         <!-- Template Selection (hidden since it's pre-selected) -->
                         <input type="hidden" name="template_id" value="{{ optional($templates->where('name', 'templates.feedback.' . $selectedTemplate)->first())->id ?? '' }}">
 

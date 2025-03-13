@@ -8,6 +8,9 @@ use Livewire\Volt\Volt;
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
 Route::post('/', [WelcomeController::class, 'accessSurvey'])->name('surveys.access.submit');
 
+// Direct QR code access route
+Route::get('/survey/scan', [WelcomeController::class, 'scanQrAccess'])->name('surveys.scan');
+
 Route::middleware(['auth'])->group(function () {
     Route::view('dashboard', 'dashboard')
         ->name('dashboard');
@@ -15,6 +18,10 @@ Route::middleware(['auth'])->group(function () {
     Route::view('profile', 'profile')->name('profile');
     Route::get('/admin-panel', App\Livewire\Admin\Panel::class)->name('admin.panel');
     Route::get('/admin/users', App\Livewire\Admin\Users::class)->name('admin.users');
+
+    // Survey statistics route
+    Route::get('/surveys/{survey}/statistics', [App\Http\Controllers\SurveyStatisticsController::class, 'show'])
+        ->name('surveys.statistics');
 });
 
 Route::controller(SurveyController::class)->group(function (){
@@ -73,5 +80,8 @@ Route::middleware(['auth'])->group(function () {
     // Use resource route but exclude 'edit' and 'index' to avoid conflicts with Livewire
     Route::resource('surveys', SurveyController::class)->except(['edit', 'index']);
 });
+
+Route::get('/admin/invite-token', App\Livewire\Admin\InviteToken::class)
+    ->name('admin.invite-token');
 
 require __DIR__.'/auth.php';

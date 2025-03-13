@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\Models\Feedback;
+use App\Policies\FeedbackPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,5 +26,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('admin', function (User $user) {
             return $user->is_admin;
         });
+
+        // Register the owns-survey gate
+        Gate::define('owns-survey', [FeedbackPolicy::class, 'ownsSurvey']);
     }
 }
