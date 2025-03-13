@@ -1,0 +1,99 @@
+name: Manual Deploy to Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Docker image tag to deploy (leave empty for latest dev)'
+        required: false
+        default: 'dev'
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set environment variables
+        run: |
+          echo "NAMESPACE=feedback-forms-test" >> $GITHUB_ENV
+          echo "DOMAIN=feedback-forms-test.uts-x.com" >> $GITHUB_ENV
+          echo "IMAGE_TAG=${{ github.event.inputs.image_tag || 'dev' }}" >> $GITHUB_ENV
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Create kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Create namespace if not exists
+        run: |
+          kubectl create namespace ${{ env.NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Update deployment files
+        run: |
+          # Update namespace and image tags in all deployment files
+          for file in deployments/*deployment.yaml deployments/db-setup-job.yaml deployments/nginx-configmap.yaml deployments/ingress.yaml; do
+            sed -i "s/namespace: feedback-forms/namespace: ${{ env.NAMESPACE }}/g" "$file"
+            sed -i "s|:dev|:${{ env.IMAGE_TAG }}|g" "$file"
+          done
+
+          # Update domain in ingress and APP_URL in deployments
+          sed -i "s/feedback-forms.uts-x.com/${{ env.DOMAIN }}/g" deployments/ingress.yaml
+          sed -i "s/\$(DOMAIN)/${{ env.DOMAIN }}/g" deployments/app-deployment.yaml
+          sed -i "s/\$(DOMAIN)/${{ env.DOMAIN }}/g" deployments/queue-deployment.yaml
+
+      - name: Apply ConfigMaps and Secrets first
+        run: |
+          kubectl apply -f deployments/nginx-configmap.yaml
+          # Wait for resources to be available
+          sleep 5
+
+      - name: Deploy PostgreSQL
+        run: |
+          kubectl apply -f deployments/postgres-deployment.yaml
+          kubectl rollout status deployment/postgres -n ${{ env.NAMESPACE }} --timeout=180s
+          kubectl wait --for=condition=ready pod -l app=postgres -n ${{ env.NAMESPACE }} --timeout=300s
+
+      - name: Deploy database setup
+        run: |
+          kubectl delete job db-setup -n ${{ env.NAMESPACE }} --ignore-not-found
+          kubectl apply -f deployments/db-setup-job.yaml
+          kubectl wait --for=condition=complete job/db-setup -n ${{ env.NAMESPACE }} --timeout=1800s
+
+      - name: Deploy application and queue
+        run: |
+          kubectl apply -f deployments/app-deployment.yaml
+          kubectl apply -f deployments/queue-deployment.yaml
+          kubectl apply -f deployments/ingress.yaml
+
+      - name: Verify deployments
+        run: |
+          kubectl rollout status deployment/feedback-forms -n ${{ env.NAMESPACE }} --timeout=900s
+          kubectl rollout status deployment/feedback-forms-queue -n ${{ env.NAMESPACE }} --timeout=900s
+
+      - name: Health check
+        run: |
+          echo "Waiting for application to be ready..."
+          for i in {1..20}; do
+            if curl -f -k https://${{ env.DOMAIN }}/ -H "Host: ${{ env.DOMAIN }}" --retry 3 --retry-delay 10; then
+              echo "Application is responding successfully"
+              exit 0
+            fi
+            echo "Attempt $i/20 - Waiting 15 seconds before next attempt..."
+            sleep 15
+          done
+          echo "Application failed to respond within timeout"
+          kubectl get pods -n ${{ env.NAMESPACE }}
+          kubectl describe pods -n ${{ env.NAMESPACE }}
+          kubectl logs -n ${{ env.NAMESPACE }} -l app=feedback-forms -c php-fpm --tail=100
+          exit 1
