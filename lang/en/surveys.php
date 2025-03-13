@@ -91,6 +91,7 @@ return [
     'status' => 'Status',
     'active' => 'Active',
     'statistics' => 'Statistics',
+    'no_surveys_found' => 'No surveys match your current filters',
 
     // Survey statistics
     'survey_statistics' => 'Survey Statistics',
