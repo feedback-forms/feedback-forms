@@ -63,6 +63,7 @@ return [
     'cancelled' => 'Cancelled',
     'edit_survey' => 'Edit Survey',
     'back_to_surveys' => 'Back to Surveys',
+    'back_to_dashboard' => 'Back to Dashboard',
     'save_changes' => 'Save Changes',
     'updated_successfully' => 'Survey updated successfully',
     'update_failed' => 'Failed to update survey',
@@ -73,6 +74,17 @@ return [
     'updated_at' => 'Updated At',
     'view_details' => 'View Details',
     'edit' => 'Edit',
+    'survey_title' => 'Survey Title',
+    'expires' => 'Expires',
+    'status' => 'Status',
+    'active' => 'Active',
+
+    // Survey statistics
+    'survey_statistics' => 'Survey Statistics',
+    'survey_details' => 'Survey Details',
+    'question_statistics' => 'Question Statistics',
+    'no_responses_yet' => 'No Responses Yet',
+    'no_responses_explanation' => 'This survey hasn\'t received any responses yet. Statistics will be displayed once responses are submitted.',
 
     // Survey response
     'survey' => 'Survey',

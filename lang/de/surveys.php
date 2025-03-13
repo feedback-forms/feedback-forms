@@ -6,6 +6,7 @@ return [
     'cancelled' => 'Abgebrochen',
     'running' => 'Läuft',
     'create_new_survey' => 'Neue Umfrage erstellen',
+    'survey_name' => 'Name der Umfrage',
     'select_school_year' => 'Schuljahr',
     'select_school_year_placeholder' => 'Schuljahr auswählen...',
     'select_department' => 'Abteilung',
@@ -62,6 +63,7 @@ return [
     // Survey management
     'edit_survey' => 'Umfrage bearbeiten',
     'back_to_surveys' => 'Zurück zu Umfragen',
+    'back_to_dashboard' => 'Zurück zum Dashboard',
     'save_changes' => 'Änderungen speichern',
     'updated_successfully' => 'Umfrage wurde erfolgreich aktualisiert',
     'update_failed' => 'Fehler beim Aktualisieren der Umfrage',
@@ -72,6 +74,17 @@ return [
     'updated_at' => 'Aktualisiert am',
     'view_details' => 'Details anzeigen',
     'edit' => 'Bearbeiten',
+    'survey_title' => 'Umfragetitel',
+    'expires' => 'Läuft ab',
+    'status' => 'Status',
+    'active' => 'Aktiv',
+
+    // Survey statistics
+    'survey_statistics' => 'Umfrage-Statistiken',
+    'survey_details' => 'Umfrage-Details',
+    'question_statistics' => 'Fragenstatistiken',
+    'no_responses_yet' => 'Noch keine Antworten',
+    'no_responses_explanation' => 'Diese Umfrage hat noch keine Antworten erhalten. Statistiken werden angezeigt, sobald Antworten eingegangen sind.',
 
     // Survey response
     'survey' => 'Umfrage',
@@ -102,7 +115,7 @@ return [
     'scan_to_access' => 'Scannen Sie diesen QR-Code, um auf die Umfrage zuzugreifen',
     'close' => 'Schließen',
     'qr_code_error' => 'QR-Code konnte nicht generiert werden. Bitte versuchen Sie es erneut.',
-  
+
     // Smiley template
     'smiley' => [
         'positive' => 'Was hat Ihnen gefallen?',
