@@ -23,6 +23,16 @@ class Users extends Component
 
     public function generateTemporaryPassword($userId): void
     {
+        // Prevent admin from generating temporary password for themselves
+        if ($userId == auth()->id()) {
+            session()->flash('error', 'Admins cannot generate a temporary password for their own account.');
+            Log::warning('Admin attempted to generate temporary password for themselves', [
+                'admin_user_id' => auth()->id(),
+                'target_user_id' => $userId,
+            ]);
+            return;
+        }
+
         $user = User::find($userId);
 
         if (!$user) {

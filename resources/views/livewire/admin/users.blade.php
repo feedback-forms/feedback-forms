@@ -24,6 +24,14 @@
         </div>
     @endif
 
+    <!-- Error message for operation failures -->
+    @if(session()->has('error'))
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <strong class="font-bold">Error!</strong>
+            <span class="block sm:inline">{{ session('error') }}</span>
+        </div>
+    @endif
+
     <div class="bg-gray-50 dark:bg-gray-800 flex flex-col gap-6 p-10">
         <!-- Users List -->
         @foreach($users as $user)
@@ -64,10 +72,16 @@
                             <button class="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-full transition-colors relative"
                                     wire:click="generateTemporaryPassword({{ $user->id }})"
                                     @mouseenter="showTooltip = true"
-                                    @mouseleave="showTooltip = false">
+                                    @mouseleave="showTooltip = false"
+                                    {{ $user->id == auth()->id() ? 'disabled' : '' }}
+                                    class="{{ $user->id == auth()->id() ? 'opacity-50 cursor-not-allowed' : '' }}">
                                 <x-fas-key class="w-4 h-4 text-gray-400 dark:text-gray-500" />
                                 <div x-show="showTooltip" x-cloak class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded shadow-lg z-10 w-48">
-                                    {{ __('admin.generate_temporary_password') }}
+                                    @if($user->id == auth()->id())
+                                        {{ __('admin.cannot_generate_temp_password_for_self') }}
+                                    @else
+                                        {{ __('admin.generate_temporary_password') }}
+                                    @endif
                                 </div>
                             </button>
                         </div>
