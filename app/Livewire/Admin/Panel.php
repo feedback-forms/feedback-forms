@@ -10,16 +10,13 @@ use Illuminate\Database\Eloquent\Collection;
 class Panel extends Component
 {
     public function render(RegisterKeyService $keyService)
-
     {
-        $this->users = User::all();
-    }
+        $users = User::all();
+        $registerKeys = $keyService->getLatestRegisterKeys();
 
-    public function render()
-    {
         return view('livewire/admin/panel', [
-            'users' => $this->users,
-            'registerKeys' => $keyService->getLatestRegisterKeys(),
+            'users' => $users,
+            'registerKeys' => $registerKeys,
         ]);
     }
 }

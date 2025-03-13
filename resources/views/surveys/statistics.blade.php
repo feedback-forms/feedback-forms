@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="bg-indigo-100 dark:bg-indigo-900 py-4 px-6 rounded-md shadow-md">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('Survey Statistics') }} - {{ $survey->feedback_template->title ?? 'Survey' }}
+                {{ __('surveys.survey_statistics') }} - {{ $survey->name ?: ($survey->feedback_template->title ?? __('surveys.survey')) }}
             </h2>
         </div>
     </x-slot>
@@ -16,31 +16,31 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-500 dark:text-gray-300" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
                             </svg>
-                            <span class="text-gray-500 dark:text-gray-400">{{ __('Back to Dashboard') }}</span>
+                            <span class="text-gray-500 dark:text-gray-400">{{ __('surveys.back_to_dashboard') }}</span>
                         </a>
                     </div>
 
-                    <h3 class="text-xl font-semibold mb-4 text-indigo-700 dark:text-indigo-300">{{ __('Survey Details') }}</h3>
+                    <h3 class="text-xl font-semibold mb-4 text-indigo-700 dark:text-indigo-300">{{ __('surveys.survey_details') }}</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
                         <div class="bg-gray-50 dark:bg-gray-700 p-5 rounded-lg shadow-sm">
-                            <p class="mb-2"><span class="font-semibold">Survey Title:</span> {{ $survey->feedback_template->title ?? 'N/A' }}</p>
-                            <p class="mb-2"><span class="font-semibold">Access Key:</span> {{ $survey->accesskey }}</p>
-                            <p><span class="font-semibold">Created:</span> {{ $survey->created_at->format('M d, Y') }}</p>
+                            <p class="mb-2"><span class="font-semibold">{{ __('surveys.survey_title') }}:</span> {{ $survey->name ?: ($survey->feedback_template->title ?? 'N/A') }}</p>
+                            <p class="mb-2"><span class="font-semibold">{{ __('surveys.access_key') }}:</span> {{ $survey->accesskey }}</p>
+                            <p><span class="font-semibold">{{ __('surveys.created_at') }}:</span> {{ $survey->created_at->format('M d, Y') }}</p>
                         </div>
                         <div class="bg-gray-50 dark:bg-gray-700 p-5 rounded-lg shadow-sm">
-                            <p class="mb-2"><span class="font-semibold">Responses:</span> {{ $survey->submission_count }} / {{ $survey->limit == -1 ? '∞' : $survey->limit }}</p>
-                            <p class="mb-2"><span class="font-semibold">Expires:</span> {{ $survey->expire_date->format('M d, Y') }}</p>
-                            <p><span class="font-semibold">Status:</span>
+                            <p class="mb-2"><span class="font-semibold">{{ __('surveys.responses') }}:</span> {{ $survey->submission_count }} / {{ $survey->limit == -1 ? '∞' : $survey->limit }}</p>
+                            <p class="mb-2"><span class="font-semibold">{{ __('surveys.expires') }}:</span> {{ $survey->expire_date->format('M d, Y') }}</p>
+                            <p><span class="font-semibold">{{ __('surveys.status') }}:</span>
                                 @if($survey->expire_date->isPast())
-                                    <span class="text-red-500 font-medium">Expired</span>
+                                    <span class="text-red-500 font-medium">{{ __('surveys.expired') }}</span>
                                 @else
-                                    <span class="text-green-500 font-medium">Active</span>
+                                    <span class="text-green-500 font-medium">{{ __('surveys.active') }}</span>
                                 @endif
                             </p>
                         </div>
                     </div>
 
-                    <h3 class="text-xl font-semibold mt-10 mb-6 text-indigo-700 dark:text-indigo-300">{{ __('Question Statistics') }}</h3>
+                    <h3 class="text-xl font-semibold mt-10 mb-6 text-indigo-700 dark:text-indigo-300">{{ __('surveys.question_statistics') }}</h3>
 
                     @php
                         // Initialize variables
@@ -127,8 +127,8 @@
                         @endif
                     @else
                         <div class="p-6 border rounded-lg bg-yellow-50 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
-                            <h4 class="text-lg font-semibold mb-2">No Responses Yet</h4>
-                            <p>This survey hasn't received any responses yet. Statistics will be displayed once responses are submitted.</p>
+                            <h4 class="text-lg font-semibold mb-2">{{ __('surveys.no_responses_yet') }}</h4>
+                            <p>{{ __('surveys.no_responses_explanation') }}</p>
                         </div>
                     @endif
                 </div>

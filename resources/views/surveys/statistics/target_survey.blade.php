@@ -11,11 +11,11 @@
 
 @if($targetItem && isset($targetItem['data']['segment_statistics']))
     <div class="mb-8 p-6 border rounded-lg bg-gray-50 dark:bg-gray-700 shadow-sm hover:shadow-md transition-shadow duration-300">
-        <h4 class="font-semibold text-lg text-gray-800 dark:text-gray-200 mb-1">Target Survey Results</h4>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Segment ratings for target diagram</p>
+        <h4 class="font-semibold text-lg text-gray-800 dark:text-gray-200 mb-1">{{ __('surveys.target_survey_results') }}</h4>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ __('surveys.segment_ratings_description') }}</p>
 
         @if($submissionCount > 0)
-            <p class="text-sm mb-4">{{ $submissionCount }} response(s) received</p>
+            <p class="text-sm mb-4">{{ __('surveys.responses_count', ['count' => $submissionCount]) }}</p>
 
             <!-- Calculate the maximum rating count across all segments -->
             @php
@@ -35,10 +35,10 @@
                 <table class="min-w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700">
                     <thead>
                         <tr>
-                            <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-left font-semibold text-gray-700 dark:text-gray-300">Segment</th>
-                            <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-center font-semibold text-gray-700 dark:text-gray-300">Avg. Rating</th>
-                            <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-center font-semibold text-gray-700 dark:text-gray-300">Responses</th>
-                            <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-center font-semibold text-gray-700 dark:text-gray-300 hidden sm:table-cell">Distribution</th>
+                            <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-left font-semibold text-gray-700 dark:text-gray-300">{{ __('surveys.segment') }}</th>
+                            <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-center font-semibold text-gray-700 dark:text-gray-300">{{ __('surveys.average_rating_short') }}</th>
+                            <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-center font-semibold text-gray-700 dark:text-gray-300">{{ __('surveys.responses') }}</th>
+                            <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-center font-semibold text-gray-700 dark:text-gray-300 hidden sm:table-cell">{{ __('surveys.distribution') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -72,7 +72,7 @@
         @else
             <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <p class="text-gray-600 dark:text-gray-300">
-                    No responses have been received for this target survey yet.
+                    {{ __('surveys.no_target_responses') }}
                 </p>
             </div>
         @endif

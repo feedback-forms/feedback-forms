@@ -23,7 +23,7 @@
                             </a>
                         </div>
                     </div>
-                    <p class="text-ellipsis text-gray-600 dark:text-gray-500"><b>{{ $survey->feedback_template->title ?? 'Title' }}</b></p>
+                    <p class="text-ellipsis text-gray-600 dark:text-gray-500"><b>{{ $survey->name ?: ($survey->feedback_template->title ?? 'Untitled Survey') }}</b></p>
                     <p class="text-ellipsis text-gray-500 dark:text-gray-400">Updated {{ $survey->updated_at->diffForHumans() }}</p>
                     <div class="flex justify-between items-center">
                         <span class="text-sm text-gray-500 dark:text-gray-400">
@@ -31,7 +31,7 @@
                         </span>
                         <div class="flex gap-2">
                             <a href="{{ route('surveys.statistics', ['survey' => $survey->id]) }}" class="text-green-500 hover:text-green-600 text-sm">
-                                {{__('Statistics')}} →
+                                {{__('surveys.statistics')}} →
                             </a>
                             <a href="{{ route('surveys.edit', ['id' => $survey->id]) }}" class="text-blue-500 hover:text-blue-600 text-sm">
                                 {{__('surveys.edit')}} →

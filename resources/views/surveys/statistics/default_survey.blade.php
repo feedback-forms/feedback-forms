@@ -24,16 +24,16 @@
                 @if($stat['template_type'] === 'range')
                     @if(isset($stat['data']['average_rating']) && is_numeric($stat['data']['average_rating']))
                         <div class="mb-4">
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Average Rating</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">{{ __('surveys.average_rating_short') }}</p>
                             <p class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{{ $stat['data']['average_rating'] }}</p>
                             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                from {{ $stat['data']['submission_count'] }} response(s)
+                                {{ __('surveys.responses_count', ['count' => $stat['data']['submission_count']]) }}
                             </p>
                         </div>
 
                         @if(isset($stat['data']['rating_counts']) && count($stat['data']['rating_counts']) > 0)
                             <div class="mt-4">
-                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rating Distribution</p>
+                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('surveys.distribution') }}</p>
                                 @include('surveys.statistics.components.rating_distribution', [
                                     'ratingCounts' => $stat['data']['rating_counts'] ?? [],
                                     'maxValue' => $maxRatingCount
@@ -41,12 +41,12 @@
                             </div>
                         @endif
                     @else
-                        <p class="text-gray-500 dark:text-gray-400">No ratings received yet.</p>
+                        <p class="text-gray-500 dark:text-gray-400">{{ __('surveys.no_responses_yet') }}</p>
                     @endif
                 @elseif($stat['template_type'] === 'text' || $stat['template_type'] === 'textarea')
                     @if(isset($stat['data']['responses']) && count($stat['data']['responses']) > 0)
                         <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                            {{ count($stat['data']['responses']) }} text response(s) received
+                            {{ __('surveys.text_responses_count', ['count' => count($stat['data']['responses'])]) }}
                         </p>
                         <div class="space-y-2 max-h-96 overflow-y-auto">
                             @foreach($stat['data']['responses'] as $response)
@@ -56,12 +56,12 @@
                             @endforeach
                         </div>
                     @else
-                        <p class="text-gray-500 dark:text-gray-400">No text responses received yet.</p>
+                        <p class="text-gray-500 dark:text-gray-400">{{ __('surveys.no_responses_yet') }}</p>
                     @endif
                 @elseif($stat['template_type'] === 'checkbox' || $stat['template_type'] === 'checkboxes')
                     @if(isset($stat['data']['option_counts']) && count($stat['data']['option_counts']) > 0)
                         <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                            {{ $stat['data']['submission_count'] }} response(s) received
+                            {{ __('surveys.responses_count', ['count' => $stat['data']['submission_count']]) }}
                         </p>
                         <div class="space-y-3">
                             @foreach($stat['data']['option_counts'] as $option => $count)
@@ -79,7 +79,7 @@
                             @endforeach
                         </div>
                     @else
-                        <p class="text-gray-500 dark:text-gray-400">No checkbox selections received yet.</p>
+                        <p class="text-gray-500 dark:text-gray-400">{{ __('surveys.no_responses_yet') }}</p>
                     @endif
                 @endif
             </div>

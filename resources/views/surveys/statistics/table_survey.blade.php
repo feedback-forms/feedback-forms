@@ -1,10 +1,10 @@
 {{-- Table Survey Statistics Component --}}
 <div class="mb-8 p-6 border rounded-lg bg-gray-50 dark:bg-gray-700 shadow-sm hover:shadow-md transition-shadow duration-300">
-    <h4 class="font-semibold text-lg text-gray-800 dark:text-gray-200 mb-1">Table Survey Results</h4>
-    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Ratings grouped by category</p>
+    <h4 class="font-semibold text-lg text-gray-800 dark:text-gray-200 mb-1">{{ __('surveys.table_survey_results') }}</h4>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ __('surveys.ratings_grouped_by_category') }}</p>
 
     @if($submissionCount > 0)
-        <p class="text-sm mb-4">{{ $submissionCount }} response(s) received</p>
+        <p class="text-sm mb-4">{{ __('surveys.responses_count', ['count' => $submissionCount]) }}</p>
 
         @if(count($tableCategories) > 0)
             @php
@@ -33,9 +33,9 @@
                                 class="px-4 py-2 font-medium text-sm focus:outline-none"
                                 role="tab"
                             >
-                                {{ $category['title'] ?? 'Category' }}
+                                {{ $category['title'] ?? __('surveys.category') }}
                                 @if(($category['hasResponses'] ?? false) === false)
-                                    <span class="text-xs text-red-500">(No responses)</span>
+                                    <span class="text-xs text-red-500">({{ __('surveys.no_responses_yet') }})</span>
                                 @endif
                             </button>
                         @endif
@@ -49,7 +49,7 @@
                             x-show="activeTab === '{{ $catKey }}'"
                             class="py-4"
                             role="tabpanel">
-                            <h5 class="font-semibold text-lg mb-3 text-indigo-700 dark:text-indigo-300">{{ $category['title'] ?? 'Category' }}</h5>
+                            <h5 class="font-semibold text-lg mb-3 text-indigo-700 dark:text-indigo-300">{{ $category['title'] ?? __('surveys.category') }}</h5>
 
                             @if($category['hasResponses'] ?? false)
                                 <!-- Calculate the maximum rating count for this category -->
@@ -70,10 +70,10 @@
                                     <table class="min-w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700">
                                         <thead>
                                             <tr>
-                                                <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-left font-semibold text-gray-700 dark:text-gray-300">Question</th>
-                                                <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-center font-semibold text-gray-700 dark:text-gray-300">Avg. Rating</th>
-                                                <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-center font-semibold text-gray-700 dark:text-gray-300">Responses</th>
-                                                <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-center font-semibold text-gray-700 dark:text-gray-300 hidden sm:table-cell">Distribution</th>
+                                                <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-left font-semibold text-gray-700 dark:text-gray-300">{{ __('surveys.question') }}</th>
+                                                <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-center font-semibold text-gray-700 dark:text-gray-300">{{ __('surveys.average_rating_short') }}</th>
+                                                <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-center font-semibold text-gray-700 dark:text-gray-300">{{ __('surveys.responses') }}</th>
+                                                <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-center font-semibold text-gray-700 dark:text-gray-300 hidden sm:table-cell">{{ __('surveys.distribution') }}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -105,7 +105,7 @@
                                                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-600">
                                                         <td class="py-3 px-4 border-b border-gray-300 dark:border-gray-700" colspan="4">
                                                             <div class="mb-2 font-medium">{{ $questionStat['question']->question }}</div>
-                                                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ $questionStat['data']['response_count'] }} text response(s) received</p>
+                                                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('surveys.text_responses_count', ['count' => $questionStat['data']['response_count']]) }}</p>
                                                             @if(isset($questionStat['data']['responses']))
                                                                 <div class="mt-2 space-y-2">
                                                                     @foreach($questionStat['data']['responses'] as $response)
@@ -122,7 +122,7 @@
                                 </div>
                             @else
                                 <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg mb-4">
-                                    <p class="text-gray-600 dark:text-gray-300">No response statistics available for this category yet.</p>
+                                    <p class="text-gray-600 dark:text-gray-300">{{ __('surveys.no_category_responses') }}</p>
                                 </div>
                             @endif
                         </div>
@@ -131,8 +131,8 @@
             </div>
         @else
             <div class="p-4 bg-yellow-50 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-lg my-4">
-                <h5 class="font-semibold">No Categories Available</h5>
-                <p class="text-sm mt-1">No categories could be generated from the survey questions.</p>
+                <h5 class="font-semibold">{{ __('surveys.no_categories_available') }}</h5>
+                <p class="text-sm mt-1">{{ __('surveys.no_categories_generated_description') }}</p>
             </div>
         @endif
     @endif
