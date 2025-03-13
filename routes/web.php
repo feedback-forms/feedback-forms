@@ -12,9 +12,6 @@ Route::post('/', [WelcomeController::class, 'accessSurvey'])->name('surveys.acce
 Route::get('/survey/scan', [WelcomeController::class, 'scanQrAccess'])->name('surveys.scan');
 
 Route::middleware(['auth'])->group(function () {
-    Route::view('dashboard', 'dashboard')
-        ->name('dashboard');
-
     Route::view('profile', 'profile')->name('profile');
     Route::get('/admin-panel', App\Livewire\Admin\Panel::class)->name('admin.panel');
     Route::get('/admin/users', App\Livewire\Admin\Users::class)->name('admin.users');

@@ -63,7 +63,7 @@ return [
     // Survey management
     'edit_survey' => 'Umfrage bearbeiten',
     'back_to_surveys' => 'Zurück zu Umfragen',
-    'back_to_dashboard' => 'Zurück zum Dashboard',
+    'back_to_overview' => 'Zurück zur Übersicht',
     'save_changes' => 'Änderungen speichern',
     'updated_successfully' => 'Umfrage wurde erfolgreich aktualisiert',
     'update_failed' => 'Fehler beim Aktualisieren der Umfrage',
