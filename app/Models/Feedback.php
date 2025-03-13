@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasManyThrough};
 
 class Feedback extends Model
 {
@@ -42,5 +42,13 @@ class Feedback extends Model
     public function questions(): HasMany
     {
         return $this->hasMany(Question::class);
+    }
+
+    /**
+     * Get all results associated with this feedback through its questions.
+     */
+    public function results(): HasManyThrough
+    {
+        return $this->hasManyThrough(Result::class, Question::class);
     }
 }
