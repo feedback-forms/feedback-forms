@@ -187,46 +187,47 @@
         </div>
     </div>
     <x-modal name="edit-option" :show="$errors->isNotEmpty()" focusable>
-        <h1 class="pt-4 pl-4 text-2xl font-bold text-gray-700 dark:text-gray-200 px-2">
-            {{ __('options.modal.title') }}
-        </h1>
-        <form wire:submit.prevent="updateOption">
-            <div>
-                <x-input-label for="name" :value="__('options.modal.label')" />
-                <input id="name" 
-                       wire:model.live="editingOption"
-                       type="text"
-                       class="block mt-1 w-full dark:bg-gray-700 dark:text-white"
-                       placeholder="{{ $editingName }}"
-                       autofocus />
-                <!-- Hidden input for key -->
-                <input type="hidden" 
-                       wire:model="editingKey" 
-                       value="{{ $key }}" />
-                <x-input-error :messages="$errors->get('editingOption')" class="mt-2" />
-            </div>
+        <div class="p-6">
+            <h1 class="text-2xl font-bold text-gray-700 dark:text-gray-200 mb-6">
+                {{ __('options.modal.title') }}
+            </h1>
             
-            @if($editingCode != '')
-                <div class="mt-4">
-                    <x-input-label for="code" :value="__('options.modal.code')" />
-                    <input id="code" 
-                           wire:model="editingCode"
-                           type="text"
-                           class="block mt-1 w-full dark:bg-gray-700 dark:text-white"
-                           placeholder="{{ $editingCode }}"
-                           autofocus />
-                    <x-input-error :messages="$errors->get('editingCode')" class="mt-2" />
-                </div>
-            @endif
+            <form wire:submit.prevent="updateOption" class="space-y-6">
+                <div class="space-y-4">
+                    <div>
+                        <x-input-label for="name" :value="__('options.modal.label')" class="mb-2" />
+                        <input id="name" 
+                               wire:model.live="editingOption"
+                               type="text"
+                               class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                               autofocus />
+                        <x-input-error :messages="$errors->get('editingOption')" class="mt-2" />
+                    </div>
+                    
+                    @if($editingCode != '')
+                        <div>
+                            <x-input-label for="code" :value="__('options.modal.code')" class="mb-2" />
+                            <input id="code" 
+                                   wire:model="editingCode"
+                                   type="text"
+                                   class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                   autofocus />
+                            <x-input-error :messages="$errors->get('editingCode')" class="mt-2" />
+                        </div>
+                    @endif
 
-            <div class="flex items-center justify-end mt-5 mr-4 mb-4">
-                <x-primary-button type="submit">
-                    {{ __('options.modal.button') }}
-                </x-primary-button>
-                <x-secondary-button type="button" x-on:click="$dispatch('close-modal', 'edit-option')">
-                    {{ __('options.modal.cancel') }}
-                </x-secondary-button>
-            </div>               
-        </form>
+                    <input type="hidden" wire:model="editingKey" value="{{ $key }}" />
+                </div>
+
+                <div class="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                    <x-secondary-button type="button" x-on:click="$dispatch('close-modal', 'edit-option')">
+                        {{ __('options.modal.cancel') }}
+                    </x-secondary-button>
+                    <x-primary-button type="submit">
+                        {{ __('options.modal.button') }}
+                    </x-primary-button>
+                </div>               
+            </form>
+        </div>
     </x-modal>
 </div>
