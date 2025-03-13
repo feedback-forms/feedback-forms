@@ -4,15 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 
 class Subject extends Model
 {
-    protected $fillable = ['code', 'name', 'department_id', 'is_active'];
+    use SoftDeletes;
 
-    public function scopeActive($query)
-    {
-        return $query->where('is_active', true);
-    }
+    protected $fillable = ['code', 'name', 'department_id'];
 
     public function department(): BelongsTo
     {

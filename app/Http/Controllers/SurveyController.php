@@ -32,11 +32,11 @@ class SurveyController extends Controller
         }
 
         // Load options from database
-        $schoolYears = SchoolYear::active()->get();
-        $departments = Department::active()->get();
-        $gradeLevels = GradeLevel::active()->orderBy('level')->get();
-        $schoolClasses = SchoolClass::active()->get();
-        $subjects = Subject::active()->get();
+        $schoolYears = SchoolYear::get();
+        $departments = Department::get();
+        $gradeLevels = GradeLevel::orderBy('id')->get();
+        $schoolClasses = SchoolClass::get();
+        $subjects = Subject::get();
 
         // Verify the template exists
         $template = $templates->where('name', 'templates.feedback.' . $selectedTemplate)->first();

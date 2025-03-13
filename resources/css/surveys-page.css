@@ -1,10 +1,1 @@
-.filter-button {
-  padding: 1px 15px;
-  border-radius: 10px;
-}
-
-.filter-button.active{
-  background: rgb(18, 83, 188);
-  border: 1px solid black;
-  color: white;
-}
+/* No longer needed as we're using Tailwind CSS directly */
