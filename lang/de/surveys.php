@@ -78,6 +78,7 @@ return [
     'expires' => 'Läuft ab',
     'status' => 'Status',
     'active' => 'Aktiv',
+    'statistics' => 'Statistiken',
 
     // Survey statistics
     'survey_statistics' => 'Umfrage-Statistiken',
@@ -85,6 +86,21 @@ return [
     'question_statistics' => 'Fragenstatistiken',
     'no_responses_yet' => 'Noch keine Antworten',
     'no_responses_explanation' => 'Diese Umfrage hat noch keine Antworten erhalten. Statistiken werden angezeigt, sobald Antworten eingegangen sind.',
+    'target_survey_results' => 'Zielumfrage-Ergebnisse',
+    'segment_ratings_description' => 'Segmentbewertungen für Zieldiagramm',
+    'responses_count' => ':count Antwort(en) erhalten',
+    'segment' => 'Segment',
+    'average_rating_short' => 'Durchschn. Bewertung',
+    'distribution' => 'Verteilung',
+    'no_target_responses' => 'Für diese Zielumfrage wurden noch keine Antworten empfangen.',
+    'table_survey_results' => 'Tabellenumfrage-Ergebnisse',
+    'ratings_grouped_by_category' => 'Bewertungen nach Kategorie gruppiert',
+    'category' => 'Kategorie',
+    'question' => 'Frage',
+    'no_category_responses' => 'Für diese Kategorie sind noch keine Antwortstatistiken verfügbar.',
+    'no_categories_available' => 'Keine Kategorien verfügbar',
+    'no_categories_generated_description' => 'Aus den Umfragefragen konnten keine Kategorien generiert werden.',
+    'text_responses_count' => ':count Textantwort(en) erhalten',
 
     // Survey response
     'survey' => 'Umfrage',

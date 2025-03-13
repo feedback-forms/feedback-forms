@@ -31,7 +31,7 @@
                         </span>
                         <div class="flex gap-2">
                             <a href="{{ route('surveys.statistics', ['survey' => $survey->id]) }}" class="text-green-500 hover:text-green-600 text-sm">
-                                {{__('Statistics')}} →
+                                {{__('surveys.statistics')}} →
                             </a>
                             <a href="{{ route('surveys.edit', ['id' => $survey->id]) }}" class="text-blue-500 hover:text-blue-600 text-sm">
                                 {{__('surveys.edit')}} →

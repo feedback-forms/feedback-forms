@@ -78,6 +78,7 @@ return [
     'expires' => 'Expires',
     'status' => 'Status',
     'active' => 'Active',
+    'statistics' => 'Statistics',
 
     // Survey statistics
     'survey_statistics' => 'Survey Statistics',
@@ -85,6 +86,21 @@ return [
     'question_statistics' => 'Question Statistics',
     'no_responses_yet' => 'No Responses Yet',
     'no_responses_explanation' => 'This survey hasn\'t received any responses yet. Statistics will be displayed once responses are submitted.',
+    'target_survey_results' => 'Target Survey Results',
+    'segment_ratings_description' => 'Segment ratings for target diagram',
+    'responses_count' => ':count response(s) received',
+    'segment' => 'Segment',
+    'average_rating_short' => 'Avg. Rating',
+    'distribution' => 'Distribution',
+    'no_target_responses' => 'No responses have been received for this target survey yet.',
+    'table_survey_results' => 'Table Survey Results',
+    'ratings_grouped_by_category' => 'Ratings grouped by category',
+    'category' => 'Category',
+    'question' => 'Question',
+    'no_category_responses' => 'No response statistics available for this category yet.',
+    'no_categories_available' => 'No Categories Available',
+    'no_categories_generated_description' => 'No categories could be generated from the survey questions.',
+    'text_responses_count' => ':count text response(s) received',
 
     // Survey response
     'survey' => 'Survey',
