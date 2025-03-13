@@ -22,3 +22,6 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+/.cursor/
+/.cursorrules
+/.repomix-output.txt
