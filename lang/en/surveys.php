@@ -75,7 +75,7 @@ return [
     'all_subjects' => 'All Subjects',
     'edit_survey' => 'Edit Survey',
     'back_to_surveys' => 'Back to Surveys',
-    'back_to_dashboard' => 'Back to Dashboard',
+    'back_to_overview' => 'Back to Overview',
     'save_changes' => 'Save Changes',
     'updated_successfully' => 'Survey updated successfully',
     'update_failed' => 'Failed to update survey',

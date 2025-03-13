@@ -11,9 +11,18 @@ Route::post('/', [WelcomeController::class, 'accessSurvey'])->name('surveys.acce
 Route::get('/templates', App\Livewire\Templates\Overview::class)
     ->name('templates.index');
 
-    Route::view('dashboard', 'dashboard')
-        ->name('dashboard')
-        ->middleware(['auth']);
+// Direct QR code access route
+Route::get('/survey/scan', [WelcomeController::class, 'scanQrAccess'])->name('surveys.scan');
+
+Route::middleware(['auth'])->group(function () {
+    Route::view('profile', 'profile')->name('profile');
+    Route::get('/admin-panel', App\Livewire\Admin\Panel::class)->name('admin.panel');
+    Route::get('/admin/users', App\Livewire\Admin\Users::class)->name('admin.users');
+
+    // Survey statistics route
+    Route::get('/surveys/{survey}/statistics', [App\Http\Controllers\SurveyStatisticsController::class, 'show'])
+        ->name('surveys.statistics');
+});
 
 Route::controller(SurveyController::class)->group(function (){
     Route::get('feedback/smiley', 'showSmiley');
@@ -55,7 +64,7 @@ Route::middleware(['auth'])->group(function () {
         // Use resource route but exclude 'edit' and 'index' to avoid conflicts with Livewire
         Route::resource('/', SurveyController::class)->except(['edit', 'index']);
 
-        // Survey statistics route 
+        // Survey statistics route
         Route::get('/{survey}/statistics', [App\Http\Controllers\SurveyStatisticsController::class, 'show'])
             ->name('surveys.statistics');
 
@@ -81,7 +90,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/invite-token', App\Livewire\Admin\InviteToken::class)
             ->middleware(['can:admin'])
             ->name('admin.invite-token');
-    });   
+    });
 
 
     // ------ PROFILE  ------ \\
