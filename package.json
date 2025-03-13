@@ -16,6 +16,7 @@
         "vite": "^6.2"
     },
     "dependencies": {
-        "alpinejs": "^3.14.8"
+        "alpinejs": "^3.14.8",
+        "qrcode": "^1.5.4"
     }
 }

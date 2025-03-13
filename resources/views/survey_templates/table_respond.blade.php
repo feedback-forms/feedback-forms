@@ -3,10 +3,7 @@
         <form method="POST" action="{{ route('surveys.submit', $survey->accesskey) }}" id="surveyForm">
             @csrf
             <input type="hidden" name="responses" x-bind:value="JSON.stringify({
-                behavior: behavior,
-                fairness: fairness,
-                class_quality: classQuality,
-                evaluation: evaluation,
+                ratings: formatRatingsForSubmission(),
                 feedback: {
                     positive: positive,
                     negative: negative,
@@ -284,6 +281,51 @@
                 positive: '',
                 negative: '',
                 suggestions: '',
+
+                // Format the ratings in the expected format for the backend
+                formatRatingsForSubmission() {
+                    // Create a ratings object that matches the expected format
+                    const ratings = {};
+
+                    // Map all the ratings from different question categories
+                    const questionMappings = {
+                        '... ungeduldig': this.behavior['ungeduldig'],
+                        '... sicher im Auftreten': this.behavior['sicher-im-auftreten'],
+                        '... freundlich': this.behavior['freundlich'],
+                        '... energisch und aufbauend': this.behavior['energisch-und-aufbauend'],
+                        '... tatkräftig, aktiv': this.behavior['tatkraftig-aktiv'],
+                        '... aufgeschlossen': this.behavior['aufgeschlossen'],
+
+                        '... bevorzugt manche Schülerinnen oder Schüler.': this.fairness['bevorzugt-manche-schulerinnen-oder-schuler'],
+                        '... nimmt die Schülerinnen und Schüler ernst.': this.fairness['nimmt-die-schulerinnen-und-schuler-ernst'],
+                        '... ermutigt und lobt viel.': this.fairness['ermutigt-und-lobt-viel'],
+                        '... entscheidet immer allein.': this.fairness['entscheidet-immer-allein'],
+                        '... gesteht eigene Fehler ein.': this.fairness['gesteht-eigene-fehler-ein'],
+
+                        'Die Ziele des Unterrichts sind klar erkennbar.': this.classQuality['die-ziele-des-unterrichts-sind-klar-erkennbar'],
+                        'Der Lehrer redet zu viel.': this.classQuality['der-lehrer-redet-zu-viel'],
+                        'Der Lehrer schweift oft vom Thema ab.': this.classQuality['der-lehrer-schweift-oft-vom-thema-ab'],
+                        'Die Fragen und Beiträge der Schülerinnen und Schüler werden ernst genommen.': this.classQuality['die-fragen-und-beitrage-der-schulerinnen-und-schuler-werden-ernst-genommen'],
+                        'Die Sprache des Lehrers ist gut verständlich.': this.classQuality['die-sprache-des-lehrers-ist-gut-verstandlich'],
+                        'Der Lehrer achtet auf Ruhe und Disziplin im Unterricht.': this.classQuality['der-lehrer-achtet-auf-ruhe-und-disziplin-im-unterricht'],
+                        'Der Unterricht ist abwechslungsreich.': this.classQuality['der-unterricht-ist-abwechslungsreich'],
+                        'Unterrichtsmaterialien sind ansprechend und gut verständlich gestaltet.': this.classQuality['unterrichtsmaterialien-sind-ansprechend-und-gut-verstandlich-gestaltet'],
+                        'Der Stoff wird ausreichend wiederholt und geübt.': this.classQuality['der-stoff-wird-ausreichend-wiederholt-und-geubt'],
+
+                        'Die Themen der Schulaufgaben werden rechtzeitig vorher bekannt gegeben.': this.evaluation['die-themen-der-schulaufgaben-werden-rechtzeitig-vorher-bekannt-gegeben'],
+                        'Der Schwierigkeitsgrad der Leistungsnachweise entspricht dem der Unterrichtsinhalte.': this.evaluation['der-schwierigkeitsgrad-der-leistungsnachweise-entspricht-dem-der-unterrichtsinhalte'],
+                        'Die Bewertungen sind nachvollziehbar und verständlich.': this.evaluation['die-bewertungen-sind-nachvollziehbar-und-verstandlich']
+                    };
+
+                    // Add each rating to the ratings object, skipping undefined values
+                    for (const [question, rating] of Object.entries(questionMappings)) {
+                        if (rating !== undefined) {
+                            ratings[question] = rating;
+                        }
+                    }
+
+                    return ratings;
+                },
 
                 setBehavior(key, value) {
                     this.behavior[key] = value;

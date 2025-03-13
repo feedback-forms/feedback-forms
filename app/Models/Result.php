@@ -10,7 +10,8 @@ class Result extends Model
     protected $fillable = [
         'question_id',
         'submission_id',
-        'value'
+        'value_type',
+        'rating_value'
     ];
 
     /**
@@ -19,7 +20,7 @@ class Result extends Model
      * @var array
      */
     protected $casts = [
-        'value' => 'json',
+        'submission_id' => 'string',
     ];
 
     public function question(): BelongsTo
@@ -28,23 +29,14 @@ class Result extends Model
     }
 
     /**
-     * Get the value attribute.
-     * If the value is valid JSON, it will be automatically cast to an array.
-     * Otherwise, it will be returned as is.
+     * Scope a query to only include results from a specific submission.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string  $submissionId
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function getValueAttribute($value)
+    public function scopeSubmission($query, $submissionId)
     {
-        if (is_string($value)) {
-            try {
-                $decoded = json_decode($value, true);
-                if (json_last_error() === JSON_ERROR_NONE) {
-                    return $decoded;
-                }
-            } catch (\Exception $e) {
-                // If there's an error decoding, just return the original value
-            }
-        }
-
-        return $value;
+        return $query->where('submission_id', $submissionId);
     }
 }

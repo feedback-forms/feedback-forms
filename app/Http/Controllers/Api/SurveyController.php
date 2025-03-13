@@ -35,7 +35,9 @@ class SurveyController extends Controller
 
             return response()->json([
                 'message' => 'Survey created successfully',
-                'survey' => $survey->load('questions'),
+                'survey' => $survey->load(['questions' => function($query) {
+                    $query->orderBy('order')->with('question_template');
+                }]),
             ], 201);
 
         } catch (\Exception $e) {

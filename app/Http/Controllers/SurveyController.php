@@ -63,6 +63,7 @@ class SurveyController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
+            'name' => 'required|string|max:255',
             'template_id' => 'required|exists:feedback_templates,id',
             'expire_date' => 'required|date|after:now',
             'response_limit' => 'nullable|integer|min:-1',

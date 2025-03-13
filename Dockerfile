@@ -48,6 +48,10 @@ RUN npm run build
 # Production stage
 FROM php:8.4-fpm-alpine
 
+# Add Git SHA as build argument and environment variable
+ARG GIT_SHA
+ENV GIT_SHA=${GIT_SHA}
+
 # Install production dependencies
 RUN apk add --no-cache postgresql-dev
 RUN docker-php-ext-install pdo pdo_pgsql opcache
