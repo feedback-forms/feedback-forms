@@ -66,9 +66,9 @@
 
                         <!-- Survey Questions -->
                         <div class="space-y-8">
-                            @foreach($survey->questions as $question)
+                            @foreach($survey->questions->sortBy('order') as $question)
                                 <div class="p-4 border rounded-lg">
-                                    <h3 class="font-semibold mb-3">{{ $question->question }}</h3>
+                                    <h3 class="font-semibold mb-3">{{ $question->order }}. {{ $question->question }}</h3>
 
                                     @php
                                         $templateType = $question->question_template->type ?? 'text';

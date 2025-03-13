@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('results', function (Blueprint $table) {
-            $table->string('value')->nullable()->change();
+            // Make submission_id required after it has been populated
+            $table->uuid('submission_id')->nullable(false)->change();
         });
     }
 
@@ -22,7 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('results', function (Blueprint $table) {
-            $table->string('value')->nullable(false)->change();
+            // Make submission_id nullable again
+            $table->uuid('submission_id')->nullable()->change();
         });
     }
 };

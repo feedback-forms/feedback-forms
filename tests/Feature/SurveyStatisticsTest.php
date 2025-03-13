@@ -7,7 +7,6 @@ use App\Models\Feedback_template;
 use App\Models\Question;
 use App\Models\Question_template;
 use App\Models\Result;
-use App\Models\ResponseValue;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -61,25 +60,16 @@ class SurveyStatisticsTest extends TestCase
         // Create some results
         $result1 = Result::create([
             'question_id' => $question->id,
-            'submission_id' => '123e4567-e89b-12d3-a456-426614174000',
+            'submission_id' => (string) \Illuminate\Support\Str::uuid(),
+            'value_type' => 'number',
+            'rating_value' => '4'
         ]);
 
         $result2 = Result::create([
             'question_id' => $question->id,
-            'submission_id' => '123e4567-e89b-12d3-a456-426614174001',
-        ]);
-
-        // Create response values
-        ResponseValue::create([
-            'result_id' => $result1->id,
-            'question_template_type' => 'range',
-            'range_value' => 4,
-        ]);
-
-        ResponseValue::create([
-            'result_id' => $result2->id,
-            'question_template_type' => 'range',
-            'range_value' => 5,
+            'submission_id' => (string) \Illuminate\Support\Str::uuid(),
+            'value_type' => 'number',
+            'rating_value' => '5'
         ]);
 
         // Act as the teacher and visit the statistics page

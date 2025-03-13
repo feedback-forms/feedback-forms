@@ -11,6 +11,24 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Check if the table exists first
+        if (Schema::hasTable('response_values')) {
+            // Drop the foreign key constraint first if it exists
+            Schema::table('response_values', function (Blueprint $table) {
+                if (Schema::hasColumn('response_values', 'result_id')) {
+                    $table->dropForeign(['result_id']);
+                }
+            });
+
+            Schema::dropIfExists('response_values');
+        }
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
         Schema::create('response_values', function (Blueprint $table) {
             $table->id();
             $table->foreignId('result_id')->constrained()->cascadeOnDelete();
@@ -22,13 +40,5 @@ return new class extends Migration
 
             $table->index(['question_template_type', 'range_value'], 'response_values_range_index');
         });
-    }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('response_values');
     }
 };

@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Result extends Model
 {
     protected $fillable = [
         'question_id',
-        'submission_id'
+        'submission_id',
+        'value_type',
+        'rating_value'
     ];
 
     /**
@@ -19,6 +20,7 @@ class Result extends Model
      * @var array
      */
     protected $casts = [
+        'submission_id' => 'string',
     ];
 
     public function question(): BelongsTo
@@ -27,39 +29,14 @@ class Result extends Model
     }
 
     /**
-     * Get the response value for this result.
+     * Scope a query to only include results from a specific submission.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string  $submissionId
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function responseValue(): HasOne
+    public function scopeSubmission($query, $submissionId)
     {
-        return $this->hasOne(ResponseValue::class);
-    }
-
-    /**
-     * Get the value attribute dynamically.
-     * This maintains backward compatibility with existing code that uses $result->value.
-     */
-    public function getValueAttribute()
-    {
-        $responseValue = $this->responseValue;
-
-        if ($responseValue) {
-            return $responseValue->value;
-        }
-
-        // For backward compatibility - try to get the value from the database column if it exists
-        $value = $this->attributes['value'] ?? null;
-
-        if (is_string($value)) {
-            try {
-                $decoded = json_decode($value, true);
-                if (json_last_error() === JSON_ERROR_NONE) {
-                    return $decoded;
-                }
-            } catch (\Exception $e) {
-                // If there's an error decoding, just return the original value
-            }
-        }
-
-        return $value;
+        return $query->where('submission_id', $submissionId);
     }
 }
