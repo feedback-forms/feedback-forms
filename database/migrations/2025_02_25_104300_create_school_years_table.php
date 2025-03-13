@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('school_years', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->boolean('is_active')->default(true);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
