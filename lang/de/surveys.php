@@ -63,7 +63,7 @@ return [
     // Survey management
     'edit_survey' => 'Umfrage bearbeiten',
     'back_to_surveys' => 'Zurück zu Umfragen',
-    'back_to_dashboard' => 'Zurück zum Dashboard',
+    'back_to_overview' => 'Zurück zur Übersicht',
     'save_changes' => 'Änderungen speichern',
     'updated_successfully' => 'Umfrage wurde erfolgreich aktualisiert',
     'update_failed' => 'Fehler beim Aktualisieren der Umfrage',
@@ -138,4 +138,20 @@ return [
         'negative' => 'Was könnte verbessert werden?',
         'button' => 'Feedback absenden'
     ],
+
+    // Filter options
+    'filter_options' => 'Filteroptionen',
+    'school_year' => 'Schuljahr',
+    'department' => 'Abteilung',
+    'grade_level' => 'Jahrgangsstufe',
+    'class' => 'Klasse',
+    'subject' => 'Fach',
+    'all' => 'Alle',
+    'all_school_years' => 'Alle Schuljahre',
+    'all_departments' => 'Alle Abteilungen',
+    'all_grade_levels' => 'Alle Jahrgangsstufen',
+    'all_classes' => 'Alle Klassen',
+    'all_subjects' => 'Alle Fächer',
+    'no_surveys_found' => 'Keine Umfragen gefunden',
+    'no_surveys_found_hint' => 'Versuchen Sie, Ihre Filter anzupassen oder erstellen Sie eine neue Umfrage.',
 ];

@@ -1,0 +1,17 @@
+name: Test Trigger
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'Message to echo'
+        required: false
+        default: 'Hello World'
+        type: string
+
+jobs:
+  echo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo message
+        run: echo "Message is ${{ github.event.inputs.message }}"

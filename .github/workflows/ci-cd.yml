@@ -14,7 +14,7 @@ jobs:
 
   deploy-test:
     needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' # Temporarily removed master branch restriction
     uses: ./.github/workflows/deploy.yml
     with:
       environment: test
@@ -29,3 +29,5 @@ jobs:
       environment: production
       image_tag: ${{ needs.build.outputs.image_tag }}
     secrets: inherit
+
+    

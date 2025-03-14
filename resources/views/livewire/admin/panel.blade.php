@@ -7,7 +7,12 @@
     <div class="bg-gray-50 dark:bg-gray-800 flex flex-col gap-10 p-10">
         <!-- Users Section -->
         <section>
-            <h2 class="text-xl font-bold mb-4 text-gray-700 dark:text-gray-200">{{ __('admin.users') }}</h2>
+            <a href="{{ route('admin.users') }}">
+                <div class="flex items-center gap-2 mb-4">
+                    <h2 class="text-xl font-bold text-gray-700 dark:text-gray-200">{{ __('admin.users') }}</h2>
+                    <x-fas-arrow-right class="w-4 h-4" />
+                </div>
+            </a>
             <div class="relative group" x-data="{
                 scroll: 0,
                 maxScroll: 0,
@@ -65,6 +70,16 @@
             </a>
 
             <x-invite-token-list :items="$registerKeys" />
+        </section>
+
+        <!-- Add Subjects Section -->
+        <section class="mt-8">
+            <a href="{{ route('admin.options') }}">
+                <div class="flex items-center gap-2 mb-4">
+                    <h2 class="text-xl font-bold text-gray-700 dark:text-gray-200">{{ __('admin.edit_options') }}</h2>
+                    <x-fas-arrow-right class="w-4 h-4" />
+                </div>
+            </a>
         </section>
     </div>
 </div>

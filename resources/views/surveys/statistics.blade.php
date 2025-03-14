@@ -12,11 +12,11 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="mb-8">
-                        <a href="{{ route('dashboard') }}" class="flex flex-row gap-2 items-center w-fit text-lg px-2">
+                        <a href="{{ route('surveys.list') }}" class="flex flex-row gap-2 items-center w-fit text-lg px-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-500 dark:text-gray-300" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
                             </svg>
-                            <span class="text-gray-500 dark:text-gray-400">{{ __('surveys.back_to_dashboard') }}</span>
+                            <span class="text-gray-500 dark:text-gray-400">{{ __('surveys.back_to_overview') }}</span>
                         </a>
                     </div>
 
@@ -25,11 +25,11 @@
                         <div class="bg-gray-50 dark:bg-gray-700 p-5 rounded-lg shadow-sm">
                             <p class="mb-2"><span class="font-semibold">{{ __('surveys.survey_title') }}:</span> {{ $survey->name ?: ($survey->feedback_template->title ?? 'N/A') }}</p>
                             <p class="mb-2"><span class="font-semibold">{{ __('surveys.access_key') }}:</span> {{ $survey->accesskey }}</p>
-                            <p><span class="font-semibold">{{ __('surveys.created_at') }}:</span> {{ $survey->created_at->format('M d, Y') }}</p>
+                            <p><span class="font-semibold">{{ __('surveys.created_at') }}:</span> {{ $survey->created_at->format('d.m.Y') }}</p>
                         </div>
                         <div class="bg-gray-50 dark:bg-gray-700 p-5 rounded-lg shadow-sm">
                             <p class="mb-2"><span class="font-semibold">{{ __('surveys.responses') }}:</span> {{ $survey->submission_count }} / {{ $survey->limit == -1 ? '∞' : $survey->limit }}</p>
-                            <p class="mb-2"><span class="font-semibold">{{ __('surveys.expires') }}:</span> {{ $survey->expire_date->format('M d, Y') }}</p>
+                            <p class="mb-2"><span class="font-semibold">{{ __('surveys.expires') }}:</span> {{ $survey->expire_date->format('d.m.Y') }}</p>
                             <p><span class="font-semibold">{{ __('surveys.status') }}:</span>
                                 @if($survey->expire_date->isPast())
                                     <span class="text-red-500 font-medium">{{ __('surveys.expired') }}</span>

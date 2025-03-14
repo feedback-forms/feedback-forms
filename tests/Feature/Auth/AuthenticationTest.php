@@ -32,7 +32,7 @@ class AuthenticationTest extends TestCase
 
         $component
             ->assertHasNoErrors()
-            ->assertRedirect(route('dashboard', absolute: false));
+            ->assertRedirect(route('surveys.list', absolute: false));
 
         $this->assertAuthenticated();
     }
@@ -60,7 +60,7 @@ class AuthenticationTest extends TestCase
 
         $this->actingAs($user);
 
-        $response = $this->get('/dashboard');
+        $response = $this->get('/surveys');
 
         $response
             ->assertOk()
