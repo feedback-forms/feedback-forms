@@ -124,10 +124,10 @@
                         <p class="text-gray-600 dark:text-gray-400">{{__('surveys.responses')}}: {{ $survey->already_answered }} / {{ $survey->limit == -1 ? '∞' : $survey->limit }}</p>
                     </div>
                     <div>
-                        <p class="text-gray-600 dark:text-gray-400">{{__('surveys.created_at')}}: {{ $survey->created_at->format('Y-m-d H:i') }}</p>
+                        <p class="text-gray-600 dark:text-gray-400">{{__('surveys.created_at')}}: {{ $survey->created_at->format('d.m.Y H:i') }}</p>
                     </div>
                     <div>
-                        <p class="text-gray-600 dark:text-gray-400">{{__('surveys.updated_at')}}: {{ $survey->updated_at->format('Y-m-d H:i') }}</p>
+                        <p class="text-gray-600 dark:text-gray-400">{{__('surveys.updated_at')}}: {{ $survey->updated_at->format('d.m.Y H:i') }}</p>
                     </div>
                 </div>
             </div>
