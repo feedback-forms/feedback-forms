@@ -39,7 +39,7 @@ $show = fn($item) => $item->expire_at && !$item->expire_at->isPast();
             </div>
             <x-dropdown :contentClasses="''" :showDropdown="$show($item)">
                 <x-slot name="trigger">
-                    <div class="p-2 rounded hover:bg-gray-100">
+                    <div class="p-2 rounded hover:bg-gray-100 cursor-pointer">
                         <x-fas-ellipsis-v class="w-4 h-4 text-gray-400 dark:text-gray-500 " />
                     </div>
                 </x-slot>
