@@ -152,4 +152,6 @@ return [
     'all_grade_levels' => 'Alle Jahrgangsstufen',
     'all_classes' => 'Alle Klassen',
     'all_subjects' => 'Alle Fächer',
+    'no_surveys_found' => 'Keine Umfragen gefunden',
+    'no_surveys_found_hint' => 'Versuchen Sie, Ihre Filter anzupassen oder erstellen Sie eine neue Umfrage.',
 ];
