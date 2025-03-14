@@ -3,6 +3,7 @@
 return [
     'admin_panel' => 'Admin-Panel',
     'users' => 'Benutzer',
+    'options' => 'Optionen',
     'invite_tokens' => 'Einladungs-Tokens',
     'users_management' => 'Benutzerverwaltung',
     'password_changed_weeks_ago' => 'Passwort vor :count Wochen geändert',
