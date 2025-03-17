@@ -7,7 +7,7 @@
     <div class="bg-gray-50 dark:bg-gray-800 flex flex-col gap-10 p-10">
         <!-- Users Section -->
         <section>
-            <a href="admin/users">
+            <a href="{{ route('admin.users') }}">
                 <div class="flex items-center gap-2 mb-4">
                     <h2 class="text-xl font-bold text-gray-700 dark:text-gray-200">{{ __('admin.users') }}</h2>
                     <x-fas-arrow-right class="w-4 h-4" />
