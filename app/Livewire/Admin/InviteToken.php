@@ -49,4 +49,13 @@ class InviteToken extends Component
 
         $this->token = $generatedToken;
     }
+
+    public function revokeToken(int $tokenId, RegisterKeyService $keyService)
+    {
+        $keyService->updateRegisterKey($tokenId, [
+            'expire_at' => Carbon::now()
+        ]);
+
+        $this->registerKeys = $keyService->getAll();
+    }
 }
