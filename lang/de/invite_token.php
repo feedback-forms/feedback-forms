@@ -9,4 +9,5 @@ return [
     'expires_in' => 'läuft ab in :time',
     'cancel' => 'Abbrechen',
     'create' => 'Erstellen',
+    'revoke' => 'Widerrufen'
 ];
