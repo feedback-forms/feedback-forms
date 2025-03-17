@@ -85,7 +85,7 @@ Route::middleware(['auth'])->group(function () {
             ->middleware(['can:admin'])
             ->name('admin.options');
 
-        Route::get('/admin/invite-token', App\Livewire\Admin\InviteToken::class)
+        Route::get('/invite-token', App\Livewire\Admin\InviteToken::class)
             ->middleware(['can:admin'])
             ->name('admin.invite-token');
     });   

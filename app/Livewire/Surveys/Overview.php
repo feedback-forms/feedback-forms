@@ -81,6 +81,6 @@ class Overview extends Component
     {
         return view('livewire.surveys.overview', [
             'surveys' => $this->surveys
-        ]);
+        ])->title(__('title.survey.overview'));
     }
 }
