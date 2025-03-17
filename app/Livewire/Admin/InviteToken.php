@@ -64,6 +64,13 @@ class InviteToken extends Component
     public function changeToCurrentToken(int $tokenId, RegisterKeyService $keyService)
     {
         $this->registerKey = $keyService->getRegisterKeyById($tokenId);
+        $this->token = $this->registerKey->code;
+
+        if (!$this->registerKey->expire_at) {
+            $this->duration = 1;
+
+            return;
+        }
 
         $now = Carbon::now();
         $this->duration = $now->diffInDays($this->registerKey->expire_at);
