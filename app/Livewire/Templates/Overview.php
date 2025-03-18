@@ -21,25 +21,25 @@ class Overview extends Component
             'templates.feedback.target' => [
                 'title' => __('templates.target_feedback'),
                 'description' => __('templates.target_feedback_description'),
-                'image' => 'img/preview.png',
+                'image' => 'img/bullseye-arrow.svg',
                 'route' => 'feedback/target'
             ],
             'templates.feedback.table' => [
                 'title' => __('templates.table_feedback'),
                 'description' => __('templates.table_feedback_description'),
-                'image' => 'img/preview.png',
+                'image' => 'img/table-list.svg',
                 'route' => 'feedback/table'
             ],
             'templates.feedback.smiley' => [
                 'title' => __('templates.smiley_feedback'),
                 'description' => __('templates.smiley_feedback_description'),
-                'image' => 'img/preview.png',
+                'image' => 'img/smile.svg',
                 'route' => 'feedback/smiley'
             ],
             'templates.feedback.checkbox' => [
                 'title' => __('templates.checkbox_feedback'),
                 'description' => __('templates.checkbox_feedback_description'),
-                'image' => 'img/preview.png',
+                'image' => 'img/checkbox.svg',
                 'route' => 'feedback/checkbox'
             ],
         ];

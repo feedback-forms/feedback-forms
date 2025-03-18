@@ -1,10 +1,10 @@
 @props([
-    'items' => []
+    'items' => [],
+    'showOptions' => false
 ])
 
 @php
-
-$show = fn($item) => $item->expire_at && !$item->expire_at->isPast();
+$show = fn($item) => $item->expire_at ? $item->expire_at->isFuture() : true;
 @endphp
 
 <div class="flex flex-col gap-4">
@@ -37,21 +37,31 @@ $show = fn($item) => $item->expire_at && !$item->expire_at->isPast();
                     {{ __('invite_token.created_time_ago', ['time' => $item->created_at->diffForHumans(null, true)]) }}
                 </span>
             </div>
-            <x-dropdown :contentClasses="''" :showDropdown="$show($item)">
-                <x-slot name="trigger">
-                    <div class="p-2 rounded hover:bg-gray-100 cursor-pointer">
-                        <x-fas-ellipsis-v class="w-4 h-4 text-gray-400 dark:text-gray-500 " />
-                    </div>
-                </x-slot>
 
-                <x-slot name="content">
-                    @if ($show($item))
+            @if ($showOptions)
+                <x-dropdown :contentClasses="'flex flex-col gap-1 p-2 bg-white dark:bg-gray-700'" :showDropdown="$show($item)">
+                    <x-slot name="trigger">
+                        <div class="p-2 rounded hover:bg-gray-100 cursor-pointer">
+                            <x-fas-ellipsis-v class="w-4 h-4 text-gray-400 dark:text-gray-500 "/>
+                        </div>
+                    </x-slot>
+
+                    <x-slot name="content">
                         <x-secondary-button class="w-full" wire:click="revokeToken({{$item->id}})">
                             {{__('invite_token.revoke')}}
                         </x-secondary-button>
-                    @endif
-                </x-slot>
-            </x-dropdown>
+
+                        <x-secondary-button
+                            class="w-full"
+                            wire:click="changeToCurrentToken({{$item->id}})"
+                            x-data=""
+                            x-on:click.prevent="$dispatch('open-modal', 'edit-invite_token')"
+                        >
+                            {{__('invite_token.change_duration')}}
+                        </x-secondary-button>
+                    </x-slot>
+                </x-dropdown>
+            @endif
         </div>
     @endforeach
 </div>
