@@ -132,13 +132,15 @@ class SurveyService
      * Generate a unique 8-character access key
      */
     private function generateUniqueAccessKey(): string
-    {
-        do {
-            $key = strtoupper(substr(md5(uniqid()), 0, 8));
-        } while (Feedback::where('accesskey', $key)->exists());
+{
+    do {
+        $key = strtoupper(substr(md5(uniqid()), 0, 8));
+        $formattedKey = substr($key, 0, 4) . '-' . substr($key, 4, 4);
 
-        return $key;
-    }
+    } while (Feedback::where('accesskey', $formattedKey)->exists());
+
+    return $formattedKey;
+}
 
     /**
      * Validate if survey can be answered (not expired, within limits)
