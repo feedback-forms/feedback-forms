@@ -62,7 +62,7 @@ Route::middleware(['auth'])->group(function () {
         // Use resource route but exclude 'edit' and 'index' to avoid conflicts with Livewire
         Route::resource('/', SurveyController::class)->except(['edit', 'index']);
 
-        // Survey statistics route 
+        // Survey statistics route
         Route::get('/{survey}/statistics', [App\Http\Controllers\SurveyStatisticsController::class, 'show'])
             ->name('surveys.statistics');
 
@@ -88,7 +88,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/invite-token', App\Livewire\Admin\InviteToken::class)
             ->middleware(['can:admin'])
             ->name('admin.invite-token');
-    });   
+    });
 
 
     // ------ PROFILE  ------ \\

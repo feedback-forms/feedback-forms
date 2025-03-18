@@ -72,6 +72,11 @@ new class extends Component
                                                      :active="request()->routeIs('admin.invite-token')">
                                         {{ __('admin.invite_tokens') }}
                                     </x-dropdown-link>
+
+                                    <x-dropdown-link :href="route('admin.options')" wire:navigate
+                                                     :active="request()->routeIs('admin.options')">
+                                        {{ __('admin.options') }}
+                                    </x-dropdown-link>
                                 </x-slot>
                             </x-dropdown>
                         </div>
@@ -155,6 +160,10 @@ new class extends Component
 
                     <x-responsive-nav-link :href="route('admin.invite-token')" wire:navigate :active="request()->routeIs('admin.invite-token')">
                         {{ __('admin.invite_tokens') }}
+                    </x-responsive-nav-link>
+
+                    <x-responsive-nav-link :href="route('admin.options')" wire:navigate :active="request()->routeIs('admin.options')">
+                        {{ __('admin.options') }}
                     </x-responsive-nav-link>
                 </details>
             @endcan
