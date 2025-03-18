@@ -85,14 +85,28 @@ Route::middleware(['auth'])->group(function () {
             ->middleware(['can:admin'])
             ->name('admin.options');
 
-        Route::get('/admin/invite-token', App\Livewire\Admin\InviteToken::class)
+        Route::get('/invite-token', App\Livewire\Admin\InviteToken::class)
             ->middleware(['can:admin'])
             ->name('admin.invite-token');
+
+        // Survey Aggregation Dashboard
+        Route::get('/survey-aggregation', App\Livewire\Admin\SurveyAggregation::class)
+            ->middleware(['can:admin'])
+            ->name('admin.survey-aggregation');
     });
 
 
     // ------ PROFILE  ------ \\
     Route::view('profile', 'profile')->name('profile');
 });
+
+// Test routes for debugging
+Route::get('/test-translation', function () {
+    return view('test-translation');
+});
+
+Route::get('/test-aggregation', [\App\Http\Controllers\TestController::class, 'testAggregation']);
+Route::get('/test-question-categories', [\App\Http\Controllers\TestController::class, 'questionCategories']);
+Route::get('/test-tab-categories', [\App\Http\Controllers\TestController::class, 'testTabCategories']);
 
 require __DIR__.'/auth.php';

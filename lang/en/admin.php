@@ -19,5 +19,47 @@ return [
     'temporary_password_for_user' => 'Temporary password for :name',
     'temporary_password_notice' => 'Please share this password with the user securely. The password will only be displayed once.',
     'temporary_password_one_time_use' => 'Important: This is a one-time temporary password. The user should change it after the first successful login.',
-    'edit_options' => 'Edit options'
+    'edit_options' => 'Edit options',
+
+    // Survey Aggregation
+    'survey_aggregation' => 'Survey Aggregation',
+    'class' => 'Class',
+    'department' => 'Department',
+    'subject' => 'Subject',
+    'school_year' => 'School Year',
+    'select_category' => 'Select Category',
+    'select_category_placeholder' => 'Select a category',
+    'select_value' => 'Select Value',
+    'select_value_placeholder' => 'Select a value',
+    'select_filters_message' => 'Select a category and value to view aggregated survey results',
+    'error' => 'Error',
+    'no_values_available' => 'No values available for this category',
+    'error_loading_values' => 'Error loading values',
+    'threshold_not_met' => 'Not enough responses',
+    'threshold_not_met_description' => 'There are only :count responses for :category ":value". A minimum of :required responses is required to display aggregated results.',
+    'visualization_placeholder' => 'Data visualization will appear here when enough responses are collected',
+    'rating_questions' => 'Rating Questions',
+    'checkbox_questions' => 'Checkbox Questions',
+    'responses' => 'Responses',
+    'average' => 'Average',
+    'total_responses' => 'Total Responses',
+    'no_question_data' => 'No question data available',
+    'no_question_data_for_category' => 'No data available for this category',
+    'information' => 'Information',
+    'text_answers_excluded' => 'Free text answers are excluded from aggregation to maintain respondent anonymity.',
+    'aggregation_error' => 'An error occurred while aggregating the data',
+    'min' => 'Min',
+    'responses_received' => 'responses received',
+
+    // Categories for tabs
+    'category' => [
+        'general' => 'General',
+        'teacher_behavior' => 'Teacher Behavior',
+        'teaching_quality' => 'Teaching Quality',
+        'classroom_atmosphere' => 'Classroom Atmosphere',
+        'learning_materials' => 'Learning Materials',
+        'feedback' => 'Feedback',
+        'communication' => 'Communication',
+        'assessment' => 'Assessment'
+    ],
 ];
