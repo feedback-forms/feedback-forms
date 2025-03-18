@@ -47,6 +47,7 @@
                         $isTableSurvey = false;
                         $tableCategories = [];
                         $isTargetTemplate = false;
+                        $isSmileyTemplate = false;
 
                         // Process the statistics data
                         foreach($statisticsData as $stat) {
@@ -62,6 +63,11 @@
                             // Check for target type statistics
                             if ($stat['template_type'] === 'target') {
                                 $isTargetTemplate = true;
+                            }
+
+                            // Check for smiley type statistics
+                            if ($stat['template_type'] === 'smiley') {
+                                $isSmileyTemplate = true;
                             }
                         }
 
@@ -121,9 +127,26 @@
                             @include('surveys.statistics.target_survey')
                         @endif
 
+                        <!-- Handle smiley surveys -->
+                        @if($isSmileyTemplate)
+                            @include('surveys.statistics.smiley_survey')
+                        @endif
+
                         <!-- Display statistics for non-table surveys -->
-                        @if(!$isTableSurvey)
-                            @include('surveys.statistics.default_survey')
+                        @if(!$isTableSurvey && !$isSmileyTemplate)
+                            @php
+                                // Filter out Open Feedback from statistics data if it's already displayed in the target tabs
+                                $filteredStatisticsData = $statisticsData;
+                                if ($isTargetTemplate) {
+                                    $filteredStatisticsData = collect($statisticsData)->filter(function($stat) {
+                                        // Skip Open Feedback questions for target templates since they're shown in the tab
+                                        return !(isset($stat['question']) && $stat['question'] &&
+                                                $stat['template_type'] === 'text' &&
+                                                $stat['question']->question === 'Open Feedback');
+                                    })->toArray();
+                                }
+                            @endphp
+                            @include('surveys.statistics.default_survey', ['statisticsData' => $filteredStatisticsData])
                         @endif
                     @else
                         <div class="p-6 border rounded-lg bg-yellow-50 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">

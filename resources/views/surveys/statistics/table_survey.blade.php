@@ -63,63 +63,96 @@
                                             }
                                         }
                                     }
+
+                                    // Check if this is the Open Feedback category
+                                    $isOpenFeedbackCategory = false;
+                                    $categoryTitle = $category['title'] ?? '';
+                                    if ($categoryTitle === 'Offenes Feedback' || $categoryTitle === 'Open Feedback') {
+                                        $isOpenFeedbackCategory = true;
+                                    }
                                 @endphp
 
-                                <!-- Questions with Responses -->
-                                <div class="overflow-x-auto rounded-lg shadow-md mb-4">
-                                    <table class="min-w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700">
-                                        <thead>
-                                            <tr>
-                                                <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-left font-semibold text-gray-700 dark:text-gray-300">{{ __('surveys.question') }}</th>
-                                                <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-center font-semibold text-gray-700 dark:text-gray-300">{{ __('surveys.average_rating_short') }}</th>
-                                                <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-center font-semibold text-gray-700 dark:text-gray-300">{{ __('surveys.responses') }}</th>
-                                                <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-center font-semibold text-gray-700 dark:text-gray-300 hidden sm:table-cell">{{ __('surveys.distribution') }}</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($category['questions'] as $questionStat)
-                                                @if($questionStat['template_type'] === 'range' &&
-                                                   isset($questionStat['data']['average_rating']) &&
-                                                   is_numeric($questionStat['data']['average_rating']))
-                                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-600">
-                                                        <td class="py-3 px-4 border-b border-gray-300 dark:border-gray-700">
-                                                            {{ $questionStat['question']->question }}
-                                                        </td>
-                                                        <td class="py-3 px-4 border-b border-gray-300 dark:border-gray-700 text-center">
-                                                            <span class="text-blue-500 font-medium">{{ $questionStat['data']['average_rating'] }}</span>
-                                                        </td>
-                                                        <td class="py-3 px-4 border-b border-gray-300 dark:border-gray-700 text-center">
-                                                            {{ $questionStat['data']['submission_count'] }}
-                                                        </td>
-                                                        <td class="py-3 px-4 border-b border-gray-300 dark:border-gray-700 hidden sm:table-cell">
-                                                            @include('surveys.statistics.components.rating_distribution', [
-                                                                'ratingCounts' => $questionStat['data']['rating_counts'] ?? [],
-                                                                'compactView' => true,
-                                                                'maxValue' => $maxRatingCount
-                                                            ])
-                                                        </td>
-                                                    </tr>
-                                                @elseif(($questionStat['template_type'] === 'text' || $questionStat['template_type'] === 'textarea') &&
-                                                      isset($questionStat['data']['response_count']) &&
-                                                      $questionStat['data']['response_count'] > 0)
-                                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-600">
-                                                        <td class="py-3 px-4 border-b border-gray-300 dark:border-gray-700" colspan="4">
-                                                            <div class="mb-2 font-medium">{{ $questionStat['question']->question }}</div>
-                                                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('surveys.text_responses_count', ['count' => $questionStat['data']['response_count']]) }}</p>
-                                                            @if(isset($questionStat['data']['responses']))
-                                                                <div class="mt-2 space-y-2">
-                                                                    @foreach($questionStat['data']['responses'] as $response)
-                                                                        <div class="p-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded">{{ $response }}</div>
-                                                                    @endforeach
+                                @if($isOpenFeedbackCategory)
+                                    <!-- Special display for Open Feedback -->
+                                    <div class="space-y-4">
+                                        @foreach($category['questions'] as $questionStat)
+                                            @if(($questionStat['template_type'] === 'text' || $questionStat['template_type'] === 'textarea') &&
+                                                isset($questionStat['data']['response_count']) &&
+                                                $questionStat['data']['response_count'] > 0)
+                                                <div class="mb-6">
+                                                    <h6 class="font-medium text-gray-800 dark:text-gray-200 mb-2">{{ $questionStat['question']->question }}</h6>
+                                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ __('surveys.text_responses_count', ['count' => $questionStat['data']['response_count']]) }}</p>
+
+                                                    @if(isset($questionStat['data']['responses']))
+                                                        <div class="space-y-3 rounded-lg shadow-md p-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700">
+                                                            @foreach($questionStat['data']['responses'] as $response)
+                                                                <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                                                                    {{ $response }}
                                                                 </div>
-                                                            @endif
-                                                        </td>
-                                                    </tr>
-                                                @endif
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <!-- Standard table for other categories -->
+                                    <div class="overflow-x-auto rounded-lg shadow-md mb-4">
+                                        <table class="min-w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700">
+                                            <thead>
+                                                <tr>
+                                                    <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-left font-semibold text-gray-700 dark:text-gray-300">{{ __('surveys.question') }}</th>
+                                                    <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-center font-semibold text-gray-700 dark:text-gray-300">{{ __('surveys.average_rating_short') }}</th>
+                                                    <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-center font-semibold text-gray-700 dark:text-gray-300">{{ __('surveys.responses') }}</th>
+                                                    <th class="py-3 px-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-center font-semibold text-gray-700 dark:text-gray-300 hidden sm:table-cell">{{ __('surveys.distribution') }}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($category['questions'] as $questionStat)
+                                                    @if($questionStat['template_type'] === 'range' &&
+                                                       isset($questionStat['data']['average_rating']) &&
+                                                       is_numeric($questionStat['data']['average_rating']))
+                                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                            <td class="py-3 px-4 border-b border-gray-300 dark:border-gray-700">
+                                                                {{ $questionStat['question']->question }}
+                                                            </td>
+                                                            <td class="py-3 px-4 border-b border-gray-300 dark:border-gray-700 text-center">
+                                                                <span class="text-blue-500 font-medium">{{ $questionStat['data']['average_rating'] }}</span>
+                                                            </td>
+                                                            <td class="py-3 px-4 border-b border-gray-300 dark:border-gray-700 text-center">
+                                                                {{ $questionStat['data']['submission_count'] }}
+                                                            </td>
+                                                            <td class="py-3 px-4 border-b border-gray-300 dark:border-gray-700 hidden sm:table-cell">
+                                                                @include('surveys.statistics.components.rating_distribution', [
+                                                                    'ratingCounts' => $questionStat['data']['rating_counts'] ?? [],
+                                                                    'compactView' => true,
+                                                                    'maxValue' => $maxRatingCount
+                                                                ])
+                                                            </td>
+                                                        </tr>
+                                                    @elseif(($questionStat['template_type'] === 'text' || $questionStat['template_type'] === 'textarea') &&
+                                                          isset($questionStat['data']['response_count']) &&
+                                                          $questionStat['data']['response_count'] > 0)
+                                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                            <td class="py-3 px-4 border-b border-gray-300 dark:border-gray-700" colspan="4">
+                                                                <div class="mb-2 font-medium">{{ $questionStat['question']->question }}</div>
+                                                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('surveys.text_responses_count', ['count' => $questionStat['data']['response_count']]) }}</p>
+                                                                @if(isset($questionStat['data']['responses']))
+                                                                    <div class="mt-2 space-y-2">
+                                                                        @foreach($questionStat['data']['responses'] as $response)
+                                                                            <div class="p-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded">{{ $response }}</div>
+                                                                        @endforeach
+                                                                    </div>
+                                                                @endif
+                                                            </td>
+                                                        </tr>
+                                                    @endif
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @endif
                             @else
                                 <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg mb-4">
                                     <p class="text-gray-600 dark:text-gray-300">{{ __('surveys.no_category_responses') }}</p>
