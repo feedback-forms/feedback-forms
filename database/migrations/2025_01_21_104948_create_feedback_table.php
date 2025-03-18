@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(User::class);
             $table->foreignIdFor(Feedback_template::class);
-            $table->string('accesskey', 8);
+            $table->string('accesskey', 9);
             $table->integer('limit');
             $table->integer('already_answered');
             $table->date('expire_date');

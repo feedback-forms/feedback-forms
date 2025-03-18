@@ -129,17 +129,18 @@
                                 </div>
                             </div>
                         @endif
-
+                        
                         <form method="POST" action="{{ route('surveys.access.submit') }}" id="surveyForm">
                             @csrf
                             <div class="flex flex-row gap-2 justify-center">
                                 <x-text-input id="token"
-                                              class="border-t-0 border-l-0 border-r-0 border-b-2 bg-transparent !shadow-none rounded-none focus:ring-0 focus:!border-gray-500 dark:focus:!border-gray-500 text-center"
+                                              class="codeInput border-t-0 border-l-0 border-r-0 border-b-2 bg-transparent !shadow-none rounded-none focus:ring-0 focus:!border-gray-500 dark:focus:!border-gray-500 text-center"
                                               placeholder="{{__('welcome.key')}}" type="text" name="token"
                                               :value="old('token') ?? request()->query('token')"
                                               required
                                               autofocus
                                               autocomplete="off"
+                                              maxlength="9"
                                 />
                                 <x-primary-button>
                                     <x-fas-arrow-right class="w-4 h-4"/>
@@ -147,6 +148,14 @@
                             </div>
                             <p class="mt-4 text-sm text-center text-gray-600 dark:text-gray-400">{{ __('surveys.enter_access_key_hint') }}</p>
                         </form>
+
+                        <script>
+                            document.querySelector(".codeInput").addEventListener("input", function (e) {
+                                let value = e.target.value.replace(/-/g, "");
+                                value = value.match(/.{1,4}/g)?.join("-") || value;
+                                e.target.value = value;
+                            });
+                        </script>
 
                         <!-- Auto-submit form if token is in URL -->
                         <script>
