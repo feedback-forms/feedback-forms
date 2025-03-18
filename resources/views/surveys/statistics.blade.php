@@ -1,4 +1,8 @@
 <x-app-layout>
+    <x-slot name="title">
+        {{ __('title.survey.statistics', ['name' => $survey->name ?? $survey->feedback_template->title]) }}
+    </x-slot>
+
     <x-slot name="header">
         <div class="bg-indigo-100 dark:bg-indigo-900 py-4 px-6 rounded-md shadow-md">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">

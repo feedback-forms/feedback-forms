@@ -1,4 +1,8 @@
 <x-survey-layout>
+    <x-slot name="title">
+        {{__('title.respond')}}
+    </x-slot>
+
     <style>
         path:hover {
             fill: rgba(59, 130, 246, var(--hover-opacity)) !important;

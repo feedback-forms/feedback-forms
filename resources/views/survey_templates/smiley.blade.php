@@ -1,5 +1,9 @@
 <x-app-layout>
-@if ($errors->any())
+    <x-slot name="title">
+        {{ __('title.survey.smiley') }}
+    </x-slot>
+
+    @if ($errors->any())
     <div class="alert alert-danger">
         <ul>
             @foreach ($errors->all() as $error)

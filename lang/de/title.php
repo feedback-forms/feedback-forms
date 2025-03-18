@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 return [
     'profile' => 'Profil bearbeiten',
@@ -11,10 +11,21 @@ return [
 
     'survey' => [
         'overview' => 'Umfragen Übersicht',
+        'edit' => 'Umfrage ":name" bearbeiten',
+        'statistics' => 'Statistik von ":name"',
+        'create' => 'Umfrage erstellen',
+        'smiley' => 'Smiley',
+        'target' => 'Zielscheibe',
+        'table' => 'Tabelle'
     ],
 
     'template' => [
         'choose' => 'Vorlage auswählen',
     ],
 
+    'respond' => 'Umfrage ausfüllen',
+    'welcome' => 'Willkommen bei :name!',
+    'verify' => 'Verifizierung',
+    'login' => 'Login',
+    'register' => 'Registrieren',
 ];

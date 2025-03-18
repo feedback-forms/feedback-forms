@@ -1,4 +1,8 @@
 <x-survey-layout>
+    <x-slot name="title">
+        {{__('title.respond')}}
+    </x-slot>
+
     @if ($errors->any())
         <div class="alert alert-danger">
             <ul>
