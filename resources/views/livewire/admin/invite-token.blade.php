@@ -16,7 +16,7 @@
     </div>
 
     <div class="bg-gray-50 dark:bg-gray-800 flex flex-col gap-6 p-10">
-        <x-invite-token-list :items="$registerKeys" />
+        <x-invite-token-list :items="$registerKeys" :showOptions="true" />
     </div>
 
     <x-modal name="add-invite_token" focusable>
@@ -35,8 +35,10 @@
                 <div class="flex justify-between dark:text-gray-100">
                     <span>{{__('invite_token.duration')}}</span>
 
-                    <x-text-input wire:model="duration" type="number" name="duration" required min="1" />
+                    <x-text-input wire:model.live="duration" type="number" name="duration" required min="1" />
                 </div>
+
+                <x-input-error :messages="$errors->get('duration')" class="mt-2" />
             </div>
 
             <div class="mt-6 flex justify-end">
@@ -46,6 +48,43 @@
 
                 <x-primary-button class="ms-3" x-on:click="$dispatch('close')">
                     {{ __('invite_token.create') }}
+                </x-primary-button>
+            </div>
+        </form>
+    </x-modal>
+
+    <x-modal name="edit-invite_token" focusable>
+        <form wire:submit="changeToken" class="p-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                {{ __('invite_token.change_duration') }}
+            </h2>
+
+            <div class="flex flex-col gap-4 mt-6">
+                <div class="flex justify-between dark:text-gray-100">
+                    <span>{{__('invite_token.token')}}</span>
+                    <span class="font-mono">{{ $registerKey?->code }}</span>
+                </div>
+
+                <div class="flex justify-between dark:text-gray-100">
+                    <span>{{__('invite_token.duration')}}</span>
+
+                    <x-text-input wire:model.live="duration" type="number" name="duration" required min="1" />
+                </div>
+
+                <x-input-error :messages="$errors->get('duration')" class="mt-2" />
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <x-secondary-button x-on:click="$dispatch('close')">
+                    {{ __('invite_token.cancel') }}
+                </x-secondary-button>
+
+                <x-primary-button
+                    class="ms-3"
+                    x-on:click="$dispatch('close')"
+                    :disabled="$errors->get('duration')"
+                >
+                    {{ __('invite_token.edit') }}
                 </x-primary-button>
             </div>
         </form>

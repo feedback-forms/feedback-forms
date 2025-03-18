@@ -25,4 +25,14 @@ class RegisterKeyService
     {
         return Registerkey::where('code', $code)->first();
     }
+
+    public function updateRegisterKey(int $id, array $data)
+    {
+        return Registerkey::find($id)->update($data);
+    }
+
+    public function getRegisterKeyById(int $id): ?Registerkey
+    {
+        return Registerkey::find($id);
+    }
 }
