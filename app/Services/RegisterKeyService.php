@@ -30,4 +30,9 @@ class RegisterKeyService
     {
         return Registerkey::find($id)->update($data);
     }
+
+    public function getRegisterKeyById(int $id): ?Registerkey
+    {
+        return Registerkey::find($id);
+    }
 }

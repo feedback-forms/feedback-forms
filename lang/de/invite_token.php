@@ -9,5 +9,7 @@ return [
     'expires_in' => 'läuft ab in :time',
     'cancel' => 'Abbrechen',
     'create' => 'Erstellen',
-    'revoke' => 'Widerrufen'
+    'revoke' => 'Widerrufen',
+    'change_duration' => 'Dauer ändern',
+    'edit' => 'Bearbeiten',
 ];
