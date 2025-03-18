@@ -183,11 +183,20 @@ class SurveyAggregation extends Component
                 $this->selectedValue
             );
 
-            // Set first tab as active if threshold met and categories exist
+            // Set active tab if threshold met and categories exist
             if ($this->aggregatedData['threshold_met'] &&
                 isset($this->aggregatedData['categories']) &&
                 !empty($this->aggregatedData['categories'])) {
-                $this->activeTab = array_key_first($this->aggregatedData['categories']);
+
+                // If target_feedback exists in categories, prioritize showing it
+                if (isset($this->aggregatedData['categories']['target_feedback'])) {
+                    $this->activeTab = 'target_feedback';
+                    Log::debug("Set target_feedback as the active tab");
+                } else {
+                    // Otherwise, use the first tab
+                    $this->activeTab = array_key_first($this->aggregatedData['categories']);
+                    Log::debug("Set {$this->activeTab} as the active tab (first available)");
+                }
             }
 
             Log::debug("Aggregated data loaded", [

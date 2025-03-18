@@ -220,9 +220,21 @@
 
                             @if(empty($category['results']) || (empty($category['results']['range']) && empty($category['results']['checkboxes'])))
                                 <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-8 text-center">
-                                    <p class="text-gray-500 dark:text-gray-400">
-                                        {{ __('admin.no_question_data_for_category') }}
-                                    </p>
+                                    @if($categoryId === 'target_feedback')
+                                        <div class="flex flex-col items-center">
+                                            <x-fas-comment-alt class="w-16 h-16 text-blue-500 mb-4" />
+                                            <p class="text-gray-600 dark:text-gray-300 max-w-lg mx-auto">
+                                                {{ __('admin.text_answers_excluded') }}
+                                            </p>
+                                            <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                                                {{ __('admin.target_feedback_note', ['default' => 'Textliche Rückmeldungen werden hier nicht angezeigt, um die Anonymität zu wahren.']) }}
+                                            </p>
+                                        </div>
+                                    @else
+                                        <p class="text-gray-500 dark:text-gray-400">
+                                            {{ __('admin.no_question_data_for_category') }}
+                                        </p>
+                                    @endif
                                 </div>
                             @endif
                         </div>

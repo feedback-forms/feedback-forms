@@ -172,7 +172,14 @@ class SurveyAggregationService
             // Set the active tab if we have categories
             $activeTab = null;
             if ($hasCategories) {
-                $activeTab = array_key_first($aggregatedResults['categories']);
+                // Prioritize target_feedback as the active tab if it exists
+                if (isset($aggregatedResults['categories']['target_feedback'])) {
+                    $activeTab = 'target_feedback';
+                    Log::debug("Setting target_feedback as active tab");
+                } else {
+                    $activeTab = array_key_first($aggregatedResults['categories']);
+                    Log::debug("Setting first available category as active tab: {$activeTab}");
+                }
             }
 
             Log::debug("Aggregated data loaded", [
@@ -311,16 +318,20 @@ class SurveyAggregationService
                 ]);
             }
 
-            // Only add category if it has results
-            if (!empty($categoryResults)) {
+            // Only add category if it has results or if it's the target_feedback category which should always be shown
+            if (!empty($categoryResults) || $categoryName === 'target_feedback') {
                 $aggregated['categories'][$categoryName] = [
                     'name' => $categoryName,
                     'results' => $categoryResults
                 ];
-                Log::debug("Added category with results: {$categoryName}", [
-                    'range_count' => isset($categoryResults['range']) ? count($categoryResults['range']) : 0,
-                    'checkbox_count' => isset($categoryResults['checkboxes']) ? count($categoryResults['checkboxes']) : 0
-                ]);
+                if (!empty($categoryResults)) {
+                    Log::debug("Added category with results: {$categoryName}", [
+                        'range_count' => isset($categoryResults['range']) ? count($categoryResults['range']) : 0,
+                        'checkbox_count' => isset($categoryResults['checkboxes']) ? count($categoryResults['checkboxes']) : 0
+                    ]);
+                } else {
+                    Log::debug("Added category without results (special case): {$categoryName}");
+                }
             } else {
                 Log::debug("Category has no results, skipping: {$categoryName}");
             }
@@ -398,168 +409,200 @@ class SurveyAggregationService
      */
     private function categorizeQuestions(Collection $questions): Collection
     {
-        // Define category patterns and mappings
-        $categoryPatterns = [
-            // Behavior category (Verhalten des Lehrers)
-            'behavior' => [
-                '... ungeduldig',
-                '... sicher im Auftreten',
-                '... freundlich',
-                '... energisch',
-                '... tatkräftig',
-                '... aufgeschlossen',
-                'Der Lehrer achtet auf Ruhe'
-            ],
-
-            // Statements category (Bewerten Sie folgende Aussagen)
-            'statements' => [
-                '... bevorzugt',
-                '... nimmt die',
-                '... ermutigt',
-                '... entscheidet',
-                '... gesteht',
-                'Die Fragen und Beiträge'
-            ],
-
-            // Quality category (Wie ist der Unterricht?)
-            'quality' => [
-                'Die Ziele des Unterrichts',
-                'Der Lehrer redet',
-                'Der Lehrer schweift',
-                'Die Sprache des Lehrers',
-                'Der Unterricht ist',
-                'Unterrichtsmaterialien',
-                'Der Stoff wird'
-            ],
-
-            // Claims category (Bewerten Sie folgende Behauptungen)
-            'claims' => [
-                'Die Themen der Schulaufgaben',
-                'Der Schwierigkeitsgrad',
-                'Die Bewertungen sind'
-            ],
-
-            // Feedback category (Zielscheiben Feedback)
-            'feedback' => [
-                'Das hat mir besonders',
-                'Das hat mir nicht',
-                'Verbesserungsvorschläge',
-                'Open Feedback'
-            ]
+        // Define our final categories and their display order
+        $finalCategories = [
+            'behavior',          // Verhalten des Lehrers
+            'statements',        // Bewerten Sie folgende Aussagen
+            'quality',           // Wie ist der Unterricht?
+            'claims',            // Bewerten Sie folgende Behauptungen
+            'target_feedback'    // Zielscheiben Feedback
         ];
 
-        // Map for questions about learning and teaching
-        $teachingQualityKeywords = [
-            'Unterricht', 'Lehrkraft', 'Lehrer', 'Lernklima', 'lernen', 'Hintergrundwissen', 'vorbereitet'
-        ];
+        // Initialize categories collection with ordered keys
+        $questionsByCategory = collect();
+        foreach ($finalCategories as $category) {
+            $questionsByCategory[$category] = collect();
+        }
 
-        // Initialize categories collection
-        $questionsByCategory = collect([
-            'behavior' => collect([]),
-            'statements' => collect([]),
-            'quality' => collect([]),
-            'claims' => collect([]),
-            'feedback' => collect([])
+        // Log all the questions for diagnostic purposes
+        Log::debug("Questions for categorization", [
+            'total_count' => $questions->count(),
+            'feedback_ids' => $questions->pluck('feedback_id')->unique()->toArray()
         ]);
 
-        // Find potential statements category questions
-        Log::debug("Looking for potential statements category questions", [
-            'questions' => $questions->map(function($q) {
-                return [
-                    'id' => $q->id,
-                    'text' => $q->question,
-                    'has_responses' => $q->results->count() > 0
-                ];
-            })->toArray()
+        // Check for feedback templates used with target feedback - this is to help us
+        // identify which feedbacks are using the target feedback format
+        $targetFeedbackTemplateIds = $questions->map(function($q) {
+            return $q->feedback_template &&
+                   (stripos($q->feedback_template->template ?? '', 'target') !== false ||
+                   stripos($q->feedback_template->name ?? '', 'zielscheibe') !== false) ?
+                   $q->feedback_template->id : null;
+        })->filter()->unique()->values()->toArray();
+
+        // Get feedback ids that use target feedback templates
+        $targetFeedbackIds = $questions->filter(function($q) use ($targetFeedbackTemplateIds) {
+            return in_array($q->feedback_template_id ?? 0, $targetFeedbackTemplateIds);
+        })->pluck('feedback_id')->unique()->values()->toArray();
+
+        Log::debug("Target feedback information", [
+            'template_ids' => $targetFeedbackTemplateIds,
+            'feedback_ids' => $targetFeedbackIds
         ]);
 
         // Process each question
         foreach ($questions as $question) {
             $questionText = $question->question;
             $questionType = $question->question_template->type ?? 'unknown';
+            $feedbackId = $question->feedback_id;
             $assignedCategory = null;
 
-            // Try to match question text to category patterns
-            foreach ($categoryPatterns as $category => $patterns) {
-                foreach ($patterns as $pattern) {
-                    if (stripos($questionText, $pattern) !== false) {
-                        $assignedCategory = $category;
-                        Log::debug("Assigned question to category '{$category}'", [
-                            'question' => $questionText,
-                            'id' => $question->id,
-                            'matched_prefix' => $pattern
-                        ]);
-                        break 2; // Break both loops when a match is found
-                    }
-                }
+            // First check if this question belongs to a target feedback form
+            if (in_array($feedbackId, $targetFeedbackIds)) {
+                $assignedCategory = 'target_feedback';
+                Log::debug("Assigned to target_feedback based on feedback template", [
+                    'question' => $questionText,
+                    'id' => $question->id,
+                    'feedback_id' => $feedbackId
+                ]);
             }
-
-            // If no match yet, check if it's about teaching quality
-            if (!$assignedCategory && $questionType !== 'text') {
-                foreach ($teachingQualityKeywords as $keyword) {
-                    if (stripos($questionText, $keyword) !== false) {
-                        $assignedCategory = 'quality';
-                        Log::debug("Assigned question to teaching quality category", [
-                            'question' => $questionText,
-                            'id' => $question->id,
-                            'matched_keyword' => $keyword
-                        ]);
-                        break;
-                    }
-                }
-            }
-
-            // Default category for text type questions is feedback
-            if (!$assignedCategory && $questionType === 'text') {
-                $assignedCategory = 'feedback';
-                Log::debug("Assigned text question to feedback category", [
+            // Special case for text type questions (always target_feedback)
+            else if ($questionType === 'text') {
+                $assignedCategory = 'target_feedback';
+                Log::debug("Assigned text question to target_feedback", [
                     'question' => $questionText,
                     'id' => $question->id
                 ]);
             }
-
-            // If still no match, put in general behavior category
-            if (!$assignedCategory) {
+            // Check for behavior questions
+            else if (preg_match('/^\.\.\./', $questionText) ||
+                     stripos($questionText, 'Der Lehrer achtet auf Ruhe') !== false) {
                 $assignedCategory = 'behavior';
-                Log::debug("No category match, assigned to default behavior category", [
+                Log::debug("Assigned to behavior category", [
                     'question' => $questionText,
                     'id' => $question->id
                 ]);
+            }
+            // Check for statement questions
+            else if (stripos($questionText, 'bevorzugt manche Schülerinnen') !== false ||
+                     stripos($questionText, 'nimmt die Schülerinnen') !== false ||
+                     stripos($questionText, 'ermutigt und lobt') !== false ||
+                     stripos($questionText, 'entscheidet immer') !== false ||
+                     stripos($questionText, 'gesteht eigene Fehler') !== false ||
+                     stripos($questionText, 'Die Fragen und Beiträge') !== false) {
+                $assignedCategory = 'statements';
+                Log::debug("Assigned to statements category", [
+                    'question' => $questionText,
+                    'id' => $question->id
+                ]);
+            }
+            // Check for quality questions
+            else if (stripos($questionText, 'Die Ziele des Unterrichts') !== false ||
+                     stripos($questionText, 'Der Lehrer redet') !== false ||
+                     stripos($questionText, 'Der Lehrer schweift') !== false ||
+                     stripos($questionText, 'Die Sprache des Lehrers') !== false ||
+                     stripos($questionText, 'Der Unterricht ist') !== false ||
+                     stripos($questionText, 'Unterrichtsmaterialien') !== false ||
+                     stripos($questionText, 'Der Stoff wird') !== false) {
+                $assignedCategory = 'quality';
+                Log::debug("Assigned to quality category", [
+                    'question' => $questionText,
+                    'id' => $question->id
+                ]);
+            }
+            // Check for claims questions
+            else if (stripos($questionText, 'Die Themen der Schulaufgaben') !== false ||
+                     stripos($questionText, 'Der Schwierigkeitsgrad') !== false ||
+                     stripos($questionText, 'Die Bewertungen sind') !== false) {
+                $assignedCategory = 'claims';
+                Log::debug("Assigned to claims category", [
+                    'question' => $questionText,
+                    'id' => $question->id
+                ]);
+            }
+            // Use generic heuristics if still not assigned
+            else {
+                // Special patterns for target feedback
+                if (stripos($questionText, 'Ich lerne im Unterricht viel') !== false ||
+                    stripos($questionText, 'gut vorbereitet') !== false ||
+                    stripos($questionText, 'Interesse an') !== false ||
+                    stripos($questionText, 'Lernklima') !== false ||
+                    stripos($questionText, 'Notengebung') !== false ||
+                    stripos($questionText, 'konnte dem Unterricht folgen') !== false ||
+                    stripos($questionText, 'vielfältig gestaltet') !== false ||
+                    stripos($questionText, 'Hintergrundwissen') !== false ||
+                    stripos($questionText, 'Das hat mir') !== false ||
+                    stripos($questionText, 'Verbesserungsvorschläge') !== false ||
+                    stripos($questionText, 'Open Feedback') !== false ||
+                    stripos($questionText, 'Zielscheiben') !== false ||
+                    stripos($questionText, 'Was gefällt dir') !== false) {
+
+                    $assignedCategory = 'target_feedback';
+                    Log::debug("Assigned to target_feedback based on text pattern", [
+                        'question' => $questionText,
+                        'id' => $question->id
+                    ]);
+                }
+                // Assign based on keywords for other categories
+                else if (stripos($questionText, 'Lehrer') !== false ||
+                         stripos($questionText, 'Lehrkraft') !== false) {
+                    if (stripos($questionText, 'Unterricht') !== false) {
+                        $assignedCategory = 'quality';
+                    } else {
+                        $assignedCategory = 'behavior';
+                    }
+                    Log::debug("Assigned based on teacher/teaching keyword", [
+                        'question' => $questionText,
+                        'id' => $question->id,
+                        'category' => $assignedCategory
+                    ]);
+                }
+                else if (stripos($questionText, 'Unterricht') !== false) {
+                    $assignedCategory = 'quality';
+                    Log::debug("Assigned to quality based on 'Unterricht' keyword", [
+                        'question' => $questionText,
+                        'id' => $question->id
+                    ]);
+                }
+                // Fallback - if all else fails
+                else {
+                    $assignedCategory = 'target_feedback';  // Changed default to target_feedback
+                    Log::debug("No category match, assigned to default target_feedback", [
+                        'question' => $questionText,
+                        'id' => $question->id
+                    ]);
+                }
             }
 
             // Add to the appropriate category collection
             if (isset($questionsByCategory[$assignedCategory])) {
                 $questionsByCategory[$assignedCategory]->push($question);
             } else {
-                // Create category if it doesn't exist yet
+                // Create category if it doesn't exist yet (should not happen with our predefined list)
                 $questionsByCategory[$assignedCategory] = collect([$question]);
             }
         }
 
-        // Remove empty categories
+        // Keep only categories with questions
         $filteredCategories = $questionsByCategory->filter(function ($questions) {
             return $questions->count() > 0;
         });
 
-        // Log category summary before filtering
-        Log::debug("Category summary before filtering empty categories", [
-            'categories' => $questionsByCategory->map(function($questions, $categoryName) {
-                $hasResponses = $questions->reduce(function($carry, $question) {
-                    return $carry || $question->results->count() > 0;
-                }, false);
+        // Always ensure target_feedback exists, even if empty
+        if (!isset($filteredCategories['target_feedback'])) {
+            $filteredCategories['target_feedback'] = collect();
+        }
 
+        // Log final category assignments
+        Log::debug("Category assignment summary", [
+            'categories' => $filteredCategories->map(function($questions, $category) {
                 return [
-                    'title' => __('admin.category.' . $categoryName, ['default' => $categoryName]),
-                    'question_count' => $questions->count(),
-                    'has_responses' => $hasResponses
+                    'name' => $category,
+                    'count' => $questions->count(),
+                    'sample_questions' => $questions->take(3)->map(function($q) {
+                        return $q->question;
+                    })->toArray()
                 ];
             })->toArray()
-        ]);
-
-        // Log the final grouping result
-        Log::debug("Table survey categorization complete", [
-            'final_category_count' => $filteredCategories->count(),
-            'categories' => $filteredCategories->keys()->toArray()
         ]);
 
         return $filteredCategories;
