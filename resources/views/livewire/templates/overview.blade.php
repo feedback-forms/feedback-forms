@@ -55,14 +55,14 @@
                                 <!-- Preview and Create buttons overlay -->
                                 <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center gap-2 p-4">
                                     @if(isset($template['route']))
-                                        <a href="{{ $template['route'] }}" class="w-full px-3 py-1.5 bg-gray-800 text-white text-sm rounded hover:bg-gray-700 transition flex items-center justify-center">
+                                        <a href="{{ route('surveys.preview', $template['id'] ?? '') }}" class="w-full px-3 py-1.5 bg-gray-800 text-white text-sm rounded hover:bg-gray-700 transition flex items-center justify-center">
                                             <x-fas-eye class="w-3 h-3 mr-1.5" />
                                             {{ __('templates.preview') }}
                                         </a>
                                     @endif
 
                                     @if(isset($template['create_url']))
-                                        <a href="{{ $template['create_url'] }}" class="w-full px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-500 transition flex items-center justify-center">
+                                        <a href="{{ route('surveys.create', ['template' => $template['id'] ?? '']) }}" class="w-full px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-500 transition flex items-center justify-center">
                                             <x-fas-plus class="w-3 h-3 mr-1.5" />
                                             {{ __('templates.create_survey') }}
                                         </a>
