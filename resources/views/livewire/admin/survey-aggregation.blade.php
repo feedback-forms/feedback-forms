@@ -3,6 +3,23 @@
         {{ __('admin.survey_aggregation') }}
     </h1>
 
+    <!-- Information about excluded data - moved to top -->
+    <div class="p-4 bg-blue-50 dark:bg-blue-900 rounded-lg">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <x-fas-info-circle class="w-5 h-5 text-blue-500" />
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200">
+                    {{ __('admin.information') }}
+                </h3>
+                <p class="mt-2 text-sm text-blue-700 dark:text-blue-300">
+                    {{ __('admin.text_answers_excluded') }}
+                </p>
+            </div>
+        </div>
+    </div>
+
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         <!-- Filter Controls -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -336,88 +353,4 @@
             </div>
         @endif
     </div>
-
-    <!-- Information about excluded data -->
-    <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900 rounded-lg">
-        <div class="flex">
-            <div class="flex-shrink-0">
-                <x-fas-info-circle class="w-5 h-5 text-blue-500" />
-            </div>
-            <div class="ml-3">
-                <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200">
-                    {{ __('admin.information') }}
-                </h3>
-                <p class="mt-2 text-sm text-blue-700 dark:text-blue-300">
-                    {{ __('admin.text_answers_excluded') }}
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Debug Information (only visible in non-production) -->
-    @if(config('app.debug'))
-        <div class="mt-4 p-4 bg-gray-100 dark:bg-gray-900 rounded-lg">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Debug Information</h3>
-            <dl class="space-y-2">
-                <div>
-                    <dt class="text-sm font-medium text-gray-700 dark:text-gray-300">Selected Category:</dt>
-                    <dd class="text-sm text-gray-800 dark:text-gray-200">{{ $selectedCategory ?? 'null' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-sm font-medium text-gray-700 dark:text-gray-300">Selected Value:</dt>
-                    <dd class="text-sm text-gray-800 dark:text-gray-200">{{ $selectedValue ?? 'null' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-sm font-medium text-gray-700 dark:text-gray-300">Available Values Count:</dt>
-                    <dd class="text-sm text-gray-800 dark:text-gray-200">{{ count($availableValues) }}</dd>
-                </div>
-                <div>
-                    <dt class="text-sm font-medium text-gray-700 dark:text-gray-300">Available Values:</dt>
-                    <dd class="text-sm text-gray-800 dark:text-gray-200">
-                        @if(count($availableValues) > 0)
-                            {{ implode(', ', $availableValues) }}
-                        @else
-                            None
-                        @endif
-                    </dd>
-                </div>
-                <div>
-                    <dt class="text-sm font-medium text-gray-700 dark:text-gray-300">Has Aggregated Data:</dt>
-                    <dd class="text-sm text-gray-800 dark:text-gray-200">{{ !empty($aggregatedData) ? 'Yes' : 'No' }}</dd>
-                </div>
-                @if(!empty($aggregatedData))
-                    <div>
-                        <dt class="text-sm font-medium text-gray-700 dark:text-gray-300">Threshold Met:</dt>
-                        <dd class="text-sm text-gray-800 dark:text-gray-200">{{ $aggregatedData['threshold_met'] ? 'Yes' : 'No' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-700 dark:text-gray-300">Submission Count:</dt>
-                        <dd class="text-sm text-gray-800 dark:text-gray-200">{{ $aggregatedData['submission_count'] ?? 'N/A' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-700 dark:text-gray-300">Min Threshold:</dt>
-                        <dd class="text-sm text-gray-800 dark:text-gray-200">{{ $aggregatedData['min_threshold'] ?? 'N/A' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-700 dark:text-gray-300">Has Categories:</dt>
-                        <dd class="text-sm text-gray-800 dark:text-gray-200">{{ isset($aggregatedData['categories']) ? 'Yes' : 'No' }}</dd>
-                    </div>
-                    @if(isset($aggregatedData['categories']))
-                        <div>
-                            <dt class="text-sm font-medium text-gray-700 dark:text-gray-300">Categories:</dt>
-                            <dd class="text-sm text-gray-800 dark:text-gray-200">{{ implode(', ', array_keys($aggregatedData['categories'])) }}</dd>
-                        </div>
-                        <div>
-                            <dt class="text-sm font-medium text-gray-700 dark:text-gray-300">Active Tab:</dt>
-                            <dd class="text-sm text-gray-800 dark:text-gray-200">{{ $activeTab ?? 'None' }}</dd>
-                        </div>
-                    @endif
-                @endif
-                <div>
-                    <dt class="text-sm font-medium text-gray-700 dark:text-gray-300">Error Message:</dt>
-                    <dd class="text-sm text-gray-800 dark:text-gray-200">{{ $errorMessage ?? 'None' }}</dd>
-                </div>
-            </dl>
-        </div>
-    @endif
 </div>

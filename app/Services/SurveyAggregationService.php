@@ -430,8 +430,7 @@ class SurveyAggregationService
             'feedback_ids' => $questions->pluck('feedback_id')->unique()->toArray()
         ]);
 
-        // Check for feedback templates used with target feedback - this is to help us
-        // identify which feedbacks are using the target feedback format
+        // Check for feedback templates used with target feedback
         $targetFeedbackTemplateIds = $questions->map(function($q) {
             return $q->feedback_template &&
                    (stripos($q->feedback_template->template ?? '', 'target') !== false ||
@@ -448,6 +447,55 @@ class SurveyAggregationService
             'template_ids' => $targetFeedbackTemplateIds,
             'feedback_ids' => $targetFeedbackIds
         ]);
+
+        // Define exact patterns for each category
+        $categoryPatterns = [
+            'behavior' => [
+                '... ungeduldig',
+                '... sicher im Auftreten',
+                '... freundlich',
+                '... energisch und aufbauend',
+                '... tatkräftig, aktiv',
+                '... aufgeschlossen',
+                'Sie/Er ist ...'
+            ],
+            'statements' => [
+                'bevorzugt manche Schülerinnen oder Schüler',
+                'nimmt die Schülerinnen und Schüler ernst',
+                'ermutigt und lobt viel',
+                'entscheidet immer allein',
+                'gesteht eigene Fehler ein',
+                'Die Lehrerin, der Lehrer ...'
+            ],
+            'quality' => [
+                'Die Ziele des Unterrichts sind klar erkennbar',
+                'Der Lehrer redet zu viel',
+                'Der Lehrer schweift oft vom Thema ab',
+                'Die Fragen und Beiträge der Schülerinnen und Schüler werden ernst genommen',
+                'Die Sprache des Lehrers ist gut verständlich',
+                'Der Lehrer achtet auf Ruhe und Disziplin im Unterricht',
+                'Der Unterricht ist abwechslungsreich',
+                'Unterrichtsmaterialien sind ansprechend und gut verständlich gestaltet',
+                'Der Stoff wird ausreichend wiederholt und geübt',
+                'Wie ist der Unterricht?'
+            ],
+            'claims' => [
+                'Die Themen der Schulaufgaben werden rechtzeitig vorher bekannt gegeben',
+                'Der Schwierigkeitsgrad der Leistungsnachweise entspricht dem der Unterrichtsinhalte',
+                'Die Bewertungen sind nachvollziehbar und verständlich',
+                'Bewerten Sie folgende Behauptungen'
+            ],
+            'target_feedback' => [
+                'Ich lerne im Unterricht viel',
+                'Die Lehrkraft hat ein großes Hintergrundwissen',
+                'Die Lehrkraft ist immer gut vorbereitet',
+                'Die Lehrkraft zeigt Interesse an ihren Schülern',
+                'Die Lehrkraft sorgt für ein gutes Lernklima in der Klasse',
+                'Die Notengebung ist fair und nachvollziehbar',
+                'Ich konnte dem Unterricht immer gut folgen',
+                'Der Unterricht wird vielfältig gestaltet'
+            ]
+        ];
 
         // Process each question
         foreach ($questions as $question) {
@@ -473,103 +521,106 @@ class SurveyAggregationService
                     'id' => $question->id
                 ]);
             }
-            // Check for behavior questions
-            else if (preg_match('/^\.\.\./', $questionText) ||
-                     stripos($questionText, 'Der Lehrer achtet auf Ruhe') !== false) {
-                $assignedCategory = 'behavior';
-                Log::debug("Assigned to behavior category", [
-                    'question' => $questionText,
-                    'id' => $question->id
-                ]);
-            }
-            // Check for statement questions
-            else if (stripos($questionText, 'bevorzugt manche Schülerinnen') !== false ||
-                     stripos($questionText, 'nimmt die Schülerinnen') !== false ||
-                     stripos($questionText, 'ermutigt und lobt') !== false ||
-                     stripos($questionText, 'entscheidet immer') !== false ||
-                     stripos($questionText, 'gesteht eigene Fehler') !== false ||
-                     stripos($questionText, 'Die Fragen und Beiträge') !== false) {
-                $assignedCategory = 'statements';
-                Log::debug("Assigned to statements category", [
-                    'question' => $questionText,
-                    'id' => $question->id
-                ]);
-            }
-            // Check for quality questions
-            else if (stripos($questionText, 'Die Ziele des Unterrichts') !== false ||
-                     stripos($questionText, 'Der Lehrer redet') !== false ||
-                     stripos($questionText, 'Der Lehrer schweift') !== false ||
-                     stripos($questionText, 'Die Sprache des Lehrers') !== false ||
-                     stripos($questionText, 'Der Unterricht ist') !== false ||
-                     stripos($questionText, 'Unterrichtsmaterialien') !== false ||
-                     stripos($questionText, 'Der Stoff wird') !== false) {
-                $assignedCategory = 'quality';
-                Log::debug("Assigned to quality category", [
-                    'question' => $questionText,
-                    'id' => $question->id
-                ]);
-            }
-            // Check for claims questions
-            else if (stripos($questionText, 'Die Themen der Schulaufgaben') !== false ||
-                     stripos($questionText, 'Der Schwierigkeitsgrad') !== false ||
-                     stripos($questionText, 'Die Bewertungen sind') !== false) {
-                $assignedCategory = 'claims';
-                Log::debug("Assigned to claims category", [
-                    'question' => $questionText,
-                    'id' => $question->id
-                ]);
-            }
-            // Use generic heuristics if still not assigned
             else {
-                // Special patterns for target feedback
-                if (stripos($questionText, 'Ich lerne im Unterricht viel') !== false ||
-                    stripos($questionText, 'gut vorbereitet') !== false ||
-                    stripos($questionText, 'Interesse an') !== false ||
-                    stripos($questionText, 'Lernklima') !== false ||
-                    stripos($questionText, 'Notengebung') !== false ||
-                    stripos($questionText, 'konnte dem Unterricht folgen') !== false ||
-                    stripos($questionText, 'vielfältig gestaltet') !== false ||
-                    stripos($questionText, 'Hintergrundwissen') !== false ||
-                    stripos($questionText, 'Das hat mir') !== false ||
-                    stripos($questionText, 'Verbesserungsvorschläge') !== false ||
-                    stripos($questionText, 'Open Feedback') !== false ||
-                    stripos($questionText, 'Zielscheiben') !== false ||
-                    stripos($questionText, 'Was gefällt dir') !== false) {
+                // Try to match against our exact patterns
+                $matchFound = false;
 
-                    $assignedCategory = 'target_feedback';
-                    Log::debug("Assigned to target_feedback based on text pattern", [
-                        'question' => $questionText,
-                        'id' => $question->id
-                    ]);
-                }
-                // Assign based on keywords for other categories
-                else if (stripos($questionText, 'Lehrer') !== false ||
-                         stripos($questionText, 'Lehrkraft') !== false) {
-                    if (stripos($questionText, 'Unterricht') !== false) {
-                        $assignedCategory = 'quality';
-                    } else {
-                        $assignedCategory = 'behavior';
+                foreach ($categoryPatterns as $category => $patterns) {
+                    foreach ($patterns as $pattern) {
+                        if (stripos($questionText, $pattern) !== false) {
+                            $assignedCategory = $category;
+                            $matchFound = true;
+                            Log::debug("Assigned to {$category} based on exact pattern match", [
+                                'question' => $questionText,
+                                'pattern' => $pattern,
+                                'id' => $question->id
+                            ]);
+                            break 2; // Break both loops
+                        }
                     }
-                    Log::debug("Assigned based on teacher/teaching keyword", [
-                        'question' => $questionText,
-                        'id' => $question->id,
-                        'category' => $assignedCategory
-                    ]);
                 }
-                else if (stripos($questionText, 'Unterricht') !== false) {
-                    $assignedCategory = 'quality';
-                    Log::debug("Assigned to quality based on 'Unterricht' keyword", [
-                        'question' => $questionText,
-                        'id' => $question->id
-                    ]);
-                }
-                // Fallback - if all else fails
-                else {
-                    $assignedCategory = 'target_feedback';  // Changed default to target_feedback
-                    Log::debug("No category match, assigned to default target_feedback", [
-                        'question' => $questionText,
-                        'id' => $question->id
-                    ]);
+
+                // If no exact pattern matched, use additional heuristics
+                if (!$matchFound) {
+                    // Check if it's a behavior question starting with '...'
+                    if (preg_match('/^\.\.\./', $questionText)) {
+                        $assignedCategory = 'behavior';
+                        Log::debug("Assigned to behavior category based on '...' prefix", [
+                            'question' => $questionText,
+                            'id' => $question->id
+                        ]);
+                    }
+                    // Categorize based on section headers
+                    else if (stripos($questionText, 'Verhalten des Lehrers') !== false) {
+                        $assignedCategory = 'behavior';
+                        Log::debug("Assigned to behavior based on section header", [
+                            'question' => $questionText,
+                            'id' => $question->id
+                        ]);
+                    }
+                    else if (stripos($questionText, 'Bewerten Sie folgende Aussagen') !== false) {
+                        $assignedCategory = 'statements';
+                        Log::debug("Assigned to statements based on section header", [
+                            'question' => $questionText,
+                            'id' => $question->id
+                        ]);
+                    }
+                    else if (stripos($questionText, 'Wie ist der Unterricht') !== false) {
+                        $assignedCategory = 'quality';
+                        Log::debug("Assigned to quality based on section header", [
+                            'question' => $questionText,
+                            'id' => $question->id
+                        ]);
+                    }
+                    else if (stripos($questionText, 'Bewerten Sie folgende Behauptungen') !== false) {
+                        $assignedCategory = 'claims';
+                        Log::debug("Assigned to claims based on section header", [
+                            'question' => $questionText,
+                            'id' => $question->id
+                        ]);
+                    }
+                    // Fallback categorization based on keywords
+                    else if (stripos($questionText, 'Lehrer') !== false ||
+                             stripos($questionText, 'Lehrkraft') !== false) {
+                        if (stripos($questionText, 'Unterricht') !== false ||
+                            stripos($questionText, 'unterrichtet') !== false) {
+                            $assignedCategory = 'quality';
+                        } else {
+                            $assignedCategory = 'behavior';
+                        }
+                        Log::debug("Assigned based on teacher keyword", [
+                            'question' => $questionText,
+                            'id' => $question->id,
+                            'category' => $assignedCategory
+                        ]);
+                    }
+                    else if (stripos($questionText, 'Unterricht') !== false ||
+                             stripos($questionText, 'Materialien') !== false ||
+                             stripos($questionText, 'Stoff') !== false) {
+                        $assignedCategory = 'quality';
+                        Log::debug("Assigned to quality based on teaching keywords", [
+                            'question' => $questionText,
+                            'id' => $question->id
+                        ]);
+                    }
+                    else if (stripos($questionText, 'Bewertung') !== false ||
+                             stripos($questionText, 'Notengebung') !== false ||
+                             stripos($questionText, 'Schulaufgaben') !== false ||
+                             stripos($questionText, 'Leistungsnachweise') !== false) {
+                        $assignedCategory = 'claims';
+                        Log::debug("Assigned to claims based on assessment keywords", [
+                            'question' => $questionText,
+                            'id' => $question->id
+                        ]);
+                    }
+                    // Fallback - if all else fails
+                    else {
+                        $assignedCategory = 'target_feedback';
+                        Log::debug("No category match, assigned to default target_feedback", [
+                            'question' => $questionText,
+                            'id' => $question->id
+                        ]);
+                    }
                 }
             }
 
