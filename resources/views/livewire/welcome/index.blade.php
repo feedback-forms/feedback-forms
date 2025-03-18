@@ -13,10 +13,13 @@
         <!-- Styles -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
+
     <body class="antialiased font-sans" x-data>
-        <div class="bg-gray-100 text-black/50 dark:bg-gray-900 dark:text-white/50">
-            <main>
-                <div class="min-h-dvh flex flex-col items-center justify-center gap-8 selection:bg-[#FF2D20] selection:text-white">
+        <div class="min-h-dvh  bg-gray-100 text-black/50 dark:bg-gray-900 dark:text-white/50 flex flex-col">
+            <livewire:layout.navigation />
+
+            <main class="flex-1 flex">
+                <div class="flex flex-1 flex-col items-center justify-center gap-8 selection:bg-[#FF2D20] selection:text-white">
                     <a href="/">
                         <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
                     </a>

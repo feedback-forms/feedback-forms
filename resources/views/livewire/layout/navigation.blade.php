@@ -28,60 +28,64 @@ new class extends Component
                     </a>
                 </div>
 
-                <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('surveys.list')" :active="request()->routeIs('surveys.list')" wire:navigate>
-                        {{ __('surveys.surveys') }}
-                    </x-nav-link>
+                @auth
+                    <!-- Navigation Links -->
+                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                        <x-nav-link :href="route('surveys.list')" :active="request()->routeIs('surveys.list')"
+                                    wire:navigate>
+                            {{ __('surveys.surveys') }}
+                        </x-nav-link>
 
-                    <x-nav-link :href="route('templates.list')" :active="request()->routeIs('templates.list')" wire:navigate>
-                        {{ __('templates.templates') }}
-                    </x-nav-link>
+                        <x-nav-link :href="route('templates.list')" :active="request()->routeIs('templates.list')"
+                                    wire:navigate>
+                            {{ __('templates.templates') }}
+                        </x-nav-link>
 
-                    @can('admin')
-                        <div class="hidden sm:flex sm:items-center sm:ms-6">
-                            <x-dropdown>
-                                <x-slot name="trigger">
-                                    <button
-                                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
-                                        <div>{{__('admin.admin_tools')}}</div>
+                        @can('admin')
+                            <div class="hidden sm:flex sm:items-center sm:ms-6">
+                                <x-dropdown>
+                                    <x-slot name="trigger">
+                                        <button
+                                            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                            <div>{{__('admin.admin_tools')}}</div>
 
-                                        <div class="ms-1">
-                                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
-                                                 viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd"
-                                                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                      clip-rule="evenodd"/>
-                                            </svg>
-                                        </div>
-                                    </button>
-                                </x-slot>
+                                            <div class="ms-1">
+                                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                                     viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                          d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                          clip-rule="evenodd"/>
+                                                </svg>
+                                            </div>
+                                        </button>
+                                    </x-slot>
 
-                                <x-slot name="content">
-                                    <x-dropdown-link :href="route('admin.panel')" wire:navigate
-                                                     :active="request()->routeIs('admin.panel')">
-                                        {{ __('admin.admin_panel') }}
-                                    </x-dropdown-link>
+                                    <x-slot name="content">
+                                        <x-dropdown-link :href="route('admin.panel')" wire:navigate
+                                                         :active="request()->routeIs('admin.panel')">
+                                            {{ __('admin.admin_panel') }}
+                                        </x-dropdown-link>
 
-                                    <x-dropdown-link :href="route('admin.users')" wire:navigate
-                                                     :active="request()->routeIs('admin.users')">
-                                        {{ __('admin.users') }}
-                                    </x-dropdown-link>
+                                        <x-dropdown-link :href="route('admin.users')" wire:navigate
+                                                         :active="request()->routeIs('admin.users')">
+                                            {{ __('admin.users') }}
+                                        </x-dropdown-link>
 
-                                    <x-dropdown-link :href="route('admin.invite-token')" wire:navigate
-                                                     :active="request()->routeIs('admin.invite-token')">
-                                        {{ __('admin.invite_tokens') }}
-                                    </x-dropdown-link>
+                                        <x-dropdown-link :href="route('admin.invite-token')" wire:navigate
+                                                         :active="request()->routeIs('admin.invite-token')">
+                                            {{ __('admin.invite_tokens') }}
+                                        </x-dropdown-link>
 
-                                    <x-dropdown-link :href="route('admin.options')" wire:navigate
-                                                     :active="request()->routeIs('admin.options')">
-                                        {{ __('admin.options') }}
-                                    </x-dropdown-link>
-                                </x-slot>
-                            </x-dropdown>
-                        </div>
-                    @endcan
-                </div>
+                                        <x-dropdown-link :href="route('admin.options')" wire:navigate
+                                            :active="request()->routeIs('admin.options')">
+                                            {{ __('admin.options') }}
+                                        </x-dropdown-link>
+                                    </x-slot>
+                                </x-dropdown>
+                            </div>
+                        @endcan
+                    </div>
+                @endauth
             </div>
 
             <!-- Settings Dropdown -->
@@ -114,8 +118,8 @@ new class extends Component
                         </x-slot>
                     </x-dropdown>
                 @else
-                    <a href="{{ route('login') }}" class="text-sm text-gray-700 dark:text-gray-300 underline">{{ __('Log in') }}</a>
-                    <a href="{{ route('register') }}" class="ml-4 text-sm text-gray-700 dark:text-gray-300 underline">{{ __('Register') }}</a>
+                    <a wire:navigate href="{{ route('login') }}" class="text-sm text-gray-700 dark:text-gray-300">{{ __('navigation.login') }}</a>
+                    <a wire:navigate href="{{ route('register') }}" class="ml-4 text-sm text-gray-700 dark:text-gray-300">{{ __('navigation.register') }}</a>
                 @endauth
             </div>
 
@@ -132,46 +136,55 @@ new class extends Component
     </div>
 
     <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('surveys.list')" :active="request()->routeIs('surveys.list')" wire:navigate>
-                {{ __('surveys.surveys') }}
-            </x-responsive-nav-link>
+    <div :class="{'flex': open, 'hidden': ! open}" class="hidden sm:hidden flex-col gap-4">
+        @auth
+            <div>
+                <x-responsive-nav-link :href="route('surveys.list')" :active="request()->routeIs('surveys.list')"
+                                       wire:navigate>
+                    {{ __('surveys.surveys') }}
+                </x-responsive-nav-link>
 
-            <x-responsive-nav-link :href="route('templates.list')" :active="request()->routeIs('templates.list')" wire:navigate>
-                {{ __('templates.templates') }}
-            </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('templates.list')" :active="request()->routeIs('templates.list')"
+                                       wire:navigate>
+                    {{ __('templates.templates') }}
+                </x-responsive-nav-link>
 
-            @can('admin')
-                <details class="text-gray-800 dark:text-gray-400 [&_summary]:open:bg-gray-50 [&_summary]:dark:open:bg-gray-700 [&_svg]:open:-rotate-180"
-                 {{ in_array(request()->route()->getName(), ['admin.panel', 'admin.users']) ? 'open' : '' }}
-                >
-                    <summary class="list-none flex justify-between items-center px-4 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <div>{{__('admin.admin_tools')}}</div>
-                        <x-fas-arrow-down class="w-4 h-4 transition" />
-                    </summary>
-                    <x-responsive-nav-link :href="route('admin.panel')" wire:navigate :active="request()->routeIs('admin.panel')">
-                        {{ __('admin.admin_panel') }}
-                    </x-responsive-nav-link>
+                @can('admin')
+                    <details
+                        class="text-gray-800 dark:text-gray-400 [&_summary]:open:bg-gray-50 [&_summary]:dark:open:bg-gray-700 [&_svg]:open:-rotate-180"
+                        {{ in_array(request()->route()->getName(), ['admin.panel', 'admin.users']) ? 'open' : '' }}
+                    >
+                        <summary
+                            class="list-none flex justify-between items-center px-4 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <div>{{__('admin.admin_tools')}}</div>
+                            <x-fas-arrow-down class="w-4 h-4 transition"/>
+                        </summary>
+                        <x-responsive-nav-link :href="route('admin.panel')" wire:navigate
+                                               :active="request()->routeIs('admin.panel')">
+                            {{ __('admin.admin_panel') }}
+                        </x-responsive-nav-link>
 
-                    <x-responsive-nav-link :href="route('admin.users')" wire:navigate :active="request()->routeIs('admin.users')">
-                        {{ __('admin.users') }}
-                    </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('admin.users')" wire:navigate
+                                               :active="request()->routeIs('admin.users')">
+                            {{ __('admin.users') }}
+                        </x-responsive-nav-link>
 
-                    <x-responsive-nav-link :href="route('admin.invite-token')" wire:navigate :active="request()->routeIs('admin.invite-token')">
-                        {{ __('admin.invite_tokens') }}
-                    </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('admin.invite-token')" wire:navigate
+                                               :active="request()->routeIs('admin.invite-token')">
+                            {{ __('admin.invite_tokens') }}
+                        </x-responsive-nav-link>
 
-                    <x-responsive-nav-link :href="route('admin.options')" wire:navigate :active="request()->routeIs('admin.options')">
-                        {{ __('admin.options') }}
-                    </x-responsive-nav-link>
-                </details>
-            @endcan
-        </div>
+                        <x-responsive-nav-link :href="route('admin.options')" wire:navigate :active="request()->routeIs('admin.options')">
+                            {{ __('admin.options') }}
+                        </x-responsive-nav-link>
+                    </details>
+                @endcan
+            </div>
+        @endauth
 
         @auth
             <!-- Responsive Settings Options -->
-            <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
+            <div class="border-t border-gray-200 dark:border-gray-600">
                 <div class="px-4">
                     <div class="font-medium text-base text-gray-800 dark:text-gray-200" x-data="{{ json_encode(['name' => auth()->user()->name]) }}" x-text="name" x-on:profile-updated.window="name = $event.detail.name"></div>
                     <div class="font-medium text-sm text-gray-500">{{ auth()->user()->email }}</div>
@@ -187,26 +200,17 @@ new class extends Component
                         <x-responsive-nav-link>
                             {{ __('navigation.logout') }}
                         </x-responsive-nav-link>
-
-                        <!-- Authentication -->
-                        <button wire:click="logout" class="w-full text-start">
-                            <x-responsive-nav-link>
-                                {{ __('Log Out') }}
-                            </x-responsive-nav-link>
-                        </button>
                     </button>
                 </div>
             </div>
         @else
-            <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
-                <div class="mt-3 space-y-1">
-                    <x-responsive-nav-link :href="route('login')">
-                        {{ __('Log in') }}
-                    </x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('register')">
-                        {{ __('Register') }}
-                    </x-responsive-nav-link>
-                </div>
+            <div class="border-t border-gray-200 dark:border-gray-600">
+                <x-responsive-nav-link :href="route('login')" wire:navigate>
+                    {{ __('navigation.login') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('register')" wire:navigate>
+                    {{ __('navigation.register') }}
+                </x-responsive-nav-link>
             </div>
         @endauth
     </div>
