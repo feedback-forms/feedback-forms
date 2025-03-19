@@ -24,11 +24,11 @@ class SurveyService
                 'accesskey' => $this->generateUniqueAccessKey(),
                 'limit' => $data['response_limit'] ?? -1,
                 'expire_date' => Carbon::parse($data['expire_date']),
-                'school_year' => $data['school_year'] ?? null,
-                'department' => $data['department'] ?? null,
-                'grade_level' => $data['grade_level'] ?? null,
-                'class' => $data['class'] ?? null,
-                'subject' => $data['subject'] ?? null,
+                'school_year_id' => $data['school_year_id'] ?? null,
+                'department_id' => $data['department_id'] ?? null,
+                'grade_level_id' => $data['grade_level_id'] ?? null,
+                'school_class_id' => $data['school_class_id'] ?? null,
+                'subject_id' => $data['subject_id'] ?? null,
             ]);
 
             // Get the template and its associated question templates

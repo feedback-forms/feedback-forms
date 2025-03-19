@@ -12,7 +12,8 @@ class Question extends Model
         'question_template_id',
         'feedback_id',
         'question',
-        'order'
+        'order',
+        'category'
     ];
 
     /**

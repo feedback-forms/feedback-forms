@@ -13,10 +13,13 @@
         <!-- Styles -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
+
     <body class="antialiased font-sans" x-data>
-        <div class="bg-gray-100 text-black/50 dark:bg-gray-900 dark:text-white/50">
-            <main>
-                <div class="min-h-dvh flex flex-col items-center justify-center gap-8 selection:bg-[#FF2D20] selection:text-white">
+        <div class="min-h-dvh  bg-gray-100 text-black/50 dark:bg-gray-900 dark:text-white/50 flex flex-col">
+            <livewire:layout.navigation />
+
+            <main class="flex-1 flex">
+                <div class="flex flex-1 flex-col items-center justify-center gap-8 selection:bg-[#FF2D20] selection:text-white">
                     <a href="/">
                     <svg class="w-[123px] h-auto" xmlns="http://www.w3.org/2000/svg" width="900" height="900" viewBox="0 0 900 900" fill="none">
 <path d="M536.462 69.814H205.337C138.108 69.814 83.6048 124.315 83.6048 191.547V503.734C83.6048 526.36 89.7779 547.543 100.529 565.693L100.571 565.764L81.715 740.508C78.3214 771.956 116.659 789.885 138.618 767.119L275.256 625.464L697.304 625.467C764.534 625.467 819.037 570.966 819.037 503.735V191.547C819.037 124.315 764.534 69.814 697.304 69.814H657.17C639.704 69.814 625.544 83.973 625.544 101.439C625.544 117.789 637.951 131.241 653.863 132.894H697.304C729.695 132.894 755.957 159.154 755.957 191.547V503.735C755.957 536.128 729.695 562.387 697.304 562.387L248.419 562.384L188.664 624.331L188.701 624.336L153.791 660.528L158.582 616.129L158.533 616.108L165.969 547.209C154.124 536.478 146.684 520.973 146.684 503.731V191.547C146.684 159.154 172.946 132.894 205.337 132.894H539.573C555.485 131.241 567.892 117.789 567.892 101.439C567.892 84.0383 553.838 69.9192 536.462 69.814Z" fill="#27323B"/>

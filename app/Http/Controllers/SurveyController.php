@@ -67,11 +67,11 @@ class SurveyController extends Controller
             'template_id' => 'required|exists:feedback_templates,id',
             'expire_date' => 'required|date|after:now',
             'response_limit' => 'nullable|integer|min:-1',
-            'school_year' => 'required|string',
-            'department' => 'required|string',
-            'grade_level' => 'required|string',
-            'class' => 'required|string',
-            'subject' => 'required|string',
+            'school_year_id' => 'required|exists:school_years,id',
+            'department_id' => 'required|exists:departments,id',
+            'grade_level_id' => 'required|exists:grade_levels,id',
+            'school_class_id' => 'required|exists:school_classes,id',
+            'subject_id' => 'required|exists:subjects,id',
             'survey_data' => 'nullable|string',
         ]);
 

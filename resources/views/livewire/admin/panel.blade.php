@@ -72,6 +72,29 @@
             <x-invite-token-list :items="$registerKeys" />
         </section>
 
+        <!-- Survey Aggregation Section -->
+        <section class="mt-8">
+            <a href="{{ route('admin.survey-aggregation') }}">
+                <div class="flex items-center gap-2 mb-4">
+                    <h2 class="text-xl font-bold text-gray-700 dark:text-gray-200">{{ __('admin.survey_aggregation') }}</h2>
+                    <x-fas-arrow-right class="w-4 h-4" />
+                </div>
+            </a>
+            <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                <div class="flex items-start gap-4">
+                    <div class="rounded-full bg-indigo-100 dark:bg-indigo-900 p-3">
+                        <x-fas-chart-bar class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-gray-700 dark:text-gray-300">{{ __('admin.survey_aggregation') }}</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            {{ __('admin.text_answers_excluded') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Add Subjects Section -->
         <section class="mt-8">
             <a href="{{ route('admin.options') }}">
