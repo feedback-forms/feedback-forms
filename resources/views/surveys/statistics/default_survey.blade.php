@@ -60,24 +60,10 @@
                     @endif
                 @elseif($stat['template_type'] === 'checkbox' || $stat['template_type'] === 'checkboxes')
                     @if(isset($stat['data']['option_counts']) && count($stat['data']['option_counts']) > 0)
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                            {{ __('surveys.responses_count', ['count' => $stat['data']['submission_count']]) }}
-                        </p>
-                        <div class="space-y-3">
-                            @foreach($stat['data']['option_counts'] as $option => $count)
-                                <div class="flex items-center">
-                                    <div class="w-32 truncate text-sm">{{ $option }}</div>
-                                    <div class="flex-1 ml-2">
-                                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                                            <div class="bg-indigo-600 dark:bg-indigo-500 h-2.5 rounded-full"
-                                                 style="width: {{ ($count / max(1, $stat['data']['submission_count'])) * 100 }}%">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="ml-2 text-sm font-medium">{{ $count }}</div>
-                                </div>
-                            @endforeach
-                        </div>
+                        @include('surveys.statistics.components.checkbox_distribution', [
+                            'optionCounts' => $stat['data']['option_counts'],
+                            'submissionCount' => $stat['data']['submission_count'] ?? null
+                        ])
                     @else
                         <p class="text-gray-500 dark:text-gray-400">{{ __('surveys.no_responses_yet') }}</p>
                     @endif

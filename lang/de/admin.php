@@ -67,6 +67,7 @@ return [
         'statements' => 'Bewerten Sie folgende Aussagen',
         'assessment' => 'Bewerten Sie folgende Behauptungen',
         'claims' => 'Bewerten Sie folgende Behauptungen',
+        'checkbox_feedback' => 'Checkbox-Feedback',
     ],
 ];
 

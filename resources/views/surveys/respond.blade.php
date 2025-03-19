@@ -113,6 +113,25 @@
                                                 </label>
                                             @endforeach
                                         </div>
+                                    @elseif($templateType === 'checkboxes')
+                                        <div class="space-y-2">
+                                            @php
+                                                $options = [
+                                                    __('surveys.checkboxes_options.strongly_agree'),
+                                                    __('surveys.checkboxes_options.agree'),
+                                                    __('surveys.checkboxes_options.neutral'),
+                                                    __('surveys.checkboxes_options.disagree'),
+                                                    __('surveys.checkboxes_options.strongly_disagree')
+                                                ];
+                                            @endphp
+
+                                            @foreach($options as $option)
+                                                <label class="flex items-center space-x-2 cursor-pointer">
+                                                    <input type="checkbox" name="responses[{{ $question->id }}][]" value="{{ $option }}" class="form-checkbox">
+                                                    <span>{{ $option }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
                                     @elseif($templateType === 'table')
                                         <div class="overflow-x-auto">
                                             <table class="w-full">

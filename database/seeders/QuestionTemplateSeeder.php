@@ -25,6 +25,12 @@ class QuestionTemplateSeeder extends Seeder
             'max_value' => 4,
         ]);
 
+        # Single checkbox for yes/no/na type questions
+        Question_template::updateOrCreate([
+            'type' => 'checkbox',
+            'max_value' => 3, // Yes=1, No=2, N/A=3
+        ]);
+
         Question_template::updateOrCreate([
             'type' => 'textarea',
             'max_value' => 3,

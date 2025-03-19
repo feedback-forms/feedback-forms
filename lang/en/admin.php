@@ -60,6 +60,7 @@ return [
         'learning_materials' => 'Learning Materials',
         'feedback' => 'Feedback',
         'communication' => 'Communication',
-        'assessment' => 'Assessment'
+        'assessment' => 'Assessment',
+        'checkbox_feedback' => 'Checkbox Feedback'
     ],
 ];

@@ -151,108 +151,123 @@
                     <!-- Tab Content -->
                     @foreach($aggregatedData['categories'] as $categoryId => $category)
                         <div class="{{ $activeTab === $categoryId ? 'block' : 'hidden' }}">
-                            <!-- Range Questions -->
-                            @if(isset($category['results']['range']) && count($category['results']['range']) > 0)
+                            @if($categoryId === 'checkbox_feedback')
+                                <!-- Special display for checkbox feedback category -->
                                 <div>
                                     <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-                                        {{ __('admin.rating_questions') }}
+                                        {{ __('surveys.checkbox_question_results') }}
                                     </h2>
-                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                        @foreach($category['results']['range'] as $questionData)
-                                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-                                                <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3">
-                                                    {{ $questionData['question'] }}
-                                                </h3>
-                                                <div class="flex justify-between items-center mb-4">
-                                                    <span class="text-sm text-gray-500 dark:text-gray-400">
-                                                        {{ __('admin.responses') }}: {{ $questionData['count'] }}
-                                                    </span>
-                                                    <span class="text-sm text-gray-500 dark:text-gray-400">
-                                                        {{ __('admin.average') }}: <span class="font-semibold text-indigo-600 dark:text-indigo-400">{{ $questionData['average'] }}</span>
-                                                    </span>
-                                                </div>
 
-                                                <!-- Bar Chart -->
-                                                <div class="mt-4 space-y-3">
-                                                    @foreach($questionData['distribution'] as $rating => $count)
-                                                        <div>
-                                                            <div class="flex justify-between items-center mb-1">
-                                                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $rating }}</span>
-                                                                <span class="text-sm text-gray-500 dark:text-gray-400">{{ $count }}</span>
-                                                            </div>
-                                                            <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5">
-                                                                @php
-                                                                    $percentage = $questionData['count'] > 0 ? ($count / $questionData['count']) * 100 : 0;
-                                                                @endphp
-                                                                <div class="bg-indigo-600 dark:bg-indigo-500 h-2.5 rounded-full" style="width: {{ $percentage }}%"></div>
-                                                            </div>
-                                                        </div>
-                                                    @endforeach
+                                    @if(isset($category['results']['checkboxes']) && count($category['results']['checkboxes']) > 0)
+                                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                            @foreach($category['results']['checkboxes'] as $questionData)
+                                                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
+                                                    <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3">
+                                                        {{ $questionData['question'] }}
+                                                    </h3>
+
+                                                    @include('surveys.statistics.components.checkbox_distribution', [
+                                                        'optionCounts' => $questionData['options'],
+                                                        'submissionCount' => $questionData['total_responses']
+                                                    ])
                                                 </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-8 text-center">
+                                            <p class="text-gray-500 dark:text-gray-400">
+                                                {{ __('admin.no_question_data') }}
+                                            </p>
+                                        </div>
+                                    @endif
                                 </div>
-                            @endif
+                            @else
+                                <!-- Range Questions -->
+                                @if(isset($category['results']['range']) && count($category['results']['range']) > 0)
+                                    <div>
+                                        <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+                                            {{ __('admin.rating_questions') }}
+                                        </h2>
+                                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                            @foreach($category['results']['range'] as $questionData)
+                                                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
+                                                    <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3">
+                                                        {{ $questionData['question'] }}
+                                                    </h3>
+                                                    <div class="flex justify-between items-center mb-4">
+                                                        <span class="text-sm text-gray-500 dark:text-gray-400">
+                                                            {{ __('admin.responses') }}: {{ $questionData['count'] }}
+                                                        </span>
+                                                        <span class="text-sm text-gray-500 dark:text-gray-400">
+                                                            {{ __('admin.average') }}: <span class="font-semibold text-indigo-600 dark:text-indigo-400">{{ $questionData['average'] }}</span>
+                                                        </span>
+                                                    </div>
 
-                            <!-- Checkbox Questions -->
-                            @if(isset($category['results']['checkboxes']) && count($category['results']['checkboxes']) > 0)
-                                <div class="mt-8">
-                                    <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-                                        {{ __('admin.checkbox_questions') }}
-                                    </h2>
-                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                        @foreach($category['results']['checkboxes'] as $questionData)
-                                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-                                                <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3">
-                                                    {{ $questionData['question'] }}
-                                                </h3>
-                                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                                                    {{ __('admin.total_responses') }}: {{ $questionData['total_responses'] }}
-                                                </p>
-
-                                                <div class="space-y-3 mt-4">
-                                                    @if(isset($questionData['options']))
-                                                        @foreach($questionData['options'] as $option => $count)
+                                                    <!-- Bar Chart -->
+                                                    <div class="mt-4 space-y-3">
+                                                        @foreach($questionData['distribution'] as $rating => $count)
                                                             <div>
                                                                 <div class="flex justify-between items-center mb-1">
-                                                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $option }}</span>
-                                                                    <span class="text-sm text-gray-500 dark:text-gray-400">
-                                                                        {{ $count }} ({{ $questionData['percentages'][$option] ?? 0 }}%)
-                                                                    </span>
+                                                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $rating }}</span>
+                                                                    <span class="text-sm text-gray-500 dark:text-gray-400">{{ $count }}</span>
                                                                 </div>
                                                                 <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5">
-                                                                    <div class="bg-green-500 dark:bg-green-600 h-2.5 rounded-full"
-                                                                        style="width: {{ $questionData['percentages'][$option] ?? 0 }}%"></div>
+                                                                    @php
+                                                                        $percentage = $questionData['count'] > 0 ? ($count / $questionData['count']) * 100 : 0;
+                                                                    @endphp
+                                                                    <div class="bg-indigo-600 dark:bg-indigo-500 h-2.5 rounded-full" style="width: {{ $percentage }}%"></div>
                                                                 </div>
                                                             </div>
                                                         @endforeach
-                                                    @endif
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
-
-                            @if(empty($category['results']) || (empty($category['results']['range']) && empty($category['results']['checkboxes'])))
-                                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-8 text-center">
-                                    @if($categoryId === 'target_feedback')
-                                        <div class="flex flex-col items-center">
-                                            <x-fas-comment-alt class="w-16 h-16 text-blue-500 mb-4" />
-                                            <p class="text-gray-600 dark:text-gray-300 max-w-lg mx-auto">
-                                                {{ __('admin.text_answers_excluded') }}
-                                            </p>
-                                            <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                                                {{ __('admin.target_feedback_note', ['default' => 'Textliche Rückmeldungen werden hier nicht angezeigt, um die Anonymität zu wahren.']) }}
-                                            </p>
+                                            @endforeach
                                         </div>
-                                    @else
-                                        <p class="text-gray-500 dark:text-gray-400">
-                                            {{ __('admin.no_question_data_for_category') }}
-                                        </p>
-                                    @endif
-                                </div>
+                                    </div>
+                                @endif
+
+                                <!-- Checkbox Questions -->
+                                @if(isset($category['results']['checkboxes']) && count($category['results']['checkboxes']) > 0)
+                                    <div class="mt-8">
+                                        <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+                                            {{ $categoryId === 'checkbox_feedback' ? __('surveys.checkbox_feedback') : __('admin.checkbox_questions') }}
+                                        </h2>
+                                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                            @foreach($category['results']['checkboxes'] as $questionData)
+                                                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
+                                                    <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3">
+                                                        {{ $questionData['question'] }}
+                                                    </h3>
+
+                                                    @include('surveys.statistics.components.checkbox_distribution', [
+                                                        'optionCounts' => $questionData['options'],
+                                                        'submissionCount' => $questionData['total_responses']
+                                                    ])
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @if(empty($category['results']) || (empty($category['results']['range']) && empty($category['results']['checkboxes'])))
+                                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-8 text-center">
+                                        @if($categoryId === 'target_feedback')
+                                            <div class="flex flex-col items-center">
+                                                <x-fas-comment-alt class="w-16 h-16 text-blue-500 mb-4" />
+                                                <p class="text-gray-600 dark:text-gray-300 max-w-lg mx-auto">
+                                                    {{ __('admin.text_answers_excluded') }}
+                                                </p>
+                                                <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                                                    {{ __('admin.target_feedback_note', ['default' => 'Textliche Rückmeldungen werden hier nicht angezeigt, um die Anonymität zu wahren.']) }}
+                                                </p>
+                                            </div>
+                                        @else
+                                            <p class="text-gray-500 dark:text-gray-400">
+                                                {{ __('admin.no_question_data_for_category') }}
+                                            </p>
+                                        @endif
+                                    </div>
+                                @endif
                             @endif
                         </div>
                     @endforeach
@@ -314,28 +329,11 @@
                                         <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3">
                                             {{ $questionData['question'] }}
                                         </h3>
-                                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                                            {{ __('admin.total_responses') }}: {{ $questionData['total_responses'] }}
-                                        </p>
 
-                                        <div class="space-y-3 mt-4">
-                                            @if(isset($questionData['options']))
-                                                @foreach($questionData['options'] as $option => $count)
-                                                    <div>
-                                                        <div class="flex justify-between items-center mb-1">
-                                                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $option }}</span>
-                                                            <span class="text-sm text-gray-500 dark:text-gray-400">
-                                                                {{ $count }} ({{ $questionData['percentages'][$option] ?? 0 }}%)
-                                                            </span>
-                                                        </div>
-                                                        <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5">
-                                                            <div class="bg-green-500 dark:bg-green-600 h-2.5 rounded-full"
-                                                                style="width: {{ $questionData['percentages'][$option] ?? 0 }}%"></div>
-                                                        </div>
-                                                    </div>
-                                                @endforeach
-                                            @endif
-                                        </div>
+                                        @include('surveys.statistics.components.checkbox_distribution', [
+                                            'optionCounts' => $questionData['options'],
+                                            'submissionCount' => $questionData['total_responses']
+                                        ])
                                     </div>
                                 @endforeach
                             </div>
