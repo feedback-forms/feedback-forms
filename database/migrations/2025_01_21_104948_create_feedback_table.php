@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Models\{User, Feedback_template};
+use App\Models\{Department, GradeLevel, SchoolClass, SchoolYear, Subject, User, Feedback_template};
 
 return new class extends Migration
 {
@@ -20,11 +20,11 @@ return new class extends Migration
             $table->integer('limit');
             $table->integer('already_answered');
             $table->date('expire_date');
-            $table->string('school_year')->nullable();
-            $table->string('department')->nullable();
-            $table->string('grade_level')->nullable();
-            $table->string('class')->nullable();
-            $table->string('subject')->nullable();
+            $table->foreignIdFor(SchoolYear::class)->nullable();
+            $table->foreignIdFor(Department::class)->nullable();
+            $table->foreignIdFor(GradeLevel::class)->nullable();
+            $table->foreignIdFor(SchoolClass::class)->nullable();
+            $table->foreignIdFor(Subject::class)->nullable();
             $table->timestamps();
         });
     }
