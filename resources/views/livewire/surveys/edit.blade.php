@@ -42,7 +42,7 @@
                     <select id="school_year" wire:model="school_year" class="form-select rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                         <option value="">{{__('surveys.select_school_year_placeholder')}}</option>
                         @foreach($schoolYears as $year)
-                            <option value="{{ $year->name }}">{{ $year->name }}</option>
+                            <option value="{{ $year->id }}" wire:key="year-{{$year->id}}">{{ $year->name }}</option>
                         @endforeach
                     </select>
                     @error('school_year') <span class="text-red-500">{{ $message }}</span> @enderror
@@ -53,7 +53,7 @@
                     <select id="department" wire:model="department" class="form-select rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                         <option value="">{{__('surveys.select_department_placeholder')}}</option>
                         @foreach($departments as $dept)
-                            <option value="{{ $dept->name }}">{{ $dept->name }}</option>
+                            <option value="{{ $dept->id }}" wire:key="department-{{$dept->id}}">{{ $dept->name }}</option>
                         @endforeach
                     </select>
                     @error('department') <span class="text-red-500">{{ $message }}</span> @enderror
@@ -64,7 +64,7 @@
                     <select id="grade_level" wire:model="grade_level" class="form-select rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                         <option value="">{{__('surveys.select_grade_level_placeholder')}}</option>
                         @foreach($gradeLevels as $level)
-                            <option value="{{ $level->name }}">{{ $level->name }}</option>
+                            <option value="{{ $level->id }}" wire:key="gradelevel-{{$level->id}}">{{ $level->name }}</option>
                         @endforeach
                     </select>
                     @error('grade_level') <span class="text-red-500">{{ $message }}</span> @enderror
@@ -75,7 +75,7 @@
                     <select id="class" wire:model="class" class="form-select rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                         <option value="">{{__('surveys.select_class_placeholder')}}</option>
                         @foreach($schoolClasses as $schoolClass)
-                            <option value="{{ $schoolClass->name }}">{{ $schoolClass->name }}</option>
+                            <option value="{{ $schoolClass->id }}" wire:key="schoolclass-{{$schoolClass->id}}">{{ $schoolClass->name }}</option>
                         @endforeach
                     </select>
                     @error('class') <span class="text-red-500">{{ $message }}</span> @enderror
@@ -86,7 +86,7 @@
                     <select id="subject" wire:model="subject" class="form-select rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                         <option value="">{{__('surveys.select_subject_placeholder')}}</option>
                         @foreach($subjects as $subj)
-                            <option value="{{ $subj->name }}">{{ $subj->name }}</option>
+                            <option value="{{ $subj->id }}" wire:key="subject-{{$subj->id}}">{{ $subj->name }}</option>
                         @endforeach
                     </select>
                     @error('subject') <span class="text-red-500">{{ $message }}</span> @enderror

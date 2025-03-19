@@ -20,11 +20,11 @@ class Feedback extends Model
         'already_answered',
         'expire_date',
         'status',
-        'school_year',
-        'department',
-        'grade_level',
-        'class',
-        'subject'
+        'school_year_id',
+        'department_id',
+        'grade_level_id',
+        'school_class_id',
+        'subject_id'
     ];
 
     /**
@@ -66,6 +66,31 @@ class Feedback extends Model
     public function results(): HasManyThrough
     {
         return $this->hasManyThrough(Result::class, Question::class);
+    }
+
+    public function year(): BelongsTo
+    {
+        return $this->belongsTo(SchoolYear::class, 'school_year_id', 'id');
+    }
+
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class, 'department_id', 'id');
+    }
+
+    public function grade_level(): BelongsTo
+    {
+        return $this->belongsTo(GradeLevel::class, 'grade_level_id', 'id');
+    }
+
+    public function subject(): BelongsTo
+    {
+        return $this->belongsTo(Subject::class, 'subject_id', 'id');
+    }
+
+    public function class(): BelongsTo
+    {
+        return $this->belongsTo(SchoolClass::class, 'school_class_id', 'id');
     }
 
     /**
