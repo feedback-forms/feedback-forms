@@ -45,11 +45,11 @@
                 >
                     @foreach($templates as $template)
                         <div class="flex-none w-64">
-                            <div class="aspect-video bg-white dark:bg-gray-700 rounded-lg mb-2 overflow-hidden shadow-sm relative group">
+                            <div class="flex items-center aspect-video bg-white dark:bg-gray-700 rounded-lg mb-2 overflow-hidden shadow-sm relative group">
                                 <img
                                     src="{{ asset($template['image']) }}"
                                     alt="{{ $template['title'] }}"
-                                    class="w-full h-full object-cover"
+                                    class="w-auto h-[80%] mx-auto object-cover"
                                 />
 
                                 <!-- Preview and Create buttons overlay -->

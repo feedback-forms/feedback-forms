@@ -132,13 +132,15 @@ class SurveyService
      * Generate a unique 8-character access key
      */
     private function generateUniqueAccessKey(): string
-    {
-        do {
-            $key = strtoupper(substr(md5(uniqid()), 0, 8));
-        } while (Feedback::where('accesskey', $key)->exists());
+{
+    do {
+        $key = strtoupper(substr(md5(uniqid()), 0, 8));
+        $formattedKey = substr($key, 0, 4) . '-' . substr($key, 4, 4);
 
-        return $key;
-    }
+    } while (Feedback::where('accesskey', $formattedKey)->exists());
+
+    return $formattedKey;
+}
 
     /**
      * Validate if survey can be answered (not expired, within limits)
@@ -569,6 +571,50 @@ class SurveyService
                     ]);
                 }
             }
+
+            // Process open feedback text if provided
+            if (isset($jsonData['feedback']) && !empty($jsonData['feedback'])) {
+                try {
+                    // Create or find a text question template
+                    $textQuestionTemplate = Question_template::firstOrCreate(
+                        ['type' => 'text'],
+                        ['min_value' => null, 'max_value' => null]
+                    );
+
+                    // Find or create a question for open feedback
+                    $openFeedbackQuestion = $survey->questions()
+                        ->where('question', 'Open Feedback')
+                        ->first();
+
+                    if (!$openFeedbackQuestion) {
+                        $openFeedbackQuestion = Question::create([
+                            'feedback_template_id' => $survey->feedback_template_id,
+                            'feedback_id' => $survey->id,
+                            'question_template_id' => $textQuestionTemplate->id,
+                            'question' => 'Open Feedback',
+                            'order' => count($targetStatements) + 1,
+                        ]);
+                    }
+
+                    // Store the open feedback
+                    Result::create([
+                        'question_id' => $openFeedbackQuestion->id,
+                        'submission_id' => $submissionId,
+                        'value_type' => 'text',
+                        'rating_value' => $jsonData['feedback'],
+                    ]);
+
+                    Log::info("Stored target open feedback", [
+                        'survey_id' => $survey->id,
+                        'question_id' => $openFeedbackQuestion->id
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error("Failed to store target open feedback", [
+                        'survey_id' => $survey->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
         }
         // For smiley template
         else if ($templateType === 'smiley') {
@@ -910,9 +956,29 @@ class SurveyService
             if (str_contains($templateName, 'templates.feedback.smiley')) {
                 // For smiley template, we need to calculate the average smiley rating
                 // and collect positive and negative feedback
+                \Log::debug('Processing smiley survey statistics', [
+                    'survey_id' => $survey->id,
+                    'questions_count' => $survey->questions->count()
+                ]);
 
-                // ... [existing code for smiley template]
+                // Eager load all question templates and results for better performance
+                if (!$survey->questions->isEmpty() &&
+                    (!$survey->questions->first()->relationLoaded('question_template') ||
+                     !$survey->questions->first()->relationLoaded('results'))) {
+                    $survey->load('questions.question_template', 'questions.results');
+                }
 
+                // Add a marker with smiley data
+                $statistics[] = [
+                    'question' => null,
+                    'template_type' => 'smiley',
+                    'data' => [
+                        'submission_count' => $submissionCount,
+                    ],
+                ];
+
+                // We'll still process individual questions below in the generic loop
+                // and NOT skip them, so the smiley_survey view can find and display them
             }
             else if (str_contains($templateName, 'templates.feedback.target')) {
                 // For target template, we need to calculate statistics for each segment
@@ -1025,9 +1091,7 @@ class SurveyService
             // Original statistics calculation for other templates or in addition to template-specific stats
             foreach ($survey->questions as $question) {
                 // Skip template-specific questions that have already been handled above
-                if ((str_contains($templateName, 'templates.feedback.smiley') &&
-                    in_array($question->question, ['Positive Feedback', 'Negative Feedback'])) ||
-                    (str_contains($templateName, 'templates.feedback.target') &&
+                if ((str_contains($templateName, 'templates.feedback.target') &&
                     $question->question_template && $question->question_template->type === 'range')) {
                     // Skip these questions as they're already handled in template-specific stats
                     continue;
