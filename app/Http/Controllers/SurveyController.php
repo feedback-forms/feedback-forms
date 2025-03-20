@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Http\Requests\SmileyRequest;
+use App\Http\Requests\{SmileyRequest, StoreSurveyRequest};
 use Illuminate\Support\Facades\{Log};
 
 use App\Services\SurveyService;
@@ -60,20 +60,9 @@ class SurveyController extends Controller
     /**
      * Store a new survey
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreSurveyRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'template_id' => 'required|exists:feedback_templates,id',
-            'expire_date' => 'required|date|after:now',
-            'response_limit' => 'nullable|integer|min:-1',
-            'school_year_id' => 'required|exists:school_years,id',
-            'department_id' => 'required|exists:departments,id',
-            'grade_level_id' => 'required|exists:grade_levels,id',
-            'school_class_id' => 'required|exists:school_classes,id',
-            'subject_id' => 'required|exists:subjects,id',
-            'survey_data' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         try {
             // Process the survey data if it exists

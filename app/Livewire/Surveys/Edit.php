@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Surveys;
 
+use App\Http\Livewire\Traits\WithSurveyValidation;
 use App\Models\Feedback;
 use App\Models\SchoolYear;
 use App\Models\Department;
@@ -15,6 +16,8 @@ use Illuminate\Database\Eloquent\Collection;
 
 class Edit extends Component
 {
+    use WithSurveyValidation;
+
     public Feedback $survey;
     public Collection $schoolYears;
     public Collection $departments;
@@ -32,16 +35,15 @@ class Edit extends Component
     public int $class;
     public int $subject;
 
-    protected $rules = [
-        'name' => 'required|string|max:255',
-        'expire_date' => 'required|date|after:now',
-        'response_limit' => 'nullable|integer|min:-1',
-        'school_year' => 'required|exists:school_years,id',
-        'department' => 'required|exists:departments,id',
-        'grade_level' => 'required|exists:grade_levels,id',
-        'class' => 'required|exists:school_classes,id',
-        'subject' => 'required|exists:subjects,id',
-    ];
+    protected function rules()
+    {
+        return $this->getSurveyValidationRules();
+    }
+
+    protected function messages()
+    {
+        return $this->getSurveyValidationMessages();
+    }
 
     public function mount($id)
     {
@@ -56,7 +58,7 @@ class Edit extends Component
         $this->survey = Feedback::findOrFail($id);
 
         // Ensure the user can only edit their own surveys
-        if ($this->survey->user_id !== auth()->id()) {
+        if (!$this->canUpdateSurvey($id)) {
             abort(403, 'Unauthorized action.');
         }
 
