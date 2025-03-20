@@ -25,10 +25,8 @@ class SurveyStatisticsController extends Controller
      */
     public function show(Feedback $survey): View
     {
-        // Authorization: Ensure the logged-in user owns the survey
-        if (! Gate::allows('owns-survey', $survey)) {
-            abort(403, 'Unauthorized action.');
-        }
+        // Authorization: Ensure the logged-in user can view statistics for this survey
+        $this->authorize('viewStatistics', $survey);
 
         // Eager load all necessary relationships for statistics calculation
         $survey->load(['feedback_template', 'questions.question_template', 'questions.results']);

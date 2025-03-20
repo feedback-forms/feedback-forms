@@ -31,7 +31,11 @@ class AppServiceProvider extends ServiceProvider
             return $user->is_admin;
         });
 
-        // Register the owns-survey gate
+        // Register the owns-survey gate - kept for backward compatibility
+        // but should use authorize('view', $survey) etc. going forward
         Gate::define('owns-survey', [FeedbackPolicy::class, 'ownsSurvey']);
+
+        // Register the feedback policy
+        Gate::policy(Feedback::class, FeedbackPolicy::class);
     }
 }
