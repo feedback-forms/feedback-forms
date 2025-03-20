@@ -120,6 +120,13 @@ class Feedback extends Model
     }
 
     /**
+     * A caching key for the submission count to avoid redundant queries
+     *
+     * @var string
+     */
+    private const SUBMISSION_COUNT_CACHE_KEY = 'feedback_submission_count';
+
+    /**
      * Get the base query for submissions related to this feedback
      *
      * @return \Illuminate\Database\Query\Builder
@@ -133,19 +140,28 @@ class Feedback extends Model
 
     /**
      * Get the number of unique submissions for this feedback
+     * This implementation uses caching to avoid redundant queries
      *
      * @return int
      */
     public function getSubmissionCountAttribute()
     {
-        return $this->getSubmissionsBaseQuery()
-            ->distinct('results.submission_id')
-            ->count('results.submission_id');
+        // Use Laravel's remember() method to cache the result
+        return cache()->remember(
+            self::SUBMISSION_COUNT_CACHE_KEY . ":{$this->id}",
+            now()->addMinutes(10), // Cache for 10 minutes
+            function () {
+                return $this->getSubmissionsBaseQuery()
+                    ->distinct('results.submission_id')
+                    ->count('results.submission_id');
+            }
+        );
     }
 
     /**
      * Get the already_answered attribute dynamically
      *
+     * @deprecated Use submission_count instead
      * @return int
      */
     public function getAlreadyAnsweredAttribute()
@@ -155,15 +171,22 @@ class Feedback extends Model
 
     /**
      * Get all unique submission IDs for this feedback
+     * Uses query caching to improve performance
      *
      * @return array
      */
     public function getUniqueSubmissionIdsAttribute()
     {
-        return $this->getSubmissionsBaseQuery()
-            ->distinct('results.submission_id')
-            ->pluck('results.submission_id')
-            ->toArray();
+        return cache()->remember(
+            "feedback_submission_ids:{$this->id}",
+            now()->addMinutes(10), // Cache for 10 minutes
+            function () {
+                return $this->getSubmissionsBaseQuery()
+                    ->distinct('results.submission_id')
+                    ->pluck('results.submission_id')
+                    ->toArray();
+            }
+        );
     }
 
     /**
@@ -184,12 +207,11 @@ class Feedback extends Model
     /**
      * Get the count of unique submissions for this survey.
      *
+     * @deprecated Use submission_count attribute instead to take advantage of caching
      * @return int
      */
     public function getUniqueSubmissionsCount(): int
     {
-        return $this->getSubmissionsBaseQuery()
-            ->distinct('results.submission_id')
-            ->count('results.submission_id');
+        return $this->submission_count;
     }
 }
