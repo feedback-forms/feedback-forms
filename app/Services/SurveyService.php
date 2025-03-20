@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\{Question, Feedback_template, Question_template};
+use App\Models\{Question, FeedbackTemplate, QuestionTemplate};
 use App\Models\Feedback;
 use App\Repositories\FeedbackRepository;
 use App\Exceptions\ServiceException;
@@ -84,7 +84,7 @@ class SurveyService
 
                 try {
                     // Get the template
-                    $template = Feedback_template::findOrFail($surveyConfig['template_id']);
+                    $template = FeedbackTemplate::findOrFail($surveyConfig['template_id']);
                     $templateName = $template->name ?? '';
 
                     // Get the appropriate template strategy for this template
@@ -110,7 +110,7 @@ class SurveyService
                 if ($survey->questions()->count() === 0) {
                     try {
                         // Reload template with questions to ensure we have the latest data
-                        $template = Feedback_template::with('questions.question_template')->findOrFail($surveyConfig['template_id']);
+                        $template = FeedbackTemplate::with('questions.question_template')->findOrFail($surveyConfig['template_id']);
 
                         if ($template->questions->count() > 0) {
                             foreach ($template->questions as $index => $templateQuestion) {

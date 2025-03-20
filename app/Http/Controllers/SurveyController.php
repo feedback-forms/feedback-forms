@@ -5,7 +5,7 @@ use App\Http\Requests\{SmileyRequest, StoreSurveyRequest};
 use Illuminate\Support\Facades\{Log, Gate};
 
 use App\Services\SurveyService;
-use App\Models\{Feedback_template, Question_template, Feedback, SchoolYear, Department, GradeLevel, SchoolClass, Subject};
+use App\Models\{FeedbackTemplate, QuestionTemplate, Feedback, SchoolYear, Department, GradeLevel, SchoolClass, Subject};
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -24,8 +24,8 @@ class SurveyController extends Controller
      */
     public function create(Request $request): View|RedirectResponse
     {
-        $templates = Feedback_template::all();
-        $questionTemplates = Question_template::all();
+        $templates = FeedbackTemplate::all();
+        $questionTemplates = QuestionTemplate::all();
         $selectedTemplate = $request->route('template') ?? $request->query('template');
 
         // If no template is selected, redirect to templates page

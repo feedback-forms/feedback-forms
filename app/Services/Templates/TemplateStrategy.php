@@ -3,7 +3,7 @@
 namespace App\Services\Templates;
 
 use App\Models\Feedback;
-use App\Models\Question_template;
+use App\Models\QuestionTemplate;
 
 interface TemplateStrategy
 {

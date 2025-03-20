@@ -4,7 +4,7 @@ namespace App\Services\Templates;
 
 use App\Models\Feedback;
 use App\Models\Question;
-use App\Models\Question_template;
+use App\Models\QuestionTemplate;
 use App\Models\Result;
 use Illuminate\Support\Facades\Log;
 
@@ -29,11 +29,11 @@ abstract class AbstractTemplateStrategy implements TemplateStrategy
     /**
      * Get or create a text question template
      *
-     * @return Question_template
+     * @return QuestionTemplate
      */
-    protected function getTextQuestionTemplate(): Question_template
+    protected function getTextQuestionTemplate(): QuestionTemplate
     {
-        return Question_template::firstOrCreate(
+        return QuestionTemplate::firstOrCreate(
             ['type' => 'text'],
             ['min_value' => null, 'max_value' => null]
         );
@@ -44,11 +44,11 @@ abstract class AbstractTemplateStrategy implements TemplateStrategy
      *
      * @param int $minValue Minimum value for the range
      * @param int $maxValue Maximum value for the range
-     * @return Question_template
+     * @return QuestionTemplate
      */
-    protected function getRangeQuestionTemplate(int $minValue = 1, int $maxValue = 5): Question_template
+    protected function getRangeQuestionTemplate(int $minValue = 1, int $maxValue = 5): QuestionTemplate
     {
-        return Question_template::firstOrCreate(
+        return QuestionTemplate::firstOrCreate(
             ['type' => 'range', 'min_value' => $minValue, 'max_value' => $maxValue],
             ['min_value' => $minValue, 'max_value' => $maxValue]
         );
