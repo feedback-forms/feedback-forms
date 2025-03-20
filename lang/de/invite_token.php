@@ -10,6 +10,8 @@ return [
     'cancel' => 'Abbrechen',
     'create' => 'Erstellen',
     'revoke' => 'Widerrufen',
+    'delete' => 'Löschen',
     'change_duration' => 'Dauer ändern',
+    'confirm_delete' => 'Möchten Sie diesen Token wirklich löschen?',
     'edit' => 'Bearbeiten',
 ];
