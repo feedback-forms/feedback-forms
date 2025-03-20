@@ -56,7 +56,7 @@ This document outlines recommended improvements to enhance code quality, maintai
 
 - [ ] **Increase test coverage** - Add or enhance tests for critical components, especially around survey submission and statistics
 - [ ] **Implement integration tests** - Focus on testing the interaction between components
-- [ ] **Create test factories** - Ensure all models have appropriate factory definitions for testing
+- [x] **Create test factories** - Ensure all models have appropriate factory definitions for testing
 
 ## Technical Debt
 
