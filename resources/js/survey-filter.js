@@ -108,12 +108,13 @@ document.addEventListener('alpine:init', () => {
 
                 if (!statusFiltersActive) return true; // No status filters active, show all
 
+                // Check status filters against survey status flags
                 if (this.filters.expired && survey.isExpired) return true;
                 if (this.filters.running && survey.isRunning) return true;
 
                 // If status filters are active but survey doesn't match any
                 if (statusFiltersActive) {
-                    console.log(`Survey ${survey.id} excluded by status filters: expired=${survey.isExpired}, running=${survey.isRunning}`);
+                    console.log(`Survey ${survey.id} excluded by status filters: status=${survey.statusText}, expired=${survey.isExpired}, running=${survey.isRunning}`);
                     return false;
                 }
 

@@ -3,6 +3,11 @@
 return [
     'surveys' => 'Surveys',
     'expired' => 'Expired',
+    'status' => [
+        'expired' => 'Expired',
+        'running' => 'Running',
+        'cancelled' => 'Cancelled'
+    ],
     'cancelled' => 'Cancelled',
     'running' => 'Running',
     'create_new_survey' => 'Create New Survey',
