@@ -62,5 +62,5 @@ This document outlines recommended improvements to enhance code quality, maintai
 
 - [ ] **Address deprecated functionality** - Legacy functionality and conditionals marked with comments like "can be removed after frontend updates"
 - [ ] **Review database migration sequence** - Consider consolidating incremental migrations that modify the same tables
-- [ ] **Document complex algorithms** - Improve documentation for complex calculations in `SurveyAggregationService`
+- [x] **Document complex algorithms** - Improve documentation for complex calculations in `SurveyAggregationService`
 - [ ] **Fix inconsistent coding styles** - Ensure adherence to a consistent coding style throughout the codebase

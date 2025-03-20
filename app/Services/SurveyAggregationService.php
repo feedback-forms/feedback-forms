@@ -16,6 +16,18 @@ use Illuminate\Support\Facades\Log;
  * This service calculates aggregated statistics for surveys grouped by various
  * organizational categories (class, department, subject, school year) while
  * enforcing minimum threshold requirements to ensure anonymity.
+ *
+ * Key features:
+ * - Enforces configurable anonymity thresholds for different aggregation categories
+ * - Implements multi-level categorization of questions based on content analysis
+ * - Calculates statistical distributions for range-based questions (1-5 ratings, etc.)
+ * - Processes checkbox/multiple-choice responses with percentage calculations
+ * - Supports backward compatibility with legacy data formats
+ * - Maintains data integrity through extensive validation and error handling
+ *
+ * The service is designed to balance detailed statistical reporting with
+ * privacy protection, ensuring that individual responses cannot be identified
+ * when presenting aggregate results.
  */
 class SurveyAggregationService
 {
@@ -252,6 +264,10 @@ class SurveyAggregationService
     /**
      * Get the count of unique submissions across multiple feedbacks
      *
+     * This method counts distinct submission IDs from results that are linked to questions
+     * in the provided feedback forms. It ensures that each unique submission is counted only once,
+     * even if it contains multiple responses across different feedback forms.
+     *
      * @param \Illuminate\Database\Eloquent\Collection $feedbacks Collection of feedbacks
      * @return int Count of unique submissions
      */
@@ -273,8 +289,20 @@ class SurveyAggregationService
     /**
      * Calculate aggregated results for a collection of feedbacks
      *
+     * This method implements a multi-stage aggregation algorithm:
+     * 1. Groups questions by category using pattern matching (via categorizeQuestions)
+     * 2. Processes each category to aggregate range questions and checkbox questions
+     * 3. Structures the results in a hierarchical format with categories and their respective results
+     * 4. Implements backward compatibility for older data formats
+     *
+     * The algorithm preserves question categorization while calculating statistical aggregates
+     * (averages, distributions) for each question type. Special handling exists for:
+     * - Target feedback questions
+     * - Checkbox-based questions
+     * - Questions that don't fit standard categories
+     *
      * @param \Illuminate\Database\Eloquent\Collection $feedbacks Collection of feedbacks
-     * @return array Aggregated results grouped by question type
+     * @return array Aggregated results grouped by category and question type
      */
     private function calculateAggregatedResults($feedbacks): array
     {
@@ -461,7 +489,27 @@ class SurveyAggregationService
 
     /**
      * Categorize questions based on their content into predefined categories
-     * Implements pattern matching to assign questions to the desired categories
+     *
+     * This method implements a sophisticated pattern matching algorithm to categorize questions:
+     *
+     * 1. Initial preprocessing:
+     *    - Special handling for checkbox/checkboxes type questions
+     *    - Identification of target feedback templates
+     *
+     * 2. Multi-stage categorization process:
+     *    - Exact pattern matching against predefined phrases for each category
+     *    - Heuristic-based categorization for questions without exact matches:
+     *      a. Structural patterns (e.g., questions starting with "...")
+     *      b. Section header detection
+     *      c. Keyword-based classification
+     *    - Fallback mechanisms to ensure all questions are categorized
+     *
+     * 3. Post-processing:
+     *    - Filtering to keep only categories with questions
+     *    - Special handling to always include target_feedback category
+     *
+     * The algorithm prioritizes accuracy in categorization while ensuring all questions
+     * are assigned to appropriate categories for consistent data presentation.
      *
      * @param Collection $questions Collection of questions to categorize
      * @return Collection Questions grouped by assigned category
@@ -744,10 +792,24 @@ class SurveyAggregationService
      * Aggregate results for range type questions
      *
      * Groups similar questions by text and calculates average ratings and
-     * distribution of ratings for each question
+     * distribution of ratings for each question. The aggregation algorithm:
+     *
+     * 1. Consolidates identical questions across multiple feedback forms
+     * 2. Creates a distribution map showing how many responses fell into each rating value
+     * 3. Calculates statistical measures including:
+     *    - Average rating for each question
+     *    - Response count
+     *    - Value distribution across the rating scale
+     *
+     * The method includes validation to ensure:
+     * - Only numeric values within the defined min/max range are counted
+     * - Invalid or out-of-range values are logged and excluded
+     *
+     * The final structure maintains the original question scale (min/max values)
+     * while providing complete distribution data for statistical visualization.
      *
      * @param \Illuminate\Database\Eloquent\Collection $questions Collection of range-type questions with eager-loaded results
-     * @return array Aggregated range results
+     * @return array Aggregated range results organized by question text
      */
     private function aggregateRangeQuestions(Collection $questions): array
     {
@@ -855,10 +917,23 @@ class SurveyAggregationService
     /**
      * Aggregate results for checkbox type questions
      *
-     * Groups similar questions by text and calculates distribution of selected options
+     * Groups similar questions by text and calculates distribution of selected options.
+     * The aggregation process:
+     *
+     * 1. Filters out open feedback responses (typically containing keywords like 'feedback')
+     * 2. Consolidates identical questions across multiple feedback forms
+     * 3. Counts responses for each option (Yes, No, Not applicable)
+     * 4. Calculates percentage distributions for each option
+     *
+     * The algorithm handles both 'checkbox' and 'checkboxes' question types,
+     * supporting both current and legacy data formats. It tracks unique submission counts
+     * to accurately calculate percentages and provide meaningful statistics.
+     *
+     * Only predefined valid options are considered (Yes, No, Not applicable),
+     * with custom responses filtered out to maintain consistency in aggregated data.
      *
      * @param \Illuminate\Database\Eloquent\Collection $questions Collection of checkbox/checkboxes type questions
-     * @return array Aggregated checkbox results
+     * @return array Aggregated checkbox results with counts and percentage distributions
      */
     private function aggregateCheckboxQuestions(Collection $questions): array
     {
