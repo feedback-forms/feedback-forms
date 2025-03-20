@@ -1,59 +1,7 @@
 @props(['routeName' => 'surveys.scan'])
 
 <div
-    x-data="{
-        show: false,
-        surveyUrl: '',
-        currentAccesskey: ''
-    }"
-    @open-qr-modal.window="
-        show = true;
-        currentAccesskey = $event.detail.accesskey;
-        $nextTick(() => {
-            var url = new URL('{{ url(route($routeName)) }}');
-            url.searchParams.append('token', currentAccesskey);
-            surveyUrl = url.toString();
-
-            if (typeof window.QRCode !== 'undefined') {
-                try {
-                    const canvas = document.getElementById('qrcode-canvas');
-                    const loadingEl = document.getElementById('qrcode-loading');
-                    const errorEl = document.getElementById('qrcode-error');
-
-                    if (loadingEl) loadingEl.style.display = 'flex';
-                    if (errorEl) errorEl.style.display = 'none';
-
-                    window.QRCode.toCanvas(canvas, surveyUrl, {
-                        width: 200,
-                        margin: 1
-                    }, function(error) {
-                        if (loadingEl) loadingEl.style.display = 'none';
-
-                        if (error) {
-                            if (errorEl) errorEl.style.display = 'block';
-                            console.error('QR code error:', error);
-                        }
-                    });
-                } catch(e) {
-                    const loadingEl = document.getElementById('qrcode-loading');
-                    const errorEl = document.getElementById('qrcode-error');
-
-                    if (loadingEl) loadingEl.style.display = 'none';
-                    if (errorEl) errorEl.style.display = 'block';
-
-                    console.error('QR code generation failed:', e);
-                }
-            } else {
-                const loadingEl = document.getElementById('qrcode-loading');
-                const errorEl = document.getElementById('qrcode-error');
-
-                if (loadingEl) loadingEl.style.display = 'none';
-                if (errorEl) errorEl.style.display = 'block';
-
-                console.error('QRCode library not loaded');
-            }
-        });
-    "
+    x-data="qrCodeModal('{{ url(route($routeName)) }}')"
     x-show="show"
     x-transition:enter="transition ease-out duration-300"
     x-transition:enter-start="opacity-0"
