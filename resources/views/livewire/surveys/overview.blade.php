@@ -185,8 +185,11 @@
         @open-qr-modal.window="
             show = true;
             currentAccesskey = $event.detail.accesskey;
-            surveyUrl = '{{ url('surveys/scan') }}/' + currentAccesskey;
             $nextTick(() => {
+                var url = new URL('{{ url(route('surveys.scan')) }}');
+                url.searchParams.append('token', currentAccesskey);
+                surveyUrl = url.toString();
+
                 if (typeof window.QRCode !== 'undefined') {
                     try {
                         const canvas = document.getElementById('qrcode-canvas');
