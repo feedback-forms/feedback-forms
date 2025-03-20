@@ -11,6 +11,10 @@ use Carbon\Carbon;
 class SurveyService
 {
     /**
+     * @var Templates\TemplateStrategyFactory
+     */
+    protected $templateStrategyFactory;
+    /**
      * Create a new survey from template
      */
     public function createFromTemplate(array $data, int $userId): Feedback
@@ -31,97 +35,34 @@ class SurveyService
                 'subject_id' => $data['subject_id'] ?? null,
             ]);
 
-            // Get the template and its associated question templates
-            $template = Feedback_template::with('questions.question_template')->findOrFail($data['template_id']);
+            // Get the template
+            $template = Feedback_template::findOrFail($data['template_id']);
             $templateName = $template->name ?? '';
 
-            // Special handling for target template
-            if (str_contains($templateName, 'templates.feedback.target')) {
-                // Create 8 questions for the target template, one for each segment
-                $targetStatements = [
-                    'Ich lerne im Unterricht viel.',
-                    'Die Lehrkraft hat ein großes Hintergrundwissen.',
-                    'Die Lehrkraft ist immer gut vorbereitet.',
-                    'Die Lehrkraft zeigt Interesse an ihren Schülern.',
-                    'Die Lehrkraft sorgt für ein gutes Lernklima in der Klasse.',
-                    'Die Notengebung ist fair und nachvollziehbar.',
-                    'Ich konnte dem Unterricht immer gut folgen.',
-                    'Der Unterricht wird vielfältig gestaltet.'
-                ];
+            // Get the appropriate template strategy for this template
+            $templateStrategy = $this->templateStrategyFactory->getStrategy($templateName);
 
-                // Find or create a range question template for target segments
-                $rangeQuestionTemplate = Question_template::firstOrCreate(
-                    ['type' => 'range', 'min_value' => 1, 'max_value' => 5],
-                    ['min_value' => 1, 'max_value' => 5]
-                );
+            // Use the strategy to create questions
+            $templateStrategy->createQuestions($survey, $data);
 
-                foreach ($targetStatements as $index => $statement) {
-                    Question::create([
-                        'feedback_template_id' => $data['template_id'],
-                        'feedback_id' => $survey->id,
-                        'question_template_id' => $rangeQuestionTemplate->id,
-                        'question' => $statement,
-                        'order' => $index + 1,
-                    ]);
+            // If the template has predefined questions and the strategy didn't create any,
+            // create them from the template (this handles the case where template questions
+            // are defined but we don't have a specialized strategy for this template type)
+            if ($survey->questions()->count() === 0) {
+                // Reload template with questions to ensure we have the latest data
+                $template = Feedback_template::with('questions.question_template')->findOrFail($data['template_id']);
+
+                if ($template->questions->count() > 0) {
+                    foreach ($template->questions as $index => $templateQuestion) {
+                        Question::create([
+                            'feedback_template_id' => $data['template_id'],
+                            'feedback_id' => $survey->id,
+                            'question_template_id' => $templateQuestion->question_template_id ?? null,
+                            'question' => $templateQuestion->question,
+                            'order' => $templateQuestion->order ?? ($index + 1),
+                        ]);
+                    }
                 }
-
-                return $survey;
-            }
-            // Special handling for smiley template
-            else if (str_contains($templateName, 'templates.feedback.smiley')) {
-                // Find or create a text question template
-                $textQuestionTemplate = Question_template::firstOrCreate(
-                    ['type' => 'text'],
-                    ['min_value' => null, 'max_value' => null]
-                );
-
-                // Create two questions: one for positive feedback and one for negative feedback
-                Question::create([
-                    'feedback_template_id' => $data['template_id'],
-                    'feedback_id' => $survey->id,
-                    'question_template_id' => $textQuestionTemplate->id,
-                    'question' => 'Positive Feedback',
-                    'order' => 1,
-                ]);
-
-                Question::create([
-                    'feedback_template_id' => $data['template_id'],
-                    'feedback_id' => $survey->id,
-                    'question_template_id' => $textQuestionTemplate->id,
-                    'question' => 'Negative Feedback',
-                    'order' => 2,
-                ]);
-
-                return $survey;
-            }
-            // If the template has predefined questions, use those
-            else if ($template->questions->count() > 0) {
-                foreach ($template->questions as $index => $templateQuestion) {
-                    Question::create([
-                        'feedback_template_id' => $data['template_id'],
-                        'feedback_id' => $survey->id,
-                        'question_template_id' => $templateQuestion->question_template_id ?? null,
-                        'question' => $templateQuestion->question,
-                        'order' => $templateQuestion->order ?? ($index + 1),
-                    ]);
-                }
-            }
-            // For other templates or fallback
-            else {
-                // Find or create a text question template to use
-                $textQuestionTemplate = Question_template::firstOrCreate(
-                    ['type' => 'text'],
-                    ['min_value' => null, 'max_value' => null]
-                );
-
-                // Create a default question for this survey
-                Question::create([
-                    'feedback_template_id' => $data['template_id'],
-                    'feedback_id' => $survey->id,
-                    'question_template_id' => $textQuestionTemplate->id,
-                    'question' => 'General Feedback', // Generic question text
-                    'order' => 1,
-                ]);
             }
 
             return $survey;
@@ -190,14 +131,12 @@ class SurveyService
                 // Check if this is a JSON data structure (from template-specific forms like target)
                 if (isset($responses['json_data']) && is_array($responses['json_data'])) {
                     try {
-                        // Handle template-specific response format using pre-decoded JSON data
-                        $this->storeTemplateSpecificResponses($survey, $responses['json_data'], $submissionId);
+                        // Get the appropriate template strategy for this template
+                        $templateName = $survey->feedback_template->name ?? '';
+                        $templateStrategy = $this->templateStrategyFactory->getStrategy($templateName);
 
-                        // Set the status to update if it's a draft or running
-                        if (in_array($survey->status, ['draft', 'running'])) {
-                            $survey->update(['status' => 'running']);
-                        }
-
+                        // Use the strategy to store responses
+                        $templateStrategy->storeResponses($survey, $responses['json_data'], $submissionId);
                         return true;
                     } catch (\Exception $e) {
                         Log::error('Error processing structured JSON data: ' . $e->getMessage(), [
@@ -212,14 +151,12 @@ class SurveyService
                     try {
                         $jsonData = json_decode($responses[0], true);
                         if (json_last_error() === JSON_ERROR_NONE && is_array($jsonData)) {
-                            // Handle template-specific response format
-                            $this->storeTemplateSpecificResponses($survey, $jsonData, $submissionId);
+                            // Get the appropriate template strategy for this template
+                            $templateName = $survey->feedback_template->name ?? '';
+                            $templateStrategy = $this->templateStrategyFactory->getStrategy($templateName);
 
-                            // Set the status to update if it's a draft or running
-                            if (in_array($survey->status, ['draft', 'running'])) {
-                                $survey->update(['status' => 'running']);
-                            }
-
+                            // Use the strategy to store responses
+                            $templateStrategy->storeResponses($survey, $jsonData, $submissionId);
                             return true;
                         }
                     } catch (\Exception $e) {
@@ -452,457 +389,6 @@ class SurveyService
         }
     }
 
-    /**
-     * Store responses from template-specific forms (like target diagram)
-     */
-    private function storeTemplateSpecificResponses(Feedback $survey, array $jsonData, string $submissionId): void
-    {
-        // Get the template type
-        $templateName = $survey->feedback_template->name ?? '';
-        $templateType = '';
-        if (preg_match('/templates\.feedback\.(\w+)$/', $templateName, $matches)) {
-            $templateType = $matches[1];
-        }
-
-        // Log the template type for debugging
-        Log::info("Processing template-specific response", [
-            'survey_id' => $survey->id,
-            'template_type' => $templateType,
-            'submission_id' => $submissionId
-        ]);
-
-        // For target template
-        if ($templateType === 'target') {
-            // Validate the expected structure of jsonData
-            if (!isset($jsonData['ratings']) || !is_array($jsonData['ratings'])) {
-                Log::warning("Invalid target response format: 'ratings' array missing or not an array", [
-                    'survey_id' => $survey->id,
-                    'jsonData' => $jsonData
-                ]);
-                return;
-            }
-
-            // Define the expected statements for target template
-            $targetStatements = [
-                'Ich lerne im Unterricht viel.',
-                'Die Lehrkraft hat ein großes Hintergrundwissen.',
-                'Die Lehrkraft ist immer gut vorbereitet.',
-                'Die Lehrkraft zeigt Interesse an ihren Schülern.',
-                'Die Lehrkraft sorgt für ein gutes Lernklima in der Klasse.',
-                'Die Notengebung ist fair und nachvollziehbar.',
-                'Ich konnte dem Unterricht immer gut folgen.',
-                'Der Unterricht wird vielfältig gestaltet.'
-            ];
-
-            // Load all questions for this survey
-            $questions = $survey->questions()->get();
-
-            // Create a mapping of segment index to question based on question text
-            $segmentQuestionMap = [];
-            foreach ($questions as $question) {
-                $statementIndex = array_search($question->question, $targetStatements);
-                if ($statementIndex !== false) {
-                    $segmentQuestionMap[$statementIndex] = $question;
-                }
-            }
-
-            // Process each segment rating
-            foreach ($jsonData['ratings'] as $ratingData) {
-                // Validate the rating data structure
-                if (!isset($ratingData['segment']) || !isset($ratingData['rating'])) {
-                    Log::warning("Invalid rating data in target response: missing 'segment' or 'rating'", [
-                        'survey_id' => $survey->id,
-                        'ratingData' => $ratingData
-                    ]);
-                    continue;
-                }
-
-                $segment = $ratingData['segment'];
-                $ratingValue = $ratingData['rating'];
-
-                // Validate segment index
-                if (!isset($segmentQuestionMap[$segment])) {
-                    Log::warning("Invalid segment index or question not found for segment", [
-                        'survey_id' => $survey->id,
-                        'segment' => $segment,
-                        'total_questions' => count($questions)
-                    ]);
-                    continue;
-                }
-
-                // Validate rating value (should be 1-5 for target template)
-                if (!is_numeric($ratingValue) || $ratingValue < 1 || $ratingValue > 5) {
-                    Log::warning("Invalid rating value for target template", [
-                        'survey_id' => $survey->id,
-                        'segment' => $segment,
-                        'rating' => $ratingValue
-                    ]);
-                    continue;
-                }
-
-                // Get corresponding question for this segment
-                $question = $segmentQuestionMap[$segment];
-
-                // Create a result with scalar rating value
-                try {
-                    $result = Result::create([
-                        'question_id' => $question->id,
-                        'submission_id' => $submissionId,
-                        'value_type' => 'number',
-                        'rating_value' => (string)$ratingValue, // Ensure it's a string
-                    ]);
-
-                    Log::info("Stored target segment rating", [
-                        'survey_id' => $survey->id,
-                        'segment' => $segment,
-                        'question_id' => $question->id,
-                        'rating' => $ratingValue
-                    ]);
-                } catch (\Exception $e) {
-                    Log::error("Failed to store target segment rating", [
-                        'survey_id' => $survey->id,
-                        'segment' => $segment,
-                        'question_id' => $question->id,
-                        'rating' => $ratingValue,
-                        'error' => $e->getMessage()
-                    ]);
-                }
-            }
-
-            // Process open feedback text if provided
-            if (isset($jsonData['feedback']) && !empty($jsonData['feedback'])) {
-                try {
-                    // Create or find a text question template
-                    $textQuestionTemplate = Question_template::firstOrCreate(
-                        ['type' => 'text'],
-                        ['min_value' => null, 'max_value' => null]
-                    );
-
-                    // Find or create a question for open feedback
-                    $openFeedbackQuestion = $survey->questions()
-                        ->where('question', 'Open Feedback')
-                        ->first();
-
-                    if (!$openFeedbackQuestion) {
-                        $openFeedbackQuestion = Question::create([
-                            'feedback_template_id' => $survey->feedback_template_id,
-                            'feedback_id' => $survey->id,
-                            'question_template_id' => $textQuestionTemplate->id,
-                            'question' => 'Open Feedback',
-                            'order' => count($targetStatements) + 1,
-                        ]);
-                    }
-
-                    // Store the open feedback
-                    Result::create([
-                        'question_id' => $openFeedbackQuestion->id,
-                        'submission_id' => $submissionId,
-                        'value_type' => 'text',
-                        'rating_value' => $jsonData['feedback'],
-                    ]);
-
-                    Log::info("Stored target open feedback", [
-                        'survey_id' => $survey->id,
-                        'question_id' => $openFeedbackQuestion->id
-                    ]);
-                } catch (\Exception $e) {
-                    Log::error("Failed to store target open feedback", [
-                        'survey_id' => $survey->id,
-                        'error' => $e->getMessage()
-                    ]);
-                }
-            }
-        }
-        // For smiley template
-        else if ($templateType === 'smiley') {
-            // Validate the expected structure of jsonData
-            $hasPositive = isset($jsonData['positive']) && is_string($jsonData['positive']);
-            $hasNegative = isset($jsonData['negative']) && is_string($jsonData['negative']);
-
-            if (!$hasPositive && !$hasNegative) {
-                Log::warning("Invalid smiley response format: neither 'positive' nor 'negative' found", [
-                    'survey_id' => $survey->id,
-                    'jsonData' => $jsonData
-                ]);
-                return;
-            }
-
-            // Get the positive and negative feedback questions
-            $positiveQuestion = $survey->questions()->where('question', 'Positive Feedback')->first();
-            $negativeQuestion = $survey->questions()->where('question', 'Negative Feedback')->first();
-
-            // Store positive feedback if provided
-            if ($positiveQuestion && $hasPositive && !empty($jsonData['positive'])) {
-                try {
-                    Result::create([
-                        'question_id' => $positiveQuestion->id,
-                        'submission_id' => $submissionId,
-                        'value_type' => 'text',
-                        'rating_value' => $jsonData['positive'],
-                    ]);
-
-                    Log::info("Stored smiley positive feedback", [
-                        'survey_id' => $survey->id,
-                        'question_id' => $positiveQuestion->id
-                    ]);
-                } catch (\Exception $e) {
-                    Log::error("Failed to store smiley positive feedback", [
-                        'survey_id' => $survey->id,
-                        'question_id' => $positiveQuestion->id,
-                        'error' => $e->getMessage()
-                    ]);
-                }
-            } else if (!$positiveQuestion) {
-                Log::warning("Positive feedback question not found for smiley template", [
-                    'survey_id' => $survey->id
-                ]);
-            }
-
-            // Store negative feedback if provided
-            if ($negativeQuestion && $hasNegative && !empty($jsonData['negative'])) {
-                try {
-                    Result::create([
-                        'question_id' => $negativeQuestion->id,
-                        'submission_id' => $submissionId,
-                        'value_type' => 'text',
-                        'rating_value' => $jsonData['negative'],
-                    ]);
-
-                    Log::info("Stored smiley negative feedback", [
-                        'survey_id' => $survey->id,
-                        'question_id' => $negativeQuestion->id
-                    ]);
-                } catch (\Exception $e) {
-                    Log::error("Failed to store smiley negative feedback", [
-                        'survey_id' => $survey->id,
-                        'question_id' => $negativeQuestion->id,
-                        'error' => $e->getMessage()
-                    ]);
-                }
-            } else if (!$negativeQuestion) {
-                Log::warning("Negative feedback question not found for smiley template", [
-                    'survey_id' => $survey->id
-                ]);
-            }
-        }
-        // For table template
-        else if ($templateType === 'table') {
-            Log::info("Processing table template response", [
-                'survey_id' => $survey->id,
-                'submission_id' => $submissionId,
-                'data' => $jsonData
-            ]);
-
-            // Validate the expected structure of jsonData for table template
-            if (!isset($jsonData['ratings']) || !is_array($jsonData['ratings'])) {
-                Log::warning("Invalid table response format: 'ratings' array missing or not an array", [
-                    'survey_id' => $survey->id,
-                    'jsonData' => $jsonData
-                ]);
-                return;
-            }
-
-            // Load all questions for this survey
-            $questions = $survey->questions()->get();
-
-            // Process each question rating
-            foreach ($jsonData['ratings'] as $questionKey => $ratingValue) {
-                // Find the corresponding question by the question text
-                $question = $questions->firstWhere('question', $questionKey);
-
-                if (!$question) {
-                    Log::warning("Question not found for table template rating", [
-                        'survey_id' => $survey->id,
-                        'questionKey' => $questionKey
-                    ]);
-                    continue;
-                }
-
-                // Validate rating value (should be 1-5 for table template questions)
-                if (!is_numeric($ratingValue) || $ratingValue < 1 || $ratingValue > 5) {
-                    Log::warning("Invalid rating value for table template question", [
-                        'survey_id' => $survey->id,
-                        'questionKey' => $questionKey,
-                        'rating' => $ratingValue
-                    ]);
-                    continue;
-                }
-
-                // Create a result with scalar rating value
-                try {
-                    $result = Result::create([
-                        'question_id' => $question->id,
-                        'submission_id' => $submissionId,
-                        'value_type' => 'number',
-                        'rating_value' => (string)$ratingValue, // Ensure it's a string
-                    ]);
-
-                    Log::info("Stored table question rating", [
-                        'survey_id' => $survey->id,
-                        'question_id' => $question->id,
-                        'rating' => $ratingValue
-                    ]);
-                } catch (\Exception $e) {
-                    Log::error("Failed to store table question rating", [
-                        'survey_id' => $survey->id,
-                        'question_id' => $question->id,
-                        'rating' => $ratingValue,
-                        'error' => $e->getMessage()
-                    ]);
-                }
-            }
-
-            // Store open feedback responses if provided
-            if (isset($jsonData['feedback']) && is_array($jsonData['feedback'])) {
-                // Find the general feedback questions if they exist
-                $positiveQuestion = $questions->firstWhere('question', 'Das hat mir besonders gut gefallen');
-                $negativeQuestion = $questions->firstWhere('question', 'Das hat mir nicht gefallen');
-                $suggestionsQuestion = $questions->firstWhere('question', 'Verbesserungsvorschläge');
-
-                // Store positive feedback
-                if ($positiveQuestion && isset($jsonData['feedback']['positive']) && !empty($jsonData['feedback']['positive'])) {
-                    try {
-                        Result::create([
-                            'question_id' => $positiveQuestion->id,
-                            'submission_id' => $submissionId,
-                            'value_type' => 'text',
-                            'rating_value' => $jsonData['feedback']['positive'],
-                        ]);
-
-                        Log::info("Stored table positive feedback", [
-                            'survey_id' => $survey->id,
-                            'question_id' => $positiveQuestion->id
-                        ]);
-                    } catch (\Exception $e) {
-                        Log::error("Failed to store table positive feedback", [
-                            'survey_id' => $survey->id,
-                            'question_id' => $positiveQuestion->id,
-                            'error' => $e->getMessage()
-                        ]);
-                    }
-                }
-
-                // Store negative feedback
-                if ($negativeQuestion && isset($jsonData['feedback']['negative']) && !empty($jsonData['feedback']['negative'])) {
-                    try {
-                        Result::create([
-                            'question_id' => $negativeQuestion->id,
-                            'submission_id' => $submissionId,
-                            'value_type' => 'text',
-                            'rating_value' => $jsonData['feedback']['negative'],
-                        ]);
-
-                        Log::info("Stored table negative feedback", [
-                            'survey_id' => $survey->id,
-                            'question_id' => $negativeQuestion->id
-                        ]);
-                    } catch (\Exception $e) {
-                        Log::error("Failed to store table negative feedback", [
-                            'survey_id' => $survey->id,
-                            'question_id' => $negativeQuestion->id,
-                            'error' => $e->getMessage()
-                        ]);
-                    }
-                }
-
-                // Store suggestions feedback
-                if ($suggestionsQuestion && isset($jsonData['feedback']['suggestions']) && !empty($jsonData['feedback']['suggestions'])) {
-                    try {
-                        Result::create([
-                            'question_id' => $suggestionsQuestion->id,
-                            'submission_id' => $submissionId,
-                            'value_type' => 'text',
-                            'rating_value' => $jsonData['feedback']['suggestions'],
-                        ]);
-
-                        Log::info("Stored table suggestions feedback", [
-                            'survey_id' => $survey->id,
-                            'question_id' => $suggestionsQuestion->id
-                        ]);
-                    } catch (\Exception $e) {
-                        Log::error("Failed to store table suggestions feedback", [
-                            'survey_id' => $survey->id,
-                            'question_id' => $suggestionsQuestion->id,
-                            'error' => $e->getMessage()
-                        ]);
-                    }
-                }
-            }
-        }
-        // Fallback for other template types or if template-specific handling fails
-        else {
-            Log::warning("Unsupported template type or invalid data format", [
-                'survey_id' => $survey->id,
-                'template_type' => $templateType,
-                'data' => $jsonData
-            ]);
-
-            // Get the first question as a fallback
-            $firstQuestion = $survey->questions->first();
-
-            // If no question exists, create a default one
-            if (!$firstQuestion) {
-                try {
-                    // Find or create a text question template
-                    $textQuestionTemplate = Question_template::firstOrCreate(
-                        ['type' => 'text'],
-                        ['min_value' => null, 'max_value' => null]
-                    );
-
-                    // Create a default question for this survey
-                    $firstQuestion = Question::create([
-                        'feedback_template_id' => $survey->feedback_template_id,
-                        'feedback_id' => $survey->id,
-                        'question_template_id' => $textQuestionTemplate->id,
-                        'question' => 'General Feedback', // Generic question text
-                        'order' => 1,
-                    ]);
-
-                    Log::info("Created default question for unsupported template response", [
-                        'survey_id' => $survey->id,
-                        'question_id' => $firstQuestion->id,
-                        'template_type' => $templateType
-                    ]);
-                } catch (\Exception $e) {
-                    Log::error("Failed to create default question for template response", [
-                        'survey_id' => $survey->id,
-                        'template_type' => $templateType,
-                        'error' => $e->getMessage()
-                    ]);
-                    return;
-                }
-            }
-
-            // Store a simple text response indicating the template type
-            try {
-                Result::create([
-                    'question_id' => $firstQuestion->id,
-                    'submission_id' => $submissionId,
-                    'value_type' => 'text',
-                    'rating_value' => "Response from {$templateType} template",
-                ]);
-            } catch (\Exception $e) {
-                Log::error("Failed to store fallback response", [
-                    'survey_id' => $survey->id,
-                    'question_id' => $firstQuestion->id,
-                    'template_type' => $templateType,
-                    'error' => $e->getMessage()
-                ]);
-            }
-        }
-
-        // Set the status to running
-        if (in_array($survey->status, ['draft', 'running'])) {
-            try {
-                $survey->update(['status' => 'running']);
-            } catch (\Exception $e) {
-                Log::error("Failed to update survey status", [
-                    'survey_id' => $survey->id,
-                    'error' => $e->getMessage()
-                ]);
-            }
-        }
-    }
 
     /**
      * @var StatisticsService
@@ -913,10 +399,14 @@ class SurveyService
      * Constructor to initialize dependencies
      *
      * @param StatisticsService $statisticsService
+     * @param Templates\TemplateStrategyFactory $templateStrategyFactory
      */
-    public function __construct(StatisticsService $statisticsService)
-    {
+    public function __construct(
+        StatisticsService $statisticsService,
+        Templates\TemplateStrategyFactory $templateStrategyFactory
+    ) {
         $this->statisticsService = $statisticsService;
+        $this->templateStrategyFactory = $templateStrategyFactory;
     }
 
     /**
