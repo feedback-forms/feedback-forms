@@ -1,4 +1,8 @@
 <x-app-layout>
+    <x-slot name="title">
+        {{ __('title.survey.target') }}
+    </x-slot>
+
     <style>
         path:hover {
             fill: rgba(59, 130, 246, var(--hover-opacity)) !important;

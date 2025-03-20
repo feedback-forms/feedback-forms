@@ -1,4 +1,8 @@
 <x-app-layout>
+    <x-slot name="title">
+        {{ __('title.survey.statistics', ['name' => $survey->name ?? $survey->feedback_template->title]) }}
+    </x-slot>
+
     <x-slot name="header">
         <div class="bg-indigo-100 dark:bg-indigo-900 py-4 px-6 rounded-md shadow-md">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -29,7 +33,7 @@
                         </div>
                         <div class="bg-gray-50 dark:bg-gray-700 p-5 rounded-lg shadow-sm">
                             <p class="mb-2"><span class="font-semibold">{{ __('surveys.responses') }}:</span> {{ $survey->submission_count }} / {{ $survey->limit == -1 ? '∞' : $survey->limit }}</p>
-                            <p class="mb-2"><span class="font-semibold">{{ __('surveys.expires') }}:</span> {{ $survey->expire_date->format('d.m.Y') }}</p>
+                            <p class="mb-2"><span class="font-semibold">{{ __('surveys.expires') }}:</span> {{ $survey->expire_date->format('d.m.Y H:i') }}</p>
                             <p><span class="font-semibold">{{ __('surveys.status') }}:</span>
                                 @if($survey->expire_date->isPast())
                                     <span class="text-red-500 font-medium">{{ __('surveys.expired') }}</span>
@@ -48,6 +52,7 @@
                         $tableCategories = [];
                         $isTargetTemplate = false;
                         $isSmileyTemplate = false;
+                        $isCheckboxTemplate = false;
 
                         // Process the statistics data
                         foreach($statisticsData as $stat) {
@@ -69,6 +74,16 @@
                             if ($stat['template_type'] === 'smiley') {
                                 $isSmileyTemplate = true;
                             }
+
+                            // Check for checkbox type statistics
+                            if ($stat['template_type'] === 'checkbox') {
+                                $isCheckboxTemplate = true;
+                            }
+                        }
+
+                        // Also check the template name
+                        if (str_contains($survey->feedback_template->name ?? '', 'templates.feedback.checkbox')) {
+                            $isCheckboxTemplate = true;
                         }
 
                         // Process tableCategories to add hasResponses flag
@@ -132,8 +147,13 @@
                             @include('surveys.statistics.smiley_survey')
                         @endif
 
+                        <!-- Handle checkbox surveys -->
+                        @if($isCheckboxTemplate)
+                            @include('surveys.statistics.checkbox_survey')
+                        @endif
+
                         <!-- Display statistics for non-table surveys -->
-                        @if(!$isTableSurvey && !$isSmileyTemplate)
+                        @if(!$isTableSurvey && !$isSmileyTemplate && !$isCheckboxTemplate)
                             @php
                                 // Filter out Open Feedback from statistics data if it's already displayed in the target tabs
                                 $filteredStatisticsData = $statisticsData;

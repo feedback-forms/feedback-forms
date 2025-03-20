@@ -7,7 +7,7 @@
         <link rel="icon" type="image/svg+xml" href="/img/Feedback_Forms_Favicon.svg">
 
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ $title ?? config('app.name') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

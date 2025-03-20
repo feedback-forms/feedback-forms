@@ -148,4 +148,18 @@ class Feedback extends Model
             ->select('results.submission_id')
             ->distinct();
     }
+
+    /**
+     * Get the count of unique submissions for this survey.
+     *
+     * @return int
+     */
+    public function getUniqueSubmissionsCount(): int
+    {
+        return DB::table('results')
+            ->join('questions', 'results.question_id', '=', 'questions.id')
+            ->where('questions.feedback_id', $this->id)
+            ->distinct('results.submission_id')
+            ->count('results.submission_id');
+    }
 }

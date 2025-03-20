@@ -1,4 +1,8 @@
 <x-guest-layout>
+    <x-slot name="title">
+        {{__('title.respond')}}
+    </x-slot>
+
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -109,6 +113,25 @@
                                             @foreach(['Yes', 'No', 'Not applicable'] as $index => $option)
                                                 <label class="flex items-center space-x-2 cursor-pointer">
                                                     <input type="radio" name="responses[{{ $question->id }}]" value="{{ $option }}" class="form-radio" required>
+                                                    <span>{{ $option }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    @elseif($templateType === 'checkboxes')
+                                        <div class="space-y-2">
+                                            @php
+                                                $options = [
+                                                    __('surveys.checkboxes_options.strongly_agree'),
+                                                    __('surveys.checkboxes_options.agree'),
+                                                    __('surveys.checkboxes_options.neutral'),
+                                                    __('surveys.checkboxes_options.disagree'),
+                                                    __('surveys.checkboxes_options.strongly_disagree')
+                                                ];
+                                            @endphp
+
+                                            @foreach($options as $option)
+                                                <label class="flex items-center space-x-2 cursor-pointer">
+                                                    <input type="checkbox" name="responses[{{ $question->id }}][]" value="{{ $option }}" class="form-checkbox">
                                                     <span>{{ $option }}</span>
                                                 </label>
                                             @endforeach

@@ -10,7 +10,7 @@
             <a href="{{ route('admin.users') }}">
                 <div class="flex items-center gap-2 mb-4">
                     <h2 class="text-xl font-bold text-gray-700 dark:text-gray-200">{{ __('admin.users') }}</h2>
-                    <x-fas-arrow-right class="w-4 h-4" />
+                    <x-fas-arrow-right class="w-4 h-4 text-gray-700 dark:text-gray-200" />
                 </div>
             </a>
             <div class="relative group" x-data="{
@@ -66,7 +66,7 @@
         <section class="mt-8">
             <a href="{{ route('admin.invite-token') }}" class="flex flex-row gap-2 items-center text-gray-700 dark:text-gray-200 mb-4">
                 <h2 class="text-xl font-bold">{{ __('admin.invite_tokens') }}</h2>
-                <x-fas-arrow-right class="w-4 h-4"/>
+                <x-fas-arrow-right class="w-4 h-4 text-gray-700 dark:text-gray-200"/>
             </a>
 
             <x-invite-token-list :items="$registerKeys" />
@@ -77,7 +77,7 @@
             <a href="{{ route('admin.survey-aggregation') }}">
                 <div class="flex items-center gap-2 mb-4">
                     <h2 class="text-xl font-bold text-gray-700 dark:text-gray-200">{{ __('admin.survey_aggregation') }}</h2>
-                    <x-fas-arrow-right class="w-4 h-4" />
+                    <x-fas-arrow-right class="w-4 h-4 text-gray-700 dark:text-gray-200" />
                 </div>
             </a>
             <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
@@ -100,7 +100,7 @@
             <a href="{{ route('admin.options') }}">
                 <div class="flex items-center gap-2 mb-4">
                     <h2 class="text-xl font-bold text-gray-700 dark:text-gray-200">{{ __('admin.edit_options') }}</h2>
-                    <x-fas-arrow-right class="w-4 h-4" />
+                    <x-fas-arrow-right class="w-4 h-4 text-gray-700 dark:text-gray-200" />
                 </div>
             </a>
         </section>

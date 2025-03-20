@@ -41,7 +41,24 @@ return [
     'question_types' => [
         'range' => 'Bereich (1-5)',
         'checkboxes' => 'Checkboxen',
+        'checkbox' => 'Ja/Nein Frage',
         'textarea' => 'Textfeld',
+    ],
+
+    // Checkbox options
+    'checkbox_options' => [
+        'yes' => 'Ja',
+        'no' => 'Nein',
+        'na' => 'Nicht zutreffend'
+    ],
+
+    // Multiple choice options
+    'checkboxes_options' => [
+        'strongly_agree' => 'Stimme voll zu',
+        'agree' => 'Stimme eher zu',
+        'neutral' => 'Neutral',
+        'disagree' => 'Stimme eher nicht zu',
+        'strongly_disagree' => 'Stimme überhaupt nicht zu'
     ],
 
     // Departments
@@ -109,6 +126,22 @@ return [
     'no_categories_available' => 'Keine Kategorien verfügbar',
     'no_categories_generated_description' => 'Aus den Umfragefragen konnten keine Kategorien generiert werden.',
     'text_responses_count' => ':count Textantwort(en) erhalten',
+    'question_results' => 'Fragenergebnisse',
+    'response' => 'Antwort',
+    'no_feedback_responses' => 'Noch keine Feedback-Antworten',
+    'general_feedback' => 'Allgemeines Feedback',
+    'detailed_feedback' => 'Detailliertes Feedback',
+    'additional_comments' => 'Zusätzliche Kommentare',
+
+    // Checkbox specific translations
+    'checkbox_feedback' => 'Checkbox-Feedback',
+    'checkbox_question_results' => 'Ja/Nein-Fragenergebnisse',
+    'multiple_choice_results' => 'Multiple-Choice-Ergebnisse',
+    'checkbox_distribution' => 'Antwortverteilung',
+    'yes_responses' => 'Ja-Antworten',
+    'no_responses' => 'Nein-Antworten',
+    'na_responses' => 'Nicht zutreffend-Antworten',
+    'submit' => 'Absenden',
 
     // Survey response
     'survey' => 'Umfrage',

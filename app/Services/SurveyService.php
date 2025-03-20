@@ -277,23 +277,20 @@ class SurveyService
 
                     // Set the appropriate value_type based on question template type
                     $valueType = 'text'; // Default
-
-                    switch ($questionTemplateType) {
-                        case 'range':
-                            $valueType = 'number';
-                            break;
-                        case 'checkboxes':
-                        case 'checkbox':
-                            $valueType = 'checkbox';
-                            break;
-                        case 'textarea':
-                        case 'text':
-                            $valueType = 'text';
-                            break;
-                        default:
-                            $valueType = 'text';
-                            break;
+                    if ($questionTemplateType === 'range') {
+                        $valueType = 'number';
+                    } else if (in_array($questionTemplateType, ['checkboxes', 'checkbox'])) {
+                        $valueType = 'checkbox';
                     }
+
+                    // Log info about the response being processed
+                    Log::info("Processing response for question", [
+                        'survey_id' => $survey->id,
+                        'question_id' => $question->id,
+                        'template_type' => $questionTemplateType,
+                        'value_type' => $valueType,
+                        'response_type' => is_array($value) ? 'array' : gettype($value)
+                    ]);
 
                     // Data validation based on value_type
                     $isValidValue = true;
