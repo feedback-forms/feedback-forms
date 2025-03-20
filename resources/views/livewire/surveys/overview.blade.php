@@ -135,8 +135,8 @@
                     <div class="flex justify-between items-center">
                         <span class="text-sm text-gray-500 dark:text-gray-400">
                             <span x-text="survey.already_answered"></span> / <span x-text="survey.limit == -1 ? '∞' : survey.limit"></span> {{__('surveys.responses')}}
-                            <button type="button" 
-                                @click="window.dispatchEvent(new CustomEvent('open-qr-modal', { detail: { accesskey: survey.accesskey }}))" 
+                            <button type="button"
+                                @click="window.dispatchEvent(new CustomEvent('open-qr-modal', { detail: { accesskey: survey.accesskey }}))"
                                 class="ml-2 px-2 py-1 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded">
                                 {{__('surveys.show_qr')}}
                             </button>
@@ -176,8 +176,11 @@
         @open-qr-modal.window="
             show = true;
             currentAccesskey = $event.detail.accesskey;
-            surveyUrl = '{{ url('surveys/scan') }}/' + currentAccesskey;
             $nextTick(() => {
+                var url = new URL('{{ url(route('surveys.scan')) }}');
+                url.searchParams.append('token', currentAccesskey);
+                surveyUrl = url.toString();
+
                 if (typeof window.QRCode !== 'undefined') {
                     try {
                         const canvas = document.getElementById('qrcode-canvas');
