@@ -4,7 +4,7 @@
 ])
 
 @php
-$show = fn($item) => $item->expire_at ? $item->expire_at->isFuture() : true;
+$show = fn($item) => true; // Always show options regardless of expiration status
 @endphp
 
 <div class="flex flex-col gap-4">
@@ -47,6 +47,7 @@ $show = fn($item) => $item->expire_at ? $item->expire_at->isFuture() : true;
                     </x-slot>
 
                     <x-slot name="content">
+                        @if (!$item->expire_at || $item->expire_at->isFuture())
                         <x-secondary-button class="w-full" wire:click="revokeToken({{$item->id}})">
                             {{__('invite_token.revoke')}}
                         </x-secondary-button>
@@ -59,6 +60,7 @@ $show = fn($item) => $item->expire_at ? $item->expire_at->isFuture() : true;
                         >
                             {{__('invite_token.change_duration')}}
                         </x-secondary-button>
+                        @endif
 
                         <div x-data="{ isOpen: false }" class="relative">
                             <x-danger-button
