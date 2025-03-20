@@ -93,15 +93,25 @@ class Feedback extends Model
     }
 
     /**
+     * Get the base query for submissions related to this feedback
+     *
+     * @return \Illuminate\Database\Query\Builder
+     */
+    private function getSubmissionsBaseQuery()
+    {
+        return DB::table('results')
+            ->join('questions', 'results.question_id', '=', 'questions.id')
+            ->where('questions.feedback_id', $this->id);
+    }
+
+    /**
      * Get the number of unique submissions for this feedback
      *
      * @return int
      */
     public function getSubmissionCountAttribute()
     {
-        return DB::table('results')
-            ->join('questions', 'results.question_id', '=', 'questions.id')
-            ->where('questions.feedback_id', $this->id)
+        return $this->getSubmissionsBaseQuery()
             ->distinct('results.submission_id')
             ->count('results.submission_id');
     }
@@ -123,9 +133,7 @@ class Feedback extends Model
      */
     public function getUniqueSubmissionIdsAttribute()
     {
-        return DB::table('results')
-            ->join('questions', 'results.question_id', '=', 'questions.id')
-            ->where('questions.feedback_id', $this->id)
+        return $this->getSubmissionsBaseQuery()
             ->distinct('results.submission_id')
             ->pluck('results.submission_id')
             ->toArray();
@@ -141,9 +149,7 @@ class Feedback extends Model
      */
     public function submissions()
     {
-        return DB::table('results')
-            ->join('questions', 'results.question_id', '=', 'questions.id')
-            ->where('questions.feedback_id', $this->id)
+        return $this->getSubmissionsBaseQuery()
             ->select('results.submission_id')
             ->distinct();
     }
@@ -155,9 +161,7 @@ class Feedback extends Model
      */
     public function getUniqueSubmissionsCount(): int
     {
-        return DB::table('results')
-            ->join('questions', 'results.question_id', '=', 'questions.id')
-            ->where('questions.feedback_id', $this->id)
+        return $this->getSubmissionsBaseQuery()
             ->distinct('results.submission_id')
             ->count('results.submission_id');
     }

@@ -6,7 +6,7 @@ This document outlines recommended improvements to enhance code quality, maintai
 
 - [x] **Standardize model naming conventions** - Models like `Feedback_template` use snake_case instead of Laravel's conventional PascalCase (e.g., `FeedbackTemplate`)
 - [x] ~~**Evaluate the `already_answered` field** - This field appears to be redundant as it's calculated dynamically via `getSubmissionCountAttribute()`~~
-- [ ] **Consolidate duplicate query logic** - Several repeated database queries exist in `Feedback` model methods (`getSubmissionCountAttribute`, `getUniqueSubmissionsCount`, etc.)
+- [x] **Consolidate duplicate query logic** - Several repeated database queries exist in `Feedback` model methods (`getSubmissionCountAttribute`, `getUniqueSubmissionsCount`, etc.)
 - [ ] **Review relationship naming conventions** - Some relationship methods use snake_case (e.g., `feedback_template()`) instead of camelCase
 - [ ] **Consider implementing soft deletes** - Missing for survey-related models where data preservation might be important
 
