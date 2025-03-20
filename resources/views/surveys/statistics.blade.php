@@ -46,86 +46,6 @@
 
                     <h3 class="text-xl font-semibold mt-10 mb-6 text-indigo-700 dark:text-indigo-300">{{ __('surveys.question_statistics') }}</h3>
 
-                    @php
-                        // Initialize variables
-                        $isTableSurvey = false;
-                        $tableCategories = [];
-                        $isTargetTemplate = false;
-                        $isSmileyTemplate = false;
-                        $isCheckboxTemplate = false;
-
-                        // Process the statistics data
-                        foreach($statisticsData as $stat) {
-                            // Check for table type statistics
-                            if ($stat['template_type'] === 'table' && isset($stat['data']['table_survey']) && $stat['data']['table_survey'] === true) {
-                                $isTableSurvey = true;
-
-                                if (isset($stat['data']['table_categories']) && is_array($stat['data']['table_categories'])) {
-                                    $tableCategories = $stat['data']['table_categories'];
-                                }
-                            }
-
-                            // Check for target type statistics
-                            if ($stat['template_type'] === 'target') {
-                                $isTargetTemplate = true;
-                            }
-
-                            // Check for smiley type statistics
-                            if ($stat['template_type'] === 'smiley') {
-                                $isSmileyTemplate = true;
-                            }
-
-                            // Check for checkbox type statistics
-                            if ($stat['template_type'] === 'checkbox') {
-                                $isCheckboxTemplate = true;
-                            }
-                        }
-
-                        // Also check the template name
-                        if (str_contains($survey->feedback_template->name ?? '', 'templates.feedback.checkbox')) {
-                            $isCheckboxTemplate = true;
-                        }
-
-                        // Process tableCategories to add hasResponses flag
-                        if (!empty($tableCategories)) {
-                            // Initialize categories response tracking
-                            $categoryHasResponses = [];
-
-                            // Go through each category and check for responses
-                            foreach ($tableCategories as $catKey => $category) {
-                                $categoryHasResponses[$catKey] = false;
-
-                                // Skip if no questions in this category
-                                if (empty($category['questions'])) {
-                                    continue;
-                                }
-
-                                // Check each question for responses
-                                foreach ($category['questions'] as $stat) {
-                                    // Range questions with numeric responses
-                                    if ($stat['template_type'] === 'range' &&
-                                        isset($stat['data']['average_rating']) &&
-                                        is_numeric($stat['data']['average_rating'])) {
-                                        $categoryHasResponses[$catKey] = true;
-                                        break;
-                                    }
-                                    // Text questions with responses
-                                    elseif (($stat['template_type'] === 'text' || $stat['template_type'] === 'textarea') &&
-                                          isset($stat['data']['response_count']) &&
-                                          $stat['data']['response_count'] > 0) {
-                                        $categoryHasResponses[$catKey] = true;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            // Add hasResponses flag to each category
-                            foreach ($tableCategories as $catKey => $category) {
-                                $tableCategories[$catKey]['hasResponses'] = $categoryHasResponses[$catKey] ?? false;
-                            }
-                        }
-                    @endphp
-
                     @if(count($statisticsData) > 0)
                         <!-- Test Alpine.js is working -->
                         <div x-data="{ testMessage: 'If you can see this, Alpine.js is working' }" class="hidden">
@@ -154,19 +74,7 @@
 
                         <!-- Display statistics for non-table surveys -->
                         @if(!$isTableSurvey && !$isSmileyTemplate && !$isCheckboxTemplate)
-                            @php
-                                // Filter out Open Feedback from statistics data if it's already displayed in the target tabs
-                                $filteredStatisticsData = $statisticsData;
-                                if ($isTargetTemplate) {
-                                    $filteredStatisticsData = collect($statisticsData)->filter(function($stat) {
-                                        // Skip Open Feedback questions for target templates since they're shown in the tab
-                                        return !(isset($stat['question']) && $stat['question'] &&
-                                                $stat['template_type'] === 'text' &&
-                                                $stat['question']->question === 'Open Feedback');
-                                    })->toArray();
-                                }
-                            @endphp
-                            @include('surveys.statistics.default_survey', ['statisticsData' => $filteredStatisticsData])
+                            @include('surveys.statistics.default_survey', ['statisticsData' => $statisticsData])
                         @endif
                     @else
                         <div class="p-6 border rounded-lg bg-yellow-50 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">

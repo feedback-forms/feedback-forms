@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Feedback;
 use App\Services\SurveyService;
+use App\ViewModels\SurveyStatisticsViewModel;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Gate;
@@ -41,61 +42,17 @@ class SurveyStatisticsController extends Controller
         // Calculate statistics using the service
         $statisticsData = $this->surveyService->calculateStatisticsForSurvey($survey);
 
-        // Get table categories from statistics data if it's a table survey
-        $tableCategories = [];
-        $tableItem = collect($statisticsData)->firstWhere('template_type', 'table');
+        // Create a view model to handle data processing
+        $viewModel = new SurveyStatisticsViewModel($survey, $statisticsData);
 
-        if ($tableItem && isset($tableItem['data']['table_categories'])) {
-            $tableCategories = $tableItem['data']['table_categories'];
-
-            // Ensure we have at least one category that has responses
-            $hasResponses = false;
-            foreach ($tableCategories as $category) {
-                if (!empty($category['questions']) && ($category['hasResponses'] ?? false)) {
-                    $hasResponses = true;
-                    break;
-                }
-            }
-
-            if (!$hasResponses) {
-                Log::warning('Table survey has no categories with responses', [
-                    'survey_id' => $survey->id,
-                    'categories' => array_keys($tableCategories)
-                ]);
-            }
-        }
-
-        // Add debug logging to track the statistics data
+        // Add debug logging
         Log::debug('Statistics data being passed to view', [
             'survey_id' => $survey->id,
             'stats_count' => count($statisticsData),
-            'has_table_item' => (bool)$tableItem,
-            'template_types' => collect($statisticsData)->pluck('template_type')->unique()->toArray(),
-            'template_name' => $templateName,
-            'is_table_survey' => $isTableSurvey
+            'template_name' => $templateName
         ]);
 
-        // Log specifically about the table item if applicable
-        if ($tableItem) {
-            Log::debug('Table item details', [
-                'has_table_survey_flag' => isset($tableItem['data']['table_survey']),
-                'table_survey_value' => $tableItem['data']['table_survey'] ?? null,
-                'has_table_categories' => isset($tableItem['data']['table_categories']),
-                'table_categories_count' => is_array($tableItem['data']['table_categories'] ?? null) ?
-                    count($tableItem['data']['table_categories']) : 'not an array',
-                'category_keys' => is_array($tableItem['data']['table_categories'] ?? null) ?
-                    array_keys($tableItem['data']['table_categories']) : []
-            ]);
-        }
-
-        return view('surveys.statistics', [
-            'survey' => $survey,
-            'statisticsData' => $statisticsData,
-            'isTableSurvey' => $isTableSurvey,
-            'isSmileyTemplate' => $isSmileyTemplate,
-            'isTargetTemplate' => $isTargetTemplate,
-            'tableCategories' => $tableCategories,
-            'submissionCount' => $survey->submission_count
-        ]);
+        // Pass view model data to the view
+        return view('surveys.statistics', $viewModel->toArray());
     }
 }
