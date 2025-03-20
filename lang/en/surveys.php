@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'surveys' => 'Surveys',
+    'expired' => 'Expired',
+    'cancelled' => 'Cancelled',
+    'running' => 'Running',
     'create_new_survey' => 'Create New Survey',
     'survey_name' => 'Survey Name',
     'select_school_year' => 'Select School Year',
