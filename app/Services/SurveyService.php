@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\{Feedback, Question, Feedback_template, Question_template};
+use App\Models\{Question, Feedback_template, Question_template};
+use App\Models\Feedback;
+use App\Repositories\FeedbackRepository;
 use App\Exceptions\ServiceException;
 use App\Exceptions\SurveyNotAvailableException;
 use Illuminate\Support\Facades\DB;
@@ -27,20 +29,28 @@ class SurveyService
     protected $statisticsService;
 
     /**
+     * @var FeedbackRepository
+     */
+    protected $feedbackRepository;
+
+    /**
      * Constructor to initialize dependencies
      *
      * @param StatisticsService $statisticsService
      * @param Templates\TemplateStrategyFactory $templateStrategyFactory
      * @param SurveyResponseService $surveyResponseService
+     * @param FeedbackRepository $feedbackRepository
      */
     public function __construct(
         StatisticsService $statisticsService,
         Templates\TemplateStrategyFactory $templateStrategyFactory,
-        SurveyResponseService $surveyResponseService
+        SurveyResponseService $surveyResponseService,
+        FeedbackRepository $feedbackRepository
     ) {
         $this->statisticsService = $statisticsService;
         $this->templateStrategyFactory = $templateStrategyFactory;
         $this->surveyResponseService = $surveyResponseService;
+        $this->feedbackRepository = $feedbackRepository;
     }
     /**
      * Create a new survey from template
@@ -51,11 +61,11 @@ class SurveyService
             return DB::transaction(function () use ($surveyConfig, $userId) {
                 try {
                     // Create the feedback/survey
-                    $survey = Feedback::create([
+                    $survey = $this->feedbackRepository->create([
                         'name' => $surveyConfig['name'] ?? null,
                         'user_id' => $userId,
                         'feedback_template_id' => $surveyConfig['template_id'],
-                        'accesskey' => $this->generateUniqueAccessKey(),
+                        'accesskey' => $this->feedbackRepository->generateUniqueAccessKey(),
                         'limit' => $surveyConfig['response_limit'] ?? -1,
                         'expire_date' => Carbon::parse($surveyConfig['expire_date']),
                         'school_year_id' => $surveyConfig['school_year_id'] ?? null,
@@ -141,19 +151,6 @@ class SurveyService
         }
     }
 
-    /**
-     * Generate a unique 8-character access key
-     */
-    private function generateUniqueAccessKey(): string
-{
-    do {
-        $key = strtoupper(substr(md5(uniqid()), 0, 8));
-        $formattedKey = substr($key, 0, 4) . '-' . substr($key, 4, 4);
-
-    } while (Feedback::where('accesskey', $formattedKey)->exists());
-
-    return $formattedKey;
-}
 
     /**
      * Validate if survey can be answered (not expired, within limits)
@@ -166,19 +163,7 @@ class SurveyService
     public function canBeAnswered(Feedback $survey): bool
     {
         try {
-            if ($survey->expire_date < Carbon::now()) {
-                throw new SurveyNotAvailableException(
-                    __('surveys.survey_expired')
-                );
-            }
-
-            if ($survey->limit > 0 && $survey->submission_count >= $survey->limit) {
-                throw new SurveyNotAvailableException(
-                    __('surveys.survey_limit_reached')
-                );
-            }
-
-            return true;
+            return $this->feedbackRepository->canBeAnswered($survey);
         } catch (SurveyNotAvailableException $e) {
             // Log the exception with additional context
             Log::warning($e->getMessage(), [

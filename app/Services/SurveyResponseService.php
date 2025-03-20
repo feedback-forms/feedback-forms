@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\{Feedback, Question, Result};
+use App\Repositories\FeedbackRepository;
 use App\Exceptions\ServiceException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -16,13 +17,22 @@ class SurveyResponseService
     protected $templateStrategyFactory;
 
     /**
+     * @var FeedbackRepository
+     */
+    protected $feedbackRepository;
+
+    /**
      * Constructor to initialize dependencies
      *
      * @param Templates\TemplateStrategyFactory $templateStrategyFactory
+     * @param FeedbackRepository $feedbackRepository
      */
-    public function __construct(Templates\TemplateStrategyFactory $templateStrategyFactory)
-    {
+    public function __construct(
+        Templates\TemplateStrategyFactory $templateStrategyFactory,
+        FeedbackRepository $feedbackRepository
+    ) {
         $this->templateStrategyFactory = $templateStrategyFactory;
+        $this->feedbackRepository = $feedbackRepository;
     }
 
     /**
@@ -464,7 +474,7 @@ class SurveyResponseService
     {
         // Set the status to update if it's a draft or running
         if (in_array($survey->status, ['draft', 'running'])) {
-            $survey->update(['status' => 'running']);
+            $this->feedbackRepository->updateStatus($survey, 'running');
         }
     }
 }
