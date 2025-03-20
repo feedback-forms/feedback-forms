@@ -47,6 +47,7 @@ return [
     'no_question_data_for_category' => 'No data available for this category',
     'information' => 'Information',
     'text_answers_excluded' => 'Free text answers are excluded from aggregation to maintain respondent anonymity.',
+    'target_feedback_note' => 'Text feedback such as comments or improvement suggestions are not included in the aggregation for privacy reasons.',
     'aggregation_error' => 'An error occurred while aggregating the data',
     'min' => 'Min',
     'responses_received' => 'responses received',
@@ -55,12 +56,17 @@ return [
     'category' => [
         'general' => 'General',
         'teacher_behavior' => 'Teacher Behavior',
+        'behavior' => 'Teacher Behavior',
         'teaching_quality' => 'Teaching Quality',
+        'quality' => 'Teaching Quality',
         'classroom_atmosphere' => 'Classroom Atmosphere',
         'learning_materials' => 'Learning Materials',
         'feedback' => 'Feedback',
+        'target_feedback' => 'Target Feedback',
         'communication' => 'Communication',
+        'statements' => 'Rate the following statements',
         'assessment' => 'Assessment',
+        'claims' => 'Rate the following claims',
         'checkbox_feedback' => 'Checkbox Feedback'
     ],
 ];

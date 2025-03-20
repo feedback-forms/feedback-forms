@@ -2,9 +2,15 @@
 
 return [
     'templates' => 'Templates',
+    'smiley' => 'Smiley',
+    'table' => 'Table',
+    'target' => 'Target',
     'template_gallery' => 'Template Gallery',
     'featured' => 'Featured',
+    'show_all' => 'Show All',
     'use_template' => 'Use this template',
+    'preview' => 'Preview',
+    'create_survey' => 'Create Survey',
 
     // Template types
     'target_feedback' => 'Target Feedback',

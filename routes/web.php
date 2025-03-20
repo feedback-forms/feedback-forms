@@ -11,9 +11,6 @@ Route::post('/', [WelcomeController::class, 'accessSurvey'])->name('surveys.acce
 Route::get('/templates', App\Livewire\Templates\Overview::class)
     ->name('templates.index');
 
-// Direct QR code access route
-Route::get('/survey/scan', [WelcomeController::class, 'scanQrAccess'])->name('surveys.scan');
-
 Route::middleware(['auth'])->group(function () {
     Route::view('profile', 'profile')->name('profile');
     Route::get('/admin-panel', App\Livewire\Admin\Panel::class)->name('admin.panel');
@@ -36,7 +33,7 @@ Route::controller(SurveyController::class)->group(function (){
 
 // ------ SURVEY ------ \\
 Route::prefix('survey')->group(function() {
-    Route::get('/survey/scan', [WelcomeController::class, 'scanQrAccess'])->name('surveys.scan');
+    Route::get('/scan', [WelcomeController::class, 'scanQrAccess'])->name('surveys.scan');
 
     // The thank-you route needs to be defined before the dynamic {accesskey} route to avoid conflicts
     Route::get('/survey/thank-you', [SurveyResponseController::class, 'showThankYou'])->name('surveys.thank-you');
