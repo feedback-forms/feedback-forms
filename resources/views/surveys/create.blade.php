@@ -144,7 +144,7 @@
                                         <img src="{{ asset('img/preview.png') }}" alt="Template preview" class="w-16 h-16 object-cover rounded">
                                     </div>
                                     <div>
-                                        <h4 class="font-medium">{{ __('templates.feedback.' . $selectedTemplate) }}</h4>
+                                        <h4 class="font-medium">{{ __('templates.' . $selectedTemplate . '_feedback') }}</h4>
                                         <p class="text-sm text-gray-500 dark:text-gray-400">
                                             {{ __('templates.' . $selectedTemplate . '_feedback_description') }}
                                         </p>

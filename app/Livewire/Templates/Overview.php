@@ -65,7 +65,6 @@ class Overview extends Component
         // Add some additional templates for the gallery
         $additionalTemplates = [
             ['title' => 'Multiple-Choice', 'image' => 'img/preview.png'],
-            ['title' => 'Checkbox Lists', 'image' => 'img/preview.png'],
             ['title' => 'Sliders', 'image' => 'img/preview.png'],
             ['title' => 'Rating Scale', 'image' => 'img/preview.png'],
             ['title' => 'Open Text', 'image' => 'img/preview.png'],

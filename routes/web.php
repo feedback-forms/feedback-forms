@@ -28,6 +28,8 @@ Route::controller(SurveyController::class)->group(function (){
 
     Route::get('feedback/target', 'showTarget');
 
+    Route::get('feedback/checkbox', 'showCheckbox');
+
     Route::post('feedback/smiley', 'retrieveSmiley');
 });
 
