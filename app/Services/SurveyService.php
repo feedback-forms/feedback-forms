@@ -19,49 +19,49 @@ class SurveyService
     /**
      * Create a new survey from template
      */
-    public function createFromTemplate(array $data, int $userId): Feedback
+    public function createFromTemplate(array $surveyConfig, int $userId): Feedback
     {
         try {
-            return DB::transaction(function () use ($data, $userId) {
+            return DB::transaction(function () use ($surveyConfig, $userId) {
                 try {
                     // Create the feedback/survey
                     $survey = Feedback::create([
-                        'name' => $data['name'] ?? null,
+                        'name' => $surveyConfig['name'] ?? null,
                         'user_id' => $userId,
-                        'feedback_template_id' => $data['template_id'],
+                        'feedback_template_id' => $surveyConfig['template_id'],
                         'accesskey' => $this->generateUniqueAccessKey(),
-                        'limit' => $data['response_limit'] ?? -1,
-                        'expire_date' => Carbon::parse($data['expire_date']),
-                        'school_year_id' => $data['school_year_id'] ?? null,
-                        'department_id' => $data['department_id'] ?? null,
-                        'grade_level_id' => $data['grade_level_id'] ?? null,
-                        'school_class_id' => $data['school_class_id'] ?? null,
-                        'subject_id' => $data['subject_id'] ?? null,
+                        'limit' => $surveyConfig['response_limit'] ?? -1,
+                        'expire_date' => Carbon::parse($surveyConfig['expire_date']),
+                        'school_year_id' => $surveyConfig['school_year_id'] ?? null,
+                        'department_id' => $surveyConfig['department_id'] ?? null,
+                        'grade_level_id' => $surveyConfig['grade_level_id'] ?? null,
+                        'school_class_id' => $surveyConfig['school_class_id'] ?? null,
+                        'subject_id' => $surveyConfig['subject_id'] ?? null,
                     ]);
                 } catch (\Exception $e) {
                     throw ServiceException::database(
                         'Failed to create survey from template',
-                        ['user_id' => $userId, 'template_id' => $data['template_id'] ?? null],
+                        ['user_id' => $userId, 'template_id' => $surveyConfig['template_id'] ?? null],
                         $e
                     );
                 }
 
                 try {
                     // Get the template
-                    $template = Feedback_template::findOrFail($data['template_id']);
+                    $template = Feedback_template::findOrFail($surveyConfig['template_id']);
                     $templateName = $template->name ?? '';
 
                     // Get the appropriate template strategy for this template
                     $templateStrategy = $this->templateStrategyFactory->getStrategy($templateName);
 
                     // Use the strategy to create questions
-                    $templateStrategy->createQuestions($survey, $data);
+                    $templateStrategy->createQuestions($survey, $surveyConfig);
                 } catch (\Exception $e) {
                     throw ServiceException::businessLogic(
                         'Failed to initialize template strategy or create template questions',
                         [
                             'survey_id' => $survey->id ?? null,
-                            'template_id' => $data['template_id'] ?? null,
+                            'template_id' => $surveyConfig['template_id'] ?? null,
                             'template_name' => $templateName ?? 'unknown'
                         ],
                         $e
@@ -74,12 +74,12 @@ class SurveyService
                 if ($survey->questions()->count() === 0) {
                     try {
                         // Reload template with questions to ensure we have the latest data
-                        $template = Feedback_template::with('questions.question_template')->findOrFail($data['template_id']);
+                        $template = Feedback_template::with('questions.question_template')->findOrFail($surveyConfig['template_id']);
 
                         if ($template->questions->count() > 0) {
                             foreach ($template->questions as $index => $templateQuestion) {
                                 Question::create([
-                                    'feedback_template_id' => $data['template_id'],
+                                    'feedback_template_id' => $surveyConfig['template_id'],
                                     'feedback_id' => $survey->id,
                                     'question_template_id' => $templateQuestion->question_template_id ?? null,
                                     'question' => $templateQuestion->question,
@@ -92,7 +92,7 @@ class SurveyService
                             'Failed to create default questions from template',
                             [
                                 'survey_id' => $survey->id,
-                                'template_id' => $data['template_id'],
+                                'template_id' => $surveyConfig['template_id'],
                                 'questions_count' => $template->questions->count() ?? 0
                             ],
                             $e
@@ -110,7 +110,7 @@ class SurveyService
             throw ServiceException::fromException(
                 $e,
                 ServiceException::CATEGORY_UNEXPECTED,
-                ['user_id' => $userId, 'template_id' => $data['template_id'] ?? null]
+                ['user_id' => $userId, 'template_id' => $surveyConfig['template_id'] ?? null]
             );
         }
     }
@@ -314,19 +314,19 @@ class SurveyService
     {
         $responseCount = 0;
 
-        foreach ($responses as $questionId => $value) {
+        foreach ($responses as $questionId => $responseValue) {
             // Skip non-numeric keys (like 'feedback' from the form) except 'feedback' special case
             if (!is_numeric($questionId) && $questionId !== 'feedback') {
                 continue;
             }
 
             // Special handling for feedback
-            if ($questionId === 'feedback' && !empty($value)) {
+            if ($questionId === 'feedback' && !empty($responseValue)) {
                 Result::create([
                     'question_id' => $questions->first()->id ?? null,
                     'submission_id' => $submissionId,
                     'value_type' => 'text',
-                    'rating_value' => $value,
+                    'rating_value' => $responseValue,
                 ]);
 
                 $responseCount++;
@@ -358,7 +358,7 @@ class SurveyService
                 $question,
                 $questionTemplateType,
                 $valueType,
-                $value,
+                $responseValue,
                 $submissionId
             );
 
@@ -432,26 +432,26 @@ class SurveyService
         $question,
         string $questionTemplateType,
         string $valueType,
-        $value,
+        $responseValue,
         string $submissionId
     ): int {
         // Validate the value
-        if (!$this->validateResponseValue($survey, $question, $valueType, $value)) {
+        if (!$this->validateResponseValue($survey, $question, $valueType, $responseValue)) {
             return 0;
         }
 
         // Handle different question types
         switch ($questionTemplateType) {
             case 'range':
-                $this->storeRangeResponse($question, $valueType, $value, $submissionId);
+                $this->storeRangeResponse($question, $valueType, $responseValue, $submissionId);
                 return 1;
 
             case 'checkboxes':
             case 'checkbox':
-                return $this->storeCheckboxResponse($survey, $question, $valueType, $value, $submissionId);
+                return $this->storeCheckboxResponse($survey, $question, $valueType, $responseValue, $submissionId);
 
             default: // Default case, e.g., 'text' or unknown types
-                $this->storeTextResponse($question, $valueType, $value, $submissionId);
+                $this->storeTextResponse($question, $valueType, $responseValue, $submissionId);
                 return 1;
         }
     }
@@ -465,16 +465,16 @@ class SurveyService
      * @param mixed $value The response value
      * @return bool True if valid, false otherwise
      */
-    private function validateResponseValue(Feedback $survey, $question, string $valueType, $value): bool
+    private function validateResponseValue(Feedback $survey, $question, string $valueType, $responseValue): bool
     {
-        if ($valueType === 'number' && !is_numeric($value)) {
+        if ($valueType === 'number' && !is_numeric($responseValue)) {
             throw ServiceException::validation(
                 "Invalid rating_value for number type",
                 [
                     'survey_id' => $survey->id,
                     'question_id' => $question->id,
                     'value_type' => $valueType,
-                    'provided_value' => $value,
+                    'provided_value' => $responseValue,
                 ]
             );
         }
@@ -490,13 +490,13 @@ class SurveyService
      * @param mixed $value The response value
      * @param string $submissionId The submission ID
      */
-    private function storeRangeResponse($question, string $valueType, $value, string $submissionId): void
+    private function storeRangeResponse($question, string $valueType, $rangeValue, string $submissionId): void
     {
         Result::create([
             'question_id' => $question->id,
             'submission_id' => $submissionId,
             'value_type' => $valueType,
-            'rating_value' => $value,
+            'rating_value' => $rangeValue,
         ]);
     }
 
@@ -508,13 +508,13 @@ class SurveyService
      * @param mixed $value The response value
      * @param string $submissionId The submission ID
      */
-    private function storeTextResponse($question, string $valueType, $value, string $submissionId): void
+    private function storeTextResponse($question, string $valueType, $textValue, string $submissionId): void
     {
         Result::create([
             'question_id' => $question->id,
             'submission_id' => $submissionId,
             'value_type' => $valueType,
-            'rating_value' => $value,
+            'rating_value' => $textValue,
         ]);
     }
 
@@ -528,61 +528,61 @@ class SurveyService
      * @param string $submissionId The submission ID
      * @return int The number of checkbox options stored
      */
-    private function storeCheckboxResponse(Feedback $survey, $question, string $valueType, $value, string $submissionId): int
+    private function storeCheckboxResponse(Feedback $survey, $question, string $valueType, $checkboxValues, string $submissionId): int
     {
         // If the value is an array of checkbox options
-        if (is_array($value)) {
+        if (is_array($checkboxValues)) {
             // Validate the array values
-            $validValues = array_filter($value, function($optionValue) {
-                return is_string($optionValue) || is_numeric($optionValue);
+            $validCheckboxOptions = array_filter($checkboxValues, function($selectedOption) {
+                return is_string($selectedOption) || is_numeric($selectedOption);
             });
 
-            if (empty($validValues)) {
+            if (empty($validCheckboxOptions)) {
                 throw ServiceException::validation(
                     "No valid values found in checkbox response",
                     [
                         'survey_id' => $survey->id,
                         'question_id' => $question->id,
-                        'values' => $value
+                        'values' => $checkboxValues
                     ]
                 );
             }
 
             // For each selected checkbox option, create a separate result
             try {
-                foreach ($validValues as $optionValue) {
+                foreach ($validCheckboxOptions as $selectedOption) {
                     Result::create([
                         'question_id' => $question->id,
                         'submission_id' => $submissionId,
                         'value_type' => $valueType,
-                        'rating_value' => (string)$optionValue, // Ensure it's a string
+                        'rating_value' => (string)$selectedOption, // Ensure it's a string
                     ]);
 
                     Log::info("Stored checkbox option", [
                         'survey_id' => $survey->id,
                         'question_id' => $question->id,
-                        'option' => $optionValue
+                        'option' => $selectedOption
                     ]);
                 }
 
-                return count($validValues);
+                return count($validCheckboxOptions);
             } catch (\Exception $e) {
                 throw ServiceException::database(
                     "Failed to store checkbox options",
                     [
                         'survey_id' => $survey->id,
                         'question_id' => $question->id,
-                        'values' => $validValues
+                        'values' => $validCheckboxOptions
                     ],
                     $e
                 );
             }
-        } else if (is_string($value) || is_numeric($value)) {
+        } else if (is_string($checkboxValues) || is_numeric($checkboxValues)) {
             // Handle case where a single value is submitted instead of an array
             Log::info("Converting single checkbox value to array", [
                 'survey_id' => $survey->id,
                 'question_id' => $question->id,
-                'value' => $value
+                'value' => $checkboxValues
             ]);
 
             // Create a single result for a single checkbox value
@@ -590,7 +590,7 @@ class SurveyService
                 'question_id' => $question->id,
                 'submission_id' => $submissionId,
                 'value_type' => $valueType,
-                'rating_value' => (string)$value,
+                'rating_value' => (string)$checkboxValues,
             ]);
 
             return 1;
@@ -598,7 +598,7 @@ class SurveyService
             Log::warning("Invalid checkbox value type", [
                 'survey_id' => $survey->id,
                 'question_id' => $question->id,
-                'value_type' => gettype($value)
+                'value_type' => gettype($checkboxValues)
             ]);
             return 0;
         }
