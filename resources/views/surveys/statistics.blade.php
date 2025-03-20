@@ -33,7 +33,7 @@
                         </div>
                         <div class="bg-gray-50 dark:bg-gray-700 p-5 rounded-lg shadow-sm">
                             <p class="mb-2"><span class="font-semibold">{{ __('surveys.responses') }}:</span> {{ $survey->submission_count }} / {{ $survey->limit == -1 ? '∞' : $survey->limit }}</p>
-                            <p class="mb-2"><span class="font-semibold">{{ __('surveys.expires') }}:</span> {{ $survey->expire_date->format('d.m.Y') }}</p>
+                            <p class="mb-2"><span class="font-semibold">{{ __('surveys.expires') }}:</span> {{ $survey->expire_date->format('d.m.Y H:i') }}</p>
                             <p><span class="font-semibold">{{ __('surveys.status') }}:</span>
                                 @if($survey->expire_date->isPast())
                                     <span class="text-red-500 font-medium">{{ __('surveys.expired') }}</span>
