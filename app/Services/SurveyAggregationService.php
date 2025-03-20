@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Feedback;
 use App\Models\Question;
 use App\Models\Result;
+use App\Models\SchoolClass;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -32,6 +33,13 @@ class SurveyAggregationService
         'school_year' => 2
     ];
 
+    private const CATEGORY_ID = [
+        'class' => 'school_class_id',
+        'department' => 'department_id',
+        'subject' => 'subject_id',
+        'school_year' => 'school_year_id',
+    ];
+
     /**
      * Get all available values for a specific category
      *
@@ -40,32 +48,56 @@ class SurveyAggregationService
      */
     public function getCategoryValues(string $category): array
     {
-        // Validate category is supported
-        if (!in_array($category, array_keys(self::THRESHOLDS))) {
-            Log::warning("Attempted to get values for unsupported category: {$category}");
-            return [];
+        $runningOrExpired = function ($query) {
+            $query->where('status', 'running')
+                ->orWhere('status', 'expired');
+        };
+
+        switch ($category) {
+            case 'class':
+                return DB::table('school_classes')
+                    ->join('feedback', 'school_classes.id', '=', 'feedback.school_class_id')
+                    ->where($runningOrExpired)
+                    ->groupBy('school_classes.id')
+                    ->pluck('school_classes.id', 'school_classes.name')
+                    ->toArray();
+            case 'department':
+                return DB::table('departments')
+                    ->join('feedback', 'departments.id', '=', 'feedback.department_id')
+                    ->where($runningOrExpired)
+                    ->groupBy('departments.id')
+                    ->pluck('departments.id', 'departments.name')
+                    ->toArray();
+            case 'subject':
+                return DB::table('subjects')
+                    ->join('feedback', 'subjects.id', '=', 'feedback.subject_id')
+                    ->where($runningOrExpired)
+                    ->groupBy('subjects.id')
+                    ->pluck('subjects.id', 'subjects.name')
+                    ->toArray();
+            case 'school_year':
+                return DB::table('school_years')
+                    ->join('feedback', 'school_years.id', '=', 'feedback.school_year_id')
+                    ->where($runningOrExpired)
+                    ->groupBy('school_years.id')
+                    ->pluck('school_years.id', 'school_years.name')
+                    ->toArray();
+            default:
+                Log::warning("Attempted to get values for unsupported category: {$category}");
+                return [];
         }
 
-        // Only include active or completed surveys with non-null values for the category
-        return Feedback::where(function($query) {
-                $query->where('status', 'running')
-                      ->orWhere('status', 'expired');
-            })
-            ->whereNotNull($category)
-            ->distinct($category)
-            ->pluck($category)
-            ->toArray();
     }
 
     /**
      * Aggregate results for a specific category and value
      *
      * @param string $category Category to aggregate by (class, department, subject, school_year)
-     * @param string $value The specific value to filter on
+     * @param int $value The specific value to filter on
      * @param int|null $threshold Optional custom threshold (defaults to preset thresholds)
      * @return array Array of aggregated data including threshold status and results if available
      */
-    public function aggregateByCategory(string $category, string $value, ?int $threshold = null): array
+    public function aggregateByCategory(string $category, int $value, ?int $threshold = null): array
     {
         // Ensure the category is valid
         if (!in_array($category, array_keys(self::THRESHOLDS))) {
@@ -83,7 +115,7 @@ class SurveyAggregationService
 
         try {
             // Find all feedback forms matching the category and value
-            $feedbacks = Feedback::where($category, $value)
+            $feedbacks = Feedback::where(self::CATEGORY_ID[$category], $value)
                 ->where(function($query) {
                     $query->where('status', 'running')
                           ->orWhere('status', 'expired');

@@ -50,8 +50,8 @@
                     @if(!$selectedCategory) disabled @endif
                 >
                     <option value="">{{ __('admin.select_value_placeholder') }}</option>
-                    @foreach ($availableValues as $value)
-                        <option value="{{ $value }}">{{ $value }}</option>
+                    @foreach ($availableValues as $name => $value)
+                        <option value="{{ $value }}">{{ $name }}</option>
                     @endforeach
                 </select>
             </div>

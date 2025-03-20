@@ -18,7 +18,7 @@ class SurveyAggregation extends Component
     /** @var string|null */
     public $selectedCategory = null;
 
-    /** @var string|null */
+    /** @var int|null */
     public $selectedValue = null;
 
     /** @var array */
