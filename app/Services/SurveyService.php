@@ -110,6 +110,14 @@ class SurveyService
      * @return bool True if responses were stored successfully, false otherwise
      * @throws \Exception If there's an error during response storage
      */
+    /**
+     * Store survey responses
+     *
+     * @param Feedback $survey The survey to store responses for
+     * @param array $responses The responses to store
+     * @return bool True if responses were stored successfully, false otherwise
+     * @throws \Exception If there's an error during response storage
+     */
     public function storeResponses(Feedback $survey, array $responses): bool
     {
         try {
@@ -128,240 +136,17 @@ class SurveyService
                 $questions = $survey->questions;
                 $responseCount = 0;
 
-                // Check if this is a JSON data structure (from template-specific forms like target)
-                if (isset($responses['json_data']) && is_array($responses['json_data'])) {
-                    try {
-                        // Get the appropriate template strategy for this template
-                        $templateName = $survey->feedback_template->name ?? '';
-                        $templateStrategy = $this->templateStrategyFactory->getStrategy($templateName);
-
-                        // Use the strategy to store responses
-                        $templateStrategy->storeResponses($survey, $responses['json_data'], $submissionId);
-                        return true;
-                    } catch (\Exception $e) {
-                        Log::error('Error processing structured JSON data: ' . $e->getMessage(), [
-                            'survey_id' => $survey->id,
-                            'response_data' => $responses['json_data'],
-                            'exception' => $e
-                        ]);
-                        return false;
-                    }
-                // Legacy check for JSON string (can be removed after frontend updates)
-                } else if (count($responses) === 1 && isset($responses[0]) && is_string($responses[0])) {
-                    try {
-                        $jsonData = json_decode($responses[0], true);
-                        if (json_last_error() === JSON_ERROR_NONE && is_array($jsonData)) {
-                            // Get the appropriate template strategy for this template
-                            $templateName = $survey->feedback_template->name ?? '';
-                            $templateStrategy = $this->templateStrategyFactory->getStrategy($templateName);
-
-                            // Use the strategy to store responses
-                            $templateStrategy->storeResponses($survey, $jsonData, $submissionId);
-                            return true;
-                        }
-                    } catch (\Exception $e) {
-                        Log::error('Error parsing JSON response: ' . $e->getMessage(), [
-                            'survey_id' => $survey->id,
-                            'response_data' => $responses[0],
-                            'exception' => $e
-                        ]);
-                        return false;
-                    }
+                // Try to process template-specific JSON data first
+                if ($this->processTemplateSpecificData($survey, $responses, $submissionId)) {
+                    return true;
                 }
 
-                // Handle regular question-by-question responses
-                foreach ($responses as $questionId => $value) {
-                    // Skip non-numeric keys (like 'feedback' from the form)
-                    // Non-numeric keys are typically form metadata or special fields that are not directly tied to questions
-                    // 'feedback' is handled separately as a special case for general survey feedback
-                    if (!is_numeric($questionId) && $questionId !== 'feedback') {
-                        continue;
-                    }
+                // Process regular question-by-question responses
+                $responseCount = $this->processRegularResponses($survey, $responses, $questions, $submissionId);
 
-                    // Special handling for feedback
-                    if ($questionId === 'feedback' && !empty($value)) {
-                        $result = Result::create([
-                            'question_id' => $questions->first()->id ?? null,
-                            'submission_id' => $submissionId,
-                            'value_type' => 'text',
-                            'rating_value' => $value,
-                        ]);
-
-                        $responseCount++;
-                        continue;
-                    }
-
-                    // Verify the question belongs to this survey
-                    $question = $questions->firstWhere('id', $questionId);
-
-                    if (!$question) {
-                        // Try to find by index if the questionId is numeric but not an actual ID
-                        $index = (int)$questionId;
-                        if ($index >= 0 && $index < $questions->count()) {
-                            $question = $questions[$index];
-                        } else {
-                            Log::warning("Question not found for survey", [
-                                'survey_id' => $survey->id,
-                                'question_id' => $questionId,
-                                'index' => $index
-                            ]);
-                            continue; // Skip if question doesn't belong to this survey
-                        }
-                    }
-
-                    // Get the question template type
-                    $questionTemplateType = $question->question_template->type ?? 'text'; // Default to 'text'
-
-                    // Set the appropriate value_type based on question template type
-                    $valueType = 'text'; // Default
-                    if ($questionTemplateType === 'range') {
-                        $valueType = 'number';
-                    } else if (in_array($questionTemplateType, ['checkboxes', 'checkbox'])) {
-                        $valueType = 'checkbox';
-                    }
-
-                    // Log info about the response being processed
-                    Log::info("Processing response for question", [
-                        'survey_id' => $survey->id,
-                        'question_id' => $question->id,
-                        'template_type' => $questionTemplateType,
-                        'value_type' => $valueType,
-                        'response_type' => is_array($value) ? 'array' : gettype($value)
-                    ]);
-
-                    // Data validation based on value_type
-                    $isValidValue = true;
-                    switch ($valueType) {
-                        case 'number':
-                            if (!is_numeric($value)) {
-                                $isValidValue = false;
-                                Log::warning("Invalid rating_value for number type", [
-                                    'survey_id' => $survey->id,
-                                    'question_id' => $question->id,
-                                    'value_type' => $valueType,
-                                    'provided_value' => $value,
-                                ]);
-                            }
-                            break;
-                        // For 'text' and 'checkbox', any string value is considered valid for this basic example.
-                        default:
-                            break;
-                    }
-
-                    if (!$isValidValue) {
-                        Log::warning("Skipping invalid response value", [
-                            'survey_id' => $survey->id,
-                            'question_id' => $question->id,
-                            'value' => $value,
-                        ]);
-                        continue;
-                    }
-
-                    // Handle different question types
-                    switch ($questionTemplateType) {
-                        case 'range':
-                            // Create a new result record with a scalar rating value
-                            $result = Result::create([
-                                'question_id' => $question->id,
-                                'submission_id' => $submissionId,
-                                'value_type' => $valueType,
-                                'rating_value' => $value,
-                            ]);
-                            break;
-
-                        case 'checkboxes':
-                        case 'checkbox':
-                            // If the value is an array of checkbox options
-                            if (is_array($value)) {
-                                // Validate the array values
-                                $validValues = array_filter($value, function($optionValue) {
-                                    return is_string($optionValue) || is_numeric($optionValue);
-                                });
-
-                                if (empty($validValues)) {
-                                    Log::warning("No valid values found in checkbox response", [
-                                        'survey_id' => $survey->id,
-                                        'question_id' => $question->id,
-                                        'values' => $value
-                                    ]);
-                                    continue 2; // Skip to next response
-                                }
-
-                                // For each selected checkbox option, create a separate result
-                                try {
-                                    foreach ($validValues as $optionValue) {
-                                        Result::create([
-                                            'question_id' => $question->id,
-                                            'submission_id' => $submissionId,
-                                            'value_type' => $valueType,
-                                            'rating_value' => (string)$optionValue, // Ensure it's a string
-                                        ]);
-
-                                        Log::info("Stored checkbox option", [
-                                            'survey_id' => $survey->id,
-                                            'question_id' => $question->id,
-                                            'option' => $optionValue
-                                        ]);
-                                    }
-
-                                    $responseCount += count($validValues);
-                                } catch (\Exception $e) {
-                                    Log::error("Failed to store checkbox options", [
-                                        'survey_id' => $survey->id,
-                                        'question_id' => $question->id,
-                                        'values' => $validValues,
-                                        'error' => $e->getMessage()
-                                    ]);
-                                }
-
-                                // Since we've already created the results above, continue to next response
-                                continue 2; // Skip the rest of the switch and outer loop iteration
-                            } else if (is_string($value) || is_numeric($value)) {
-                                // Handle case where a single value is submitted instead of an array
-                                Log::info("Converting single checkbox value to array", [
-                                    'survey_id' => $survey->id,
-                                    'question_id' => $question->id,
-                                    'value' => $value
-                                ]);
-                                // Continue normal processing with the single value
-                            } else {
-                                Log::warning("Invalid checkbox value type", [
-                                    'survey_id' => $survey->id,
-                                    'question_id' => $question->id,
-                                    'value_type' => gettype($value)
-                                ]);
-                                continue 2; // Skip to next response
-                            }
-
-                            // Create a single result for a single checkbox value
-                            $result = Result::create([
-                                'question_id' => $question->id,
-                                'submission_id' => $submissionId,
-                                'value_type' => $valueType,
-                                'rating_value' => (string)$value,
-                            ]);
-                            break;
-
-                        default: // Default case, e.g., 'text' or unknown types
-                            // Create a new result with default text value_type
-                            $result = Result::create([
-                                'question_id' => $question->id,
-                                'submission_id' => $submissionId,
-                                'value_type' => $valueType,
-                                'rating_value' => $value,
-                            ]);
-                            break;
-                    }
-
-                    $responseCount++;
-                }
-
-                // Only increment if we actually stored responses
+                // Only update if we actually stored responses
                 if ($responseCount > 0) {
-                    // Set the status to update if it's a draft or running
-                    if (in_array($survey->status, ['draft', 'running'])) {
-                        $survey->update(['status' => 'running']);
-                    }
+                    $this->updateSurveyStatus($survey);
 
                     Log::info("Survey response stored successfully", [
                         'survey_id' => $survey->id,
@@ -378,17 +163,394 @@ class SurveyService
                 return true;
             });
         } catch (\Exception $e) {
-            Log::error('Error storing survey responses: ' . $e->getMessage(), [
-                'survey_id' => $survey->id,
-                'exception' => $e,
-                'exception_class' => get_class($e),
-                'exception_trace' => $e->getTraceAsString(),
-                'responses' => $responses
-            ]);
+            $this->logResponseError($survey, $responses, $e);
             return false;
         }
     }
 
+    /**
+     * Process template-specific JSON data
+     *
+     * @param Feedback $survey The survey
+     * @param array $responses The responses
+     * @param string $submissionId The submission ID
+     * @return bool True if processing was successful, false otherwise
+     */
+    private function processTemplateSpecificData(Feedback $survey, array $responses, string $submissionId): bool
+    {
+        // Check if this is a JSON data structure (from template-specific forms like target)
+        if (isset($responses['json_data']) && is_array($responses['json_data'])) {
+            try {
+                // Get the appropriate template strategy for this template
+                $templateName = $survey->feedback_template->name ?? '';
+                $templateStrategy = $this->templateStrategyFactory->getStrategy($templateName);
+
+                // Use the strategy to store responses
+                $templateStrategy->storeResponses($survey, $responses['json_data'], $submissionId);
+                return true;
+            } catch (\Exception $e) {
+                Log::error('Error processing structured JSON data: ' . $e->getMessage(), [
+                    'survey_id' => $survey->id,
+                    'response_data' => $responses['json_data'],
+                    'exception' => $e
+                ]);
+                return false;
+            }
+        }
+
+        // Legacy check for JSON string (can be removed after frontend updates)
+        if (count($responses) === 1 && isset($responses[0]) && is_string($responses[0])) {
+            try {
+                $jsonData = json_decode($responses[0], true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($jsonData)) {
+                    // Get the appropriate template strategy for this template
+                    $templateName = $survey->feedback_template->name ?? '';
+                    $templateStrategy = $this->templateStrategyFactory->getStrategy($templateName);
+
+                    // Use the strategy to store responses
+                    $templateStrategy->storeResponses($survey, $jsonData, $submissionId);
+                    return true;
+                }
+            } catch (\Exception $e) {
+                Log::error('Error parsing JSON response: ' . $e->getMessage(), [
+                    'survey_id' => $survey->id,
+                    'response_data' => $responses[0],
+                    'exception' => $e
+                ]);
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Process regular question-by-question responses
+     *
+     * @param Feedback $survey The survey
+     * @param array $responses The responses
+     * @param \Illuminate\Database\Eloquent\Collection $questions The survey questions
+     * @param string $submissionId The submission ID
+     * @return int The number of responses processed
+     */
+    private function processRegularResponses(Feedback $survey, array $responses, $questions, string $submissionId): int
+    {
+        $responseCount = 0;
+
+        foreach ($responses as $questionId => $value) {
+            // Skip non-numeric keys (like 'feedback' from the form) except 'feedback' special case
+            if (!is_numeric($questionId) && $questionId !== 'feedback') {
+                continue;
+            }
+
+            // Special handling for feedback
+            if ($questionId === 'feedback' && !empty($value)) {
+                Result::create([
+                    'question_id' => $questions->first()->id ?? null,
+                    'submission_id' => $submissionId,
+                    'value_type' => 'text',
+                    'rating_value' => $value,
+                ]);
+
+                $responseCount++;
+                continue;
+            }
+
+            // Find the question in the survey
+            $question = $this->findQuestionInSurvey($survey, $questions, $questionId);
+            if (!$question) {
+                continue; // Skip if question not found
+            }
+
+            // Determine the value type based on question template
+            $questionTemplateType = $question->question_template->type ?? 'text';
+            $valueType = $this->determineValueType($questionTemplateType);
+
+            // Log processing info
+            Log::info("Processing response for question", [
+                'survey_id' => $survey->id,
+                'question_id' => $question->id,
+                'template_type' => $questionTemplateType,
+                'value_type' => $valueType,
+                'response_type' => is_array($value) ? 'array' : gettype($value)
+            ]);
+
+            // Validate and store the response based on question type
+            $processedCount = $this->processQuestionResponse(
+                $survey,
+                $question,
+                $questionTemplateType,
+                $valueType,
+                $value,
+                $submissionId
+            );
+
+            $responseCount += $processedCount;
+        }
+
+        return $responseCount;
+    }
+
+    /**
+     * Find a question in the survey
+     *
+     * @param Feedback $survey The survey
+     * @param \Illuminate\Database\Eloquent\Collection $questions The survey questions
+     * @param string|int $questionId The question ID or index
+     * @return Question|null The question if found, null otherwise
+     */
+    private function findQuestionInSurvey(Feedback $survey, $questions, $questionId)
+    {
+        // Try to find by ID first
+        $question = $questions->firstWhere('id', $questionId);
+
+        if (!$question) {
+            // Try to find by index if the questionId is numeric but not an actual ID
+            $index = (int)$questionId;
+            if ($index >= 0 && $index < $questions->count()) {
+                $question = $questions[$index];
+            } else {
+                Log::warning("Question not found for survey", [
+                    'survey_id' => $survey->id,
+                    'question_id' => $questionId,
+                    'index' => $index
+                ]);
+                return null;
+            }
+        }
+
+        return $question;
+    }
+
+    /**
+     * Determine the value type based on question template type
+     *
+     * @param string $questionTemplateType The question template type
+     * @return string The value type
+     */
+    private function determineValueType(string $questionTemplateType): string
+    {
+        if ($questionTemplateType === 'range') {
+            return 'number';
+        } else if (in_array($questionTemplateType, ['checkboxes', 'checkbox'])) {
+            return 'checkbox';
+        }
+
+        return 'text'; // Default
+    }
+
+    /**
+     * Process a response for a specific question
+     *
+     * @param Feedback $survey The survey
+     * @param Question $question The question
+     * @param string $questionTemplateType The question template type
+     * @param string $valueType The value type
+     * @param mixed $value The response value
+     * @param string $submissionId The submission ID
+     * @return int The number of responses processed
+     */
+    private function processQuestionResponse(
+        Feedback $survey,
+        $question,
+        string $questionTemplateType,
+        string $valueType,
+        $value,
+        string $submissionId
+    ): int {
+        // Validate the value
+        if (!$this->validateResponseValue($survey, $question, $valueType, $value)) {
+            return 0;
+        }
+
+        // Handle different question types
+        switch ($questionTemplateType) {
+            case 'range':
+                $this->storeRangeResponse($question, $valueType, $value, $submissionId);
+                return 1;
+
+            case 'checkboxes':
+            case 'checkbox':
+                return $this->storeCheckboxResponse($survey, $question, $valueType, $value, $submissionId);
+
+            default: // Default case, e.g., 'text' or unknown types
+                $this->storeTextResponse($question, $valueType, $value, $submissionId);
+                return 1;
+        }
+    }
+
+    /**
+     * Validate a response value
+     *
+     * @param Feedback $survey The survey
+     * @param Question $question The question
+     * @param string $valueType The value type
+     * @param mixed $value The response value
+     * @return bool True if valid, false otherwise
+     */
+    private function validateResponseValue(Feedback $survey, $question, string $valueType, $value): bool
+    {
+        if ($valueType === 'number' && !is_numeric($value)) {
+            Log::warning("Invalid rating_value for number type", [
+                'survey_id' => $survey->id,
+                'question_id' => $question->id,
+                'value_type' => $valueType,
+                'provided_value' => $value,
+            ]);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Store a range type response
+     *
+     * @param Question $question The question
+     * @param string $valueType The value type
+     * @param mixed $value The response value
+     * @param string $submissionId The submission ID
+     */
+    private function storeRangeResponse($question, string $valueType, $value, string $submissionId): void
+    {
+        Result::create([
+            'question_id' => $question->id,
+            'submission_id' => $submissionId,
+            'value_type' => $valueType,
+            'rating_value' => $value,
+        ]);
+    }
+
+    /**
+     * Store a text type response
+     *
+     * @param Question $question The question
+     * @param string $valueType The value type
+     * @param mixed $value The response value
+     * @param string $submissionId The submission ID
+     */
+    private function storeTextResponse($question, string $valueType, $value, string $submissionId): void
+    {
+        Result::create([
+            'question_id' => $question->id,
+            'submission_id' => $submissionId,
+            'value_type' => $valueType,
+            'rating_value' => $value,
+        ]);
+    }
+
+    /**
+     * Store a checkbox type response
+     *
+     * @param Feedback $survey The survey
+     * @param Question $question The question
+     * @param string $valueType The value type
+     * @param mixed $value The response value
+     * @param string $submissionId The submission ID
+     * @return int The number of checkbox options stored
+     */
+    private function storeCheckboxResponse(Feedback $survey, $question, string $valueType, $value, string $submissionId): int
+    {
+        // If the value is an array of checkbox options
+        if (is_array($value)) {
+            // Validate the array values
+            $validValues = array_filter($value, function($optionValue) {
+                return is_string($optionValue) || is_numeric($optionValue);
+            });
+
+            if (empty($validValues)) {
+                Log::warning("No valid values found in checkbox response", [
+                    'survey_id' => $survey->id,
+                    'question_id' => $question->id,
+                    'values' => $value
+                ]);
+                return 0;
+            }
+
+            // For each selected checkbox option, create a separate result
+            try {
+                foreach ($validValues as $optionValue) {
+                    Result::create([
+                        'question_id' => $question->id,
+                        'submission_id' => $submissionId,
+                        'value_type' => $valueType,
+                        'rating_value' => (string)$optionValue, // Ensure it's a string
+                    ]);
+
+                    Log::info("Stored checkbox option", [
+                        'survey_id' => $survey->id,
+                        'question_id' => $question->id,
+                        'option' => $optionValue
+                    ]);
+                }
+
+                return count($validValues);
+            } catch (\Exception $e) {
+                Log::error("Failed to store checkbox options", [
+                    'survey_id' => $survey->id,
+                    'question_id' => $question->id,
+                    'values' => $validValues,
+                    'error' => $e->getMessage()
+                ]);
+                return 0;
+            }
+        } else if (is_string($value) || is_numeric($value)) {
+            // Handle case where a single value is submitted instead of an array
+            Log::info("Converting single checkbox value to array", [
+                'survey_id' => $survey->id,
+                'question_id' => $question->id,
+                'value' => $value
+            ]);
+
+            // Create a single result for a single checkbox value
+            Result::create([
+                'question_id' => $question->id,
+                'submission_id' => $submissionId,
+                'value_type' => $valueType,
+                'rating_value' => (string)$value,
+            ]);
+
+            return 1;
+        } else {
+            Log::warning("Invalid checkbox value type", [
+                'survey_id' => $survey->id,
+                'question_id' => $question->id,
+                'value_type' => gettype($value)
+            ]);
+            return 0;
+        }
+    }
+
+    /**
+     * Update the survey status if necessary
+     *
+     * @param Feedback $survey The survey
+     */
+    private function updateSurveyStatus(Feedback $survey): void
+    {
+        // Set the status to update if it's a draft or running
+        if (in_array($survey->status, ['draft', 'running'])) {
+            $survey->update(['status' => 'running']);
+        }
+    }
+
+    /**
+     * Log error when storing responses fails
+     *
+     * @param Feedback $survey The survey
+     * @param array $responses The responses that failed to be stored
+     * @param \Exception $e The exception
+     */
+    private function logResponseError(Feedback $survey, array $responses, \Exception $e): void
+    {
+        Log::error('Error storing survey responses: ' . $e->getMessage(), [
+            'survey_id' => $survey->id,
+            'exception' => $e,
+            'exception_class' => get_class($e),
+            'exception_trace' => $e->getTraceAsString(),
+            'responses' => $responses
+        ]);
+    }
 
     /**
      * @var StatisticsService
