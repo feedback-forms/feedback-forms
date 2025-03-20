@@ -21,7 +21,7 @@ class WelcomeController extends Controller
      */
     public function index(): View
     {
-        return view('welcome');
+        return view('livewire.welcome.index');
     }
 
     /**

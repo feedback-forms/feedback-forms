@@ -95,13 +95,7 @@
                             @endif
                         </div>
                         <div class="flex-grow">
-                            @if(isset($item['route']))
-                                <a href="{{ $item['route'] }}">
-                                    <h3 class="font-medium text-gray-900 dark:text-gray-100">{{ $item['title'] }}</h3>
-                                </a>
-                            @else
-                                <h3 class="font-medium text-gray-900 dark:text-gray-100">{{ $item['title'] }}</h3>
-                            @endif
+                            <h3 class="font-medium text-gray-900 dark:text-gray-100">{{ $item['title'] }}</h3>
                             <p class="text-sm text-gray-500 dark:text-gray-400">{{ $item['description'] ?? '' }}</p>
                         </div>
                         <div class="flex flex-col gap-2">

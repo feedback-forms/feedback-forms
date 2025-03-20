@@ -69,6 +69,10 @@ Route::middleware(['auth'])->group(function () {
         // Add the missing store route
         Route::post('/', [SurveyController::class, 'store'])
             ->name('surveys.store');
+
+        // Add the preview and create routes
+        Route::get('/preview/{template}', [SurveyController::class, 'preview'])->name('surveys.preview');
+        Route::get('/create/{template?}', [SurveyController::class, 'create'])->name('surveys.create');
     });
 
     // ------ ADMIN ------ \\
@@ -88,11 +92,25 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/invite-token', App\Livewire\Admin\InviteToken::class)
             ->middleware(['can:admin'])
             ->name('admin.invite-token');
+
+        // Survey Aggregation Dashboard
+        Route::get('/survey-aggregation', App\Livewire\Admin\SurveyAggregation::class)
+            ->middleware(['can:admin'])
+            ->name('admin.survey-aggregation');
     });
 
 
     // ------ PROFILE  ------ \\
     Route::view('profile', 'profile')->name('profile');
 });
+
+// Test routes for debugging
+Route::get('/test-translation', function () {
+    return view('test-translation');
+});
+
+Route::get('/test-aggregation', [\App\Http\Controllers\TestController::class, 'testAggregation']);
+Route::get('/test-question-categories', [\App\Http\Controllers\TestController::class, 'questionCategories']);
+Route::get('/test-tab-categories', [\App\Http\Controllers\TestController::class, 'testTabCategories']);
 
 require __DIR__.'/auth.php';
