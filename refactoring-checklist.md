@@ -61,6 +61,6 @@ This document outlines recommended improvements to enhance code quality, maintai
 ## Technical Debt
 
 - [x] **Address deprecated functionality** - Legacy functionality and conditionals marked with comments like "can be removed after frontend updates"
-- [ ] **Review database migration sequence** - Consider consolidating incremental migrations that modify the same tables
+- [x] **Review database migration sequence** - Consider consolidating incremental migrations that modify the same tables
 - [x] **Document complex algorithms** - Improve documentation for complex calculations in `SurveyAggregationService`
 - [x] ~~**Fix inconsistent coding styles** - Ensure adherence to a consistent coding style throughout the codebase~~
