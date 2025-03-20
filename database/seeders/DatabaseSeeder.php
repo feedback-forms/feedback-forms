@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             SchoolYearSeeder::class,
             SubjectSeeder::class,
             QuestionSeeder::class,
+            CheckboxSurveySetupSeeder::class,
             SurveyResponseSeeder::class,
             CategoryAssignmentSeeder::class,
         ]);

@@ -65,37 +65,203 @@
                     <form method="POST" action="{{ route('surveys.submit', $survey->accesskey) }}">
                         @csrf
 
-                        <!-- Checkbox Survey -->
-                        <div class="space-y-8 mb-8">
-                            @foreach([
-                                'Der Unterricht ist gut vorbereitet.',
-                                'Die Aufgaben sind klar formuliert.',
-                                'Die Lehrkraft erklärt verständlich.',
-                                'Die Lehrkraft geht auf Fragen ein.',
-                                'Die Lehrkraft gibt konstruktives Feedback.',
-                                'Die Lehrkraft ist fair und respektvoll.',
-                                'Die Unterrichtsmaterialien sind hilfreich.',
-                                'Der Unterricht ist interessant gestaltet.'
-                            ] as $index => $statement)
-                                <div class="p-4 border rounded-lg bg-white dark:bg-gray-800">
-                                    <h3 class="font-semibold mb-3">{{ $statement }}</h3>
-                                    <div class="space-y-2">
-                                        @foreach(['Ja', 'Nein', 'Keine Angabe'] as $optionIndex => $option)
-                                            <label class="flex items-center space-x-2 cursor-pointer">
-                                                <input
-                                                    type="radio"
-                                                    name="responses[{{ $index }}]"
-                                                    value="{{ $option }}"
-                                                    class="form-radio"
-                                                    required
-                                                >
-                                                <span>{{ $option }}</span>
-                                            </label>
-                                        @endforeach
-                                    </div>
+                        <!-- General Feedback Section -->
+                        @php
+                            $generalQuestions = $survey->questions->where('category', 'general_feedback')->sortBy('order');
+                            $detailedQuestions = $survey->questions->where('category', 'detailed_feedback')->sortBy('order');
+                            $uncategorizedQuestions = $survey->questions->whereNull('category')->sortBy('order');
+                        @endphp
+
+                        @if($generalQuestions->count() > 0)
+                            <div class="mb-8">
+                                <h2 class="text-xl font-semibold mb-4 p-2 bg-gray-100 dark:bg-gray-700 rounded">
+                                    1. {{ __('surveys.general_feedback') }}
+                                </h2>
+                                <div class="space-y-4">
+                                    @foreach($generalQuestions as $question)
+                                        <div class="p-4 border rounded-lg bg-white dark:bg-gray-800">
+                                            <h3 class="font-semibold mb-3">{{ $question->order }}. {{ $question->question }}</h3>
+
+                                            @php
+                                                $templateType = $question->question_template->type ?? 'text';
+                                            @endphp
+
+                                            @if($templateType === 'checkbox')
+                                                <div class="space-y-2">
+                                                    @foreach([
+                                                        'Yes',
+                                                        'No',
+                                                        'Not applicable'
+                                                    ] as $option)
+                                                        <label class="flex items-center space-x-2 cursor-pointer">
+                                                            <input
+                                                                type="radio"
+                                                                name="responses[{{ $question->id }}]"
+                                                                value="{{ $option }}"
+                                                                class="form-radio"
+                                                                required
+                                                            >
+                                                            <span>{{ $option }}</span>
+                                                        </label>
+                                                    @endforeach
+                                                </div>
+                                            @elseif($templateType === 'checkboxes')
+                                                <div class="space-y-2">
+                                                    @php
+                                                        $options = [
+                                                            __('surveys.checkboxes_options.strongly_agree'),
+                                                            __('surveys.checkboxes_options.agree'),
+                                                            __('surveys.checkboxes_options.neutral'),
+                                                            __('surveys.checkboxes_options.disagree'),
+                                                            __('surveys.checkboxes_options.strongly_disagree')
+                                                        ];
+                                                    @endphp
+
+                                                    @foreach($options as $option)
+                                                        <label class="flex items-center space-x-2 cursor-pointer">
+                                                            <input
+                                                                type="checkbox"
+                                                                name="responses[{{ $question->id }}][]"
+                                                                value="{{ $option }}"
+                                                                class="form-checkbox"
+                                                            >
+                                                            <span>{{ $option }}</span>
+                                                        </label>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endforeach
                                 </div>
-                            @endforeach
-                        </div>
+                            </div>
+                        @endif
+
+                        <!-- Detailed Feedback Section -->
+                        @if($detailedQuestions->count() > 0)
+                            <div class="mb-8">
+                                <h2 class="text-xl font-semibold mb-4 p-2 bg-gray-100 dark:bg-gray-700 rounded">
+                                    2. {{ __('surveys.detailed_feedback') }}
+                                </h2>
+                                <div class="space-y-4">
+                                    @foreach($detailedQuestions as $question)
+                                        <div class="p-4 border rounded-lg bg-white dark:bg-gray-800">
+                                            <h3 class="font-semibold mb-3">{{ $question->question }}</h3>
+
+                                            @php
+                                                $templateType = $question->question_template->type ?? 'text';
+                                            @endphp
+
+                                            @if($templateType === 'checkbox')
+                                                <div class="space-y-2">
+                                                    @foreach([
+                                                        'Yes',
+                                                        'No',
+                                                        'Not applicable'
+                                                    ] as $option)
+                                                        <label class="flex items-center space-x-2 cursor-pointer">
+                                                            <input
+                                                                type="radio"
+                                                                name="responses[{{ $question->id }}]"
+                                                                value="{{ $option }}"
+                                                                class="form-radio"
+                                                                required
+                                                            >
+                                                            <span>{{ $option }}</span>
+                                                        </label>
+                                                    @endforeach
+                                                </div>
+                                            @elseif($templateType === 'checkboxes')
+                                                <div class="space-y-2">
+                                                    @php
+                                                        $options = [
+                                                            __('surveys.checkboxes_options.strongly_agree'),
+                                                            __('surveys.checkboxes_options.agree'),
+                                                            __('surveys.checkboxes_options.neutral'),
+                                                            __('surveys.checkboxes_options.disagree'),
+                                                            __('surveys.checkboxes_options.strongly_disagree')
+                                                        ];
+                                                    @endphp
+
+                                                    @foreach($options as $option)
+                                                        <label class="flex items-center space-x-2 cursor-pointer">
+                                                            <input
+                                                                type="checkbox"
+                                                                name="responses[{{ $question->id }}][]"
+                                                                value="{{ $option }}"
+                                                                class="form-checkbox"
+                                                            >
+                                                            <span>{{ $option }}</span>
+                                                        </label>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Uncategorized Questions Section -->
+                        @if($uncategorizedQuestions->count() > 0)
+                            <div class="mb-8">
+                                <div class="space-y-4">
+                                    @foreach($uncategorizedQuestions as $question)
+                                        <div class="p-4 border rounded-lg bg-white dark:bg-gray-800">
+                                            <h3 class="font-semibold mb-3">{{ $question->question }}</h3>
+
+                                            @php
+                                                $templateType = $question->question_template->type ?? 'text';
+                                            @endphp
+
+                                            @if($templateType === 'checkbox')
+                                                <div class="space-y-2">
+                                                    @foreach([
+                                                        'Yes',
+                                                        'No',
+                                                        'Not applicable'
+                                                    ] as $option)
+                                                        <label class="flex items-center space-x-2 cursor-pointer">
+                                                            <input
+                                                                type="radio"
+                                                                name="responses[{{ $question->id }}]"
+                                                                value="{{ $option }}"
+                                                                class="form-radio"
+                                                                required
+                                                            >
+                                                            <span>{{ $option }}</span>
+                                                        </label>
+                                                    @endforeach
+                                                </div>
+                                            @elseif($templateType === 'checkboxes')
+                                                <div class="space-y-2">
+                                                    @php
+                                                        $options = [
+                                                            __('surveys.checkboxes_options.strongly_agree'),
+                                                            __('surveys.checkboxes_options.agree'),
+                                                            __('surveys.checkboxes_options.neutral'),
+                                                            __('surveys.checkboxes_options.disagree'),
+                                                            __('surveys.checkboxes_options.strongly_disagree')
+                                                        ];
+                                                    @endphp
+
+                                                    @foreach($options as $option)
+                                                        <label class="flex items-center space-x-2 cursor-pointer">
+                                                            <input
+                                                                type="checkbox"
+                                                                name="responses[{{ $question->id }}][]"
+                                                                value="{{ $option }}"
+                                                                class="form-checkbox"
+                                                            >
+                                                            <span>{{ $option }}</span>
+                                                        </label>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
 
                         <!-- Open Feedback Section -->
                         <div class="mb-6">
@@ -110,10 +276,11 @@
                             ></textarea>
                         </div>
 
-                        <div class="flex justify-end mt-6">
-                            <x-primary-button>
-                                {{ __('surveys.submit_response') }}
-                            </x-primary-button>
+                        <!-- Submit Button -->
+                        <div class="flex justify-center">
+                            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                {{ __('surveys.submit') }}
+                            </button>
                         </div>
                     </form>
                 </div>

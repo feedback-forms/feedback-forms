@@ -36,8 +36,25 @@ return [
     // Question types
     'question_types' => [
         'range' => 'Range (1-5)',
-        'checkboxes' => 'Checkboxes',
+        'checkboxes' => 'Multiple Choice',
+        'checkbox' => 'Yes/No Question',
         'textarea' => 'Text Area',
+    ],
+
+    // Checkbox options
+    'checkbox_options' => [
+        'yes' => 'Yes',
+        'no' => 'No',
+        'na' => 'Not applicable'
+    ],
+
+    // Multiple choice options
+    'checkboxes_options' => [
+        'strongly_agree' => 'Strongly agree',
+        'agree' => 'Agree',
+        'neutral' => 'Neutral',
+        'disagree' => 'Disagree',
+        'strongly_disagree' => 'Strongly disagree'
     ],
 
     // Departments
@@ -117,12 +134,27 @@ return [
     'no_smiley_responses' => 'No responses have been received for this smiley feedback survey yet.',
     'open_feedback' => 'Open Feedback',
     'no_open_feedback' => 'No open feedback has been provided yet.',
+    'question_results' => 'Question Results',
+    'response' => 'Response',
+    'no_feedback_responses' => 'No feedback responses yet',
     'category' => 'Category',
     'question' => 'Question',
     'no_category_responses' => 'No response statistics available for this category yet.',
     'no_categories_available' => 'No Categories Available',
     'no_categories_generated_description' => 'No categories could be generated from the survey questions.',
     'text_responses_count' => ':count text response(s) received',
+    'general_feedback' => 'General Feedback',
+    'detailed_feedback' => 'Detailed Feedback',
+    'additional_comments' => 'Additional Comments',
+
+    // Checkbox specific translations
+    'checkbox_feedback' => 'Checkbox Feedback',
+    'checkbox_question_results' => 'Yes/No Question Results',
+    'multiple_choice_results' => 'Multiple Choice Results',
+    'checkbox_distribution' => 'Response Distribution',
+    'yes_responses' => 'Yes Responses',
+    'no_responses' => 'No Responses',
+    'na_responses' => 'N/A Responses',
 
     // Survey response
     'survey' => 'Survey',
@@ -137,6 +169,7 @@ return [
     'response_received' => 'Your response has been received. Thank you for your feedback.',
     'access_another_survey' => 'Access Another Survey',
     'whoops' => 'Whoops! Something went wrong.',
+    'submit' => 'Submit',
 
     // Survey response options
     'strongly_agree' => 'Strongly Agree',

@@ -71,10 +71,15 @@ new class extends Component
                                             {{ __('admin.users') }}
                                         </x-dropdown-link>
 
-                                        <x-dropdown-link :href="route('admin.invite-token')" wire:navigate
-                                                         :active="request()->routeIs('admin.invite-token')">
-                                            {{ __('admin.invite_tokens') }}
-                                        </x-dropdown-link>
+                                    <x-dropdown-link :href="route('admin.invite-token')" wire:navigate
+                                                     :active="request()->routeIs('admin.invite-token')">
+                                        {{ __('admin.invite_tokens') }}
+                                    </x-dropdown-link>
+
+                                    <x-dropdown-link :href="route('admin.survey-aggregation')" wire:navigate
+                                                     :active="request()->routeIs('admin.survey-aggregation')">
+                                        {{ __('admin.survey_aggregation') }}
+                                    </x-dropdown-link>
 
                                         <x-dropdown-link :href="route('admin.options')" wire:navigate
                                             :active="request()->routeIs('admin.options')">
@@ -149,30 +154,30 @@ new class extends Component
                     {{ __('templates.templates') }}
                 </x-responsive-nav-link>
 
-                @can('admin')
-                    <details
-                        class="text-gray-800 dark:text-gray-400 [&_summary]:open:bg-gray-50 [&_summary]:dark:open:bg-gray-700 [&_svg]:open:-rotate-180"
-                        {{ in_array(request()->route()->getName(), ['admin.panel', 'admin.users']) ? 'open' : '' }}
-                    >
-                        <summary
-                            class="list-none flex justify-between items-center px-4 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <div>{{__('admin.admin_tools')}}</div>
-                            <x-fas-arrow-down class="w-4 h-4 transition"/>
-                        </summary>
-                        <x-responsive-nav-link :href="route('admin.panel')" wire:navigate
-                                               :active="request()->routeIs('admin.panel')">
-                            {{ __('admin.admin_panel') }}
-                        </x-responsive-nav-link>
+            @can('admin')
+                <details class="text-gray-800 dark:text-gray-400 [&_summary]:open:bg-gray-50 [&_summary]:dark:open:bg-gray-700 [&_svg]:open:-rotate-180"
+                 {{ in_array(request()->route()->getName(), ['admin.panel', 'admin.users', 'admin.survey-aggregation']) ? 'open' : '' }}
+                >
+                    <summary class="list-none flex justify-between items-center px-4 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <div>{{__('admin.admin_tools')}}</div>
+                        <x-fas-arrow-down class="w-4 h-4 transition" />
+                    </summary>
+                    <x-responsive-nav-link :href="route('admin.panel')" wire:navigate :active="request()->routeIs('admin.panel')">
+                        {{ __('admin.admin_panel') }}
+                    </x-responsive-nav-link>
 
                         <x-responsive-nav-link :href="route('admin.users')" wire:navigate
                                                :active="request()->routeIs('admin.users')">
                             {{ __('admin.users') }}
                         </x-responsive-nav-link>
 
-                        <x-responsive-nav-link :href="route('admin.invite-token')" wire:navigate
-                                               :active="request()->routeIs('admin.invite-token')">
-                            {{ __('admin.invite_tokens') }}
-                        </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('admin.invite-token')" wire:navigate :active="request()->routeIs('admin.invite-token')">
+                        {{ __('admin.invite_tokens') }}
+                    </x-responsive-nav-link>
+
+                    <x-responsive-nav-link :href="route('admin.survey-aggregation')" wire:navigate :active="request()->routeIs('admin.survey-aggregation')">
+                        {{ __('admin.survey_aggregation') }}
+                    </x-responsive-nav-link>
 
                         <x-responsive-nav-link :href="route('admin.options')" wire:navigate :active="request()->routeIs('admin.options')">
                             {{ __('admin.options') }}

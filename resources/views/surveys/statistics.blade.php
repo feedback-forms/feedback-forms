@@ -52,6 +52,7 @@
                         $tableCategories = [];
                         $isTargetTemplate = false;
                         $isSmileyTemplate = false;
+                        $isCheckboxTemplate = false;
 
                         // Process the statistics data
                         foreach($statisticsData as $stat) {
@@ -73,6 +74,16 @@
                             if ($stat['template_type'] === 'smiley') {
                                 $isSmileyTemplate = true;
                             }
+
+                            // Check for checkbox type statistics
+                            if ($stat['template_type'] === 'checkbox') {
+                                $isCheckboxTemplate = true;
+                            }
+                        }
+
+                        // Also check the template name
+                        if (str_contains($survey->feedback_template->name ?? '', 'templates.feedback.checkbox')) {
+                            $isCheckboxTemplate = true;
                         }
 
                         // Process tableCategories to add hasResponses flag
@@ -136,8 +147,13 @@
                             @include('surveys.statistics.smiley_survey')
                         @endif
 
+                        <!-- Handle checkbox surveys -->
+                        @if($isCheckboxTemplate)
+                            @include('surveys.statistics.checkbox_survey')
+                        @endif
+
                         <!-- Display statistics for non-table surveys -->
-                        @if(!$isTableSurvey && !$isSmileyTemplate)
+                        @if(!$isTableSurvey && !$isSmileyTemplate && !$isCheckboxTemplate)
                             @php
                                 // Filter out Open Feedback from statistics data if it's already displayed in the target tabs
                                 $filteredStatisticsData = $statisticsData;

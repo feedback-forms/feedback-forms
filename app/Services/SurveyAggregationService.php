@@ -269,6 +269,24 @@ class SurveyAggregationService
         // Use our categorizer to group questions
         $questionsByCategory = $this->categorizeQuestions($questions);
 
+        // Ensure the checkbox_feedback category is properly handled
+        // Extract checkbox questions separately if they're not already categorized
+        $checkboxQuestions = $questions->filter(function($question) {
+            return $question->question_template &&
+                   in_array($question->question_template->type, ['checkbox', 'checkboxes']);
+        });
+
+        // If we have checkbox questions and they're not in a category, add them to checkbox_feedback
+        if ($checkboxQuestions->count() > 0 &&
+            !isset($questionsByCategory['checkbox_feedback'])) {
+            $questionsByCategory['checkbox_feedback'] = $checkboxQuestions;
+
+            Log::debug("Added checkbox questions to checkbox_feedback category", [
+                'count' => $checkboxQuestions->count(),
+                'question_ids' => $checkboxQuestions->pluck('id')->toArray()
+            ]);
+        }
+
         Log::debug("Questions grouped by category", [
             'category_count' => $questionsByCategory->count(),
             'categories' => $questionsByCategory->keys()->toArray(),
@@ -283,7 +301,7 @@ class SurveyAggregationService
 
             // Group by question type within each category
             $questionsByType = $categoryQuestions->groupBy(function($question) {
-                return $question->question_template->type;
+                return $question->question_template->type ?? 'unknown';
             });
 
             Log::debug("Question types in category: {$categoryName}", [
@@ -305,16 +323,25 @@ class SurveyAggregationService
                 ]);
             }
 
-            // Process checkbox questions
+            // Process checkbox questions - collect both 'checkbox' and 'checkboxes' types
+            $allCheckboxQuestions = collect();
+
+            if ($questionsByType->has('checkbox')) {
+                $allCheckboxQuestions = $allCheckboxQuestions->merge($questionsByType->get('checkbox'));
+            }
+
             if ($questionsByType->has('checkboxes')) {
-                $checkboxQuestions = $questionsByType->get('checkboxes');
-                $checkboxResults = $this->aggregateCheckboxQuestions($checkboxQuestions);
+                $allCheckboxQuestions = $allCheckboxQuestions->merge($questionsByType->get('checkboxes'));
+            }
+
+            if ($allCheckboxQuestions->count() > 0) {
+                $checkboxResults = $this->aggregateCheckboxQuestions($allCheckboxQuestions);
                 $categoryResults['checkboxes'] = $checkboxResults;
 
                 Log::debug("Aggregated checkbox questions for category: {$categoryName}", [
-                    'question_count' => $checkboxQuestions->count(),
+                    'question_count' => $allCheckboxQuestions->count(),
                     'results_count' => count($checkboxResults),
-                    'question_ids' => $checkboxQuestions->pluck('id')->toArray()
+                    'question_ids' => $allCheckboxQuestions->pluck('id')->toArray()
                 ]);
             }
 
@@ -415,6 +442,7 @@ class SurveyAggregationService
             'statements',        // Bewerten Sie folgende Aussagen
             'quality',           // Wie ist der Unterricht?
             'claims',            // Bewerten Sie folgende Behauptungen
+            'checkbox_feedback', // Checkbox Feedback
             'target_feedback'    // Zielscheiben Feedback
         ];
 
@@ -428,6 +456,24 @@ class SurveyAggregationService
         Log::debug("Questions for categorization", [
             'total_count' => $questions->count(),
             'feedback_ids' => $questions->pluck('feedback_id')->unique()->toArray()
+        ]);
+
+        // First pass: Special handling for checkbox and checkboxes types to put them in checkbox_feedback category
+        foreach ($questions as $question) {
+            if ($question->question_template &&
+                in_array($question->question_template->type, ['checkbox', 'checkboxes'])) {
+                $questionsByCategory['checkbox_feedback']->push($question);
+                // Mark as processed by adding a property
+                $question->already_categorized = true;
+            } else {
+                $question->already_categorized = false;
+            }
+        }
+
+        // Report on checkbox categorization
+        Log::debug("Checkbox questions categorized", [
+            'count' => $questionsByCategory['checkbox_feedback']->count(),
+            'question_ids' => $questionsByCategory['checkbox_feedback']->pluck('id')->toArray()
         ]);
 
         // Check for feedback templates used with target feedback
@@ -497,24 +543,27 @@ class SurveyAggregationService
             ]
         ];
 
-        // Process each question
+        // Categorize remaining questions
         foreach ($questions as $question) {
+            // Skip already categorized questions (like checkboxes)
+            if ($question->already_categorized ?? false) {
+                continue;
+            }
+
             $questionText = $question->question;
-            $questionType = $question->question_template->type ?? 'unknown';
-            $feedbackId = $question->feedback_id;
-            $assignedCategory = null;
+            $assignedCategory = null; // Default unassigned
 
             // First check if this question belongs to a target feedback form
-            if (in_array($feedbackId, $targetFeedbackIds)) {
+            if (in_array($question->feedback_id, $targetFeedbackIds)) {
                 $assignedCategory = 'target_feedback';
                 Log::debug("Assigned to target_feedback based on feedback template", [
                     'question' => $questionText,
                     'id' => $question->id,
-                    'feedback_id' => $feedbackId
+                    'feedback_id' => $question->feedback_id
                 ]);
             }
             // Special case for text type questions (always target_feedback)
-            else if ($questionType === 'text') {
+            else if ($question->question_template->type === 'text') {
                 $assignedCategory = 'target_feedback';
                 Log::debug("Assigned text question to target_feedback", [
                     'question' => $questionText,
@@ -774,15 +823,16 @@ class SurveyAggregationService
     /**
      * Aggregate results for checkbox type questions
      *
-     * Groups similar checkbox questions by text and calculates counts and
-     * percentages for each option
+     * Groups similar questions by text and calculates distribution of selected options
      *
-     * @param \Illuminate\Database\Eloquent\Collection $questions Collection of checkbox-type questions with eager-loaded results
+     * @param \Illuminate\Database\Eloquent\Collection $questions Collection of checkbox/checkboxes type questions
      * @return array Aggregated checkbox results
      */
     private function aggregateCheckboxQuestions(Collection $questions): array
     {
         $results = [];
+        // English keys used in the database
+        $validOptions = ['Yes', 'No', 'Not applicable'];
 
         Log::debug("Starting to aggregate checkbox questions", [
             'question_count' => $questions->count(),
@@ -792,102 +842,86 @@ class SurveyAggregationService
         foreach ($questions as $question) {
             // Group similar questions by their text content
             $questionText = $question->question;
+            $questionType = $question->question_template->type ?? 'checkbox';
+
+            // Skip open feedback responses (typically stored with name containing 'feedback')
+            if (stripos($questionText, 'feedback') !== false ||
+                stripos($questionText, 'comments') !== false ||
+                $questionText == 'responses[feedback]') {
+                continue;
+            }
 
             Log::debug("Processing checkbox question", [
                 'question_id' => $question->id,
                 'question_text' => $questionText,
-                'options' => $question->question_template->options ?? []
+                'question_type' => $questionType
             ]);
 
             if (!isset($results[$questionText])) {
                 $results[$questionText] = [
                     'question' => $questionText,
+                    'question_type' => $questionType,
                     'options' => [],
-                    'percentages' => [],
                     'total_responses' => 0
                 ];
 
-                // Initialize options from the question template if available
-                if ($question->question_template->options) {
-                    $options = json_decode($question->question_template->options, true);
-                    if (is_array($options)) {
-                        foreach ($options as $option) {
-                            $results[$questionText]['options'][$option] = 0;
-                        }
-                    }
+                // Initialize all valid options with 0 counts
+                foreach ($validOptions as $option) {
+                    $results[$questionText]['options'][$option] = 0;
                 }
             }
 
-            // Use the eager-loaded results rather than querying again
+            // Get all results for this question
+            // For checkbox type we want value_type = 'checkbox' or any responses for checkbox type questions
             $questionResults = $question->results()
-                ->where('value_type', 'array')
+                ->where(function($query) {
+                    $query->where('value_type', 'checkbox')
+                          ->orWhere('value_type', 'text'); // Some older responses might be stored as text
+                })
                 ->get();
 
-            Log::debug("Found results for checkbox question", [
+            Log::debug("Found checkbox results for question", [
                 'question_id' => $question->id,
                 'results_count' => $questionResults->count(),
-                'submission_ids' => $questionResults->pluck('submission_id')->unique()->toArray()
+                'submission_ids' => $questionResults->pluck('submission_id')->unique()->count()
             ]);
 
+            // Count unique submissions as total responses
+            $uniqueSubmissionCount = $questionResults->pluck('submission_id')->unique()->count();
+            $results[$questionText]['total_responses'] = $uniqueSubmissionCount;
+
             foreach ($questionResults as $result) {
-                // Ensure we have a valid array value
-                if (!isset($result->checkbox_value) || empty($result->checkbox_value)) {
-                    Log::warning("Invalid checkbox value for result", [
-                        'result_id' => $result->id,
+                // Ensure we have a valid value
+                if (!isset($result->rating_value) || empty($result->rating_value)) {
+                    continue;
+                }
+
+                $optionValue = $result->rating_value;
+
+                // Only count valid options (Yes, No, Not applicable)
+                if (!in_array($optionValue, $validOptions)) {
+                    Log::debug("Filtering out custom response", [
                         'question_id' => $question->id,
-                        'checkbox_value' => $result->checkbox_value ?? 'null'
+                        'result_id' => $result->id,
+                        'custom_value' => $optionValue
                     ]);
                     continue;
                 }
 
-                // Try to decode the JSON value
-                $selectedOptions = json_decode($result->checkbox_value, true);
-
-                if (!is_array($selectedOptions)) {
-                    Log::warning("Failed to decode checkbox value as array", [
-                        'result_id' => $result->id,
-                        'question_id' => $question->id,
-                        'checkbox_value' => $result->checkbox_value
-                    ]);
-                    continue;
-                }
-
-                // Count each selected option
-                foreach ($selectedOptions as $option) {
-                    // Add option if it doesn't exist (in case the template options changed)
-                    if (!isset($results[$questionText]['options'][$option])) {
-                        $results[$questionText]['options'][$option] = 0;
-                    }
-
-                    // Increment the count for this option
-                    $results[$questionText]['options'][$option]++;
-                }
-
-                // Increment the total responses count
-                $results[$questionText]['total_responses']++;
+                // Increment the count for this option
+                $results[$questionText]['options'][$optionValue]++;
             }
 
-            // Calculate percentages for each option
+            // Calculate percentages for better presentation
             if ($results[$questionText]['total_responses'] > 0) {
+                $results[$questionText]['percentages'] = [];
                 foreach ($results[$questionText]['options'] as $option => $count) {
                     $results[$questionText]['percentages'][$option] = round(
                         ($count / $results[$questionText]['total_responses']) * 100
                     );
                 }
             }
-
-            Log::debug("Completed processing checkbox question", [
-                'question_id' => $question->id,
-                'question_text' => $questionText,
-                'total_responses' => $results[$questionText]['total_responses'],
-                'options' => $results[$questionText]['options'],
-                'percentages' => $results[$questionText]['percentages']
-            ]);
         }
-
-        Log::debug("Completed aggregating checkbox questions", [
-            'unique_questions' => count($results)
-        ]);
 
         return $results;
     }
