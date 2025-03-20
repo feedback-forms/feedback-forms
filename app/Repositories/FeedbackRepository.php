@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Feedback;
 use App\Exceptions\SurveyNotAvailableException;
+use App\Services\SurveyAccessService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -17,13 +18,20 @@ class FeedbackRepository
     private $feedback;
 
     /**
+     * @var SurveyAccessService
+     */
+    private $surveyAccessService;
+
+    /**
      * Constructor
      *
      * @param Feedback $feedback
+     * @param SurveyAccessService $surveyAccessService
      */
-    public function __construct(Feedback $feedback)
+    public function __construct(Feedback $feedback, SurveyAccessService $surveyAccessService)
     {
         $this->feedback = $feedback;
+        $this->surveyAccessService = $surveyAccessService;
     }
 
     /**
@@ -122,12 +130,20 @@ class FeedbackRepository
      */
     public function generateUniqueAccessKey(): string
     {
-        do {
-            $key = strtoupper(substr(md5(uniqid()), 0, 8));
-            $formattedKey = substr($key, 0, 4) . '-' . substr($key, 4, 4);
-        } while ($this->feedback->where('accesskey', $formattedKey)->exists());
+        return $this->surveyAccessService->generateAccessKey();
+    }
 
-        return $formattedKey;
+    /**
+     * Validate an access key and return the associated survey
+     *
+     * @param string $accessKey The access key to validate
+     * @param string $ipAddress The IP address of the requester for rate limiting
+     * @return Feedback|null The survey if found and valid
+     * @throws \App\Exceptions\InvalidAccessKeyException If the key is invalid or rate limited
+     */
+    public function validateAccessKey(string $accessKey, string $ipAddress)
+    {
+        return $this->surveyAccessService->validateAccessKey($accessKey, $ipAddress);
     }
 
     /**

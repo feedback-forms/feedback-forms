@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use App\Exceptions\InvalidAccessKeyException;
 use App\Exceptions\SurveyNotAvailableException;
-use App\Models\Feedback;
+use App\Repositories\FeedbackRepository;
 use App\Services\SurveyService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Log;
@@ -18,17 +18,14 @@ class StoreSurveyResponseRequest extends FormRequest
     public function authorize(): bool
     {
         $accesskey = $this->route('accesskey');
-        $survey = Feedback::where('accesskey', $accesskey)->first();
-
-        if (!$survey) {
-            Log::warning("Invalid access key used for survey submission", [
-                'accesskey' => $accesskey
-            ]);
-            throw new InvalidAccessKeyException();
-        }
+        $ipAddress = $this->ip();
 
         try {
-            // Get the SurveyService to check if the survey can be answered
+            // Use the FeedbackRepository to validate the access key with rate limiting
+            $feedbackRepository = app(FeedbackRepository::class);
+            $survey = $feedbackRepository->validateAccessKey($accesskey, $ipAddress);
+
+            // If we get here, the key is valid. Now check if the survey can be answered
             $surveyService = app(SurveyService::class);
             if (!$surveyService->canBeAnswered($survey)) {
                 Log::warning("Attempt to submit to unavailable survey", [
@@ -40,7 +37,11 @@ class StoreSurveyResponseRequest extends FormRequest
                 ]);
                 throw new SurveyNotAvailableException();
             }
+        } catch (InvalidAccessKeyException $e) {
+            // The exception is already logged by the service
+            throw $e;
         } catch (SurveyNotAvailableException $e) {
+            // The exception is already logged
             throw $e;
         }
 
