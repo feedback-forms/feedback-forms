@@ -16,7 +16,7 @@ This document outlines recommended improvements to enhance code quality, maintai
 - [x] ~~**Implement template strategy pattern** - Template-specific logic is scattered with conditionals; could be refactored into dedicated strategy classes~~
 - [x] **Extract statistics calculation** - Move statistics logic from `SurveyService` to a dedicated `StatisticsService`
 - [x] ~~**Reduce method sizes** - Methods like `storeResponses()` and `storeTemplateSpecificResponses()` are excessively long and complex~~
-- [ ] **Standardize error handling** - Inconsistent error handling approaches exist across service methods
+- [x] **Standardize error handling** - Inconsistent error handling approaches exist across service methods
 
 ## View Layer
 

@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\{Feedback, Question, Result, Feedback_template, Question_template};
+use App\Exceptions\ServiceException;
+use App\Exceptions\SurveyNotAvailableException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -19,54 +21,98 @@ class SurveyService
      */
     public function createFromTemplate(array $data, int $userId): Feedback
     {
-        return DB::transaction(function () use ($data, $userId) {
-            // Create the feedback/survey
-            $survey = Feedback::create([
-                'name' => $data['name'] ?? null,
-                'user_id' => $userId,
-                'feedback_template_id' => $data['template_id'],
-                'accesskey' => $this->generateUniqueAccessKey(),
-                'limit' => $data['response_limit'] ?? -1,
-                'expire_date' => Carbon::parse($data['expire_date']),
-                'school_year_id' => $data['school_year_id'] ?? null,
-                'department_id' => $data['department_id'] ?? null,
-                'grade_level_id' => $data['grade_level_id'] ?? null,
-                'school_class_id' => $data['school_class_id'] ?? null,
-                'subject_id' => $data['subject_id'] ?? null,
-            ]);
+        try {
+            return DB::transaction(function () use ($data, $userId) {
+                try {
+                    // Create the feedback/survey
+                    $survey = Feedback::create([
+                        'name' => $data['name'] ?? null,
+                        'user_id' => $userId,
+                        'feedback_template_id' => $data['template_id'],
+                        'accesskey' => $this->generateUniqueAccessKey(),
+                        'limit' => $data['response_limit'] ?? -1,
+                        'expire_date' => Carbon::parse($data['expire_date']),
+                        'school_year_id' => $data['school_year_id'] ?? null,
+                        'department_id' => $data['department_id'] ?? null,
+                        'grade_level_id' => $data['grade_level_id'] ?? null,
+                        'school_class_id' => $data['school_class_id'] ?? null,
+                        'subject_id' => $data['subject_id'] ?? null,
+                    ]);
+                } catch (\Exception $e) {
+                    throw ServiceException::database(
+                        'Failed to create survey from template',
+                        ['user_id' => $userId, 'template_id' => $data['template_id'] ?? null],
+                        $e
+                    );
+                }
 
-            // Get the template
-            $template = Feedback_template::findOrFail($data['template_id']);
-            $templateName = $template->name ?? '';
+                try {
+                    // Get the template
+                    $template = Feedback_template::findOrFail($data['template_id']);
+                    $templateName = $template->name ?? '';
 
-            // Get the appropriate template strategy for this template
-            $templateStrategy = $this->templateStrategyFactory->getStrategy($templateName);
+                    // Get the appropriate template strategy for this template
+                    $templateStrategy = $this->templateStrategyFactory->getStrategy($templateName);
 
-            // Use the strategy to create questions
-            $templateStrategy->createQuestions($survey, $data);
+                    // Use the strategy to create questions
+                    $templateStrategy->createQuestions($survey, $data);
+                } catch (\Exception $e) {
+                    throw ServiceException::businessLogic(
+                        'Failed to initialize template strategy or create template questions',
+                        [
+                            'survey_id' => $survey->id ?? null,
+                            'template_id' => $data['template_id'] ?? null,
+                            'template_name' => $templateName ?? 'unknown'
+                        ],
+                        $e
+                    );
+                }
 
-            // If the template has predefined questions and the strategy didn't create any,
-            // create them from the template (this handles the case where template questions
-            // are defined but we don't have a specialized strategy for this template type)
-            if ($survey->questions()->count() === 0) {
-                // Reload template with questions to ensure we have the latest data
-                $template = Feedback_template::with('questions.question_template')->findOrFail($data['template_id']);
+                // If the template has predefined questions and the strategy didn't create any,
+                // create them from the template (this handles the case where template questions
+                // are defined but we don't have a specialized strategy for this template type)
+                if ($survey->questions()->count() === 0) {
+                    try {
+                        // Reload template with questions to ensure we have the latest data
+                        $template = Feedback_template::with('questions.question_template')->findOrFail($data['template_id']);
 
-                if ($template->questions->count() > 0) {
-                    foreach ($template->questions as $index => $templateQuestion) {
-                        Question::create([
-                            'feedback_template_id' => $data['template_id'],
-                            'feedback_id' => $survey->id,
-                            'question_template_id' => $templateQuestion->question_template_id ?? null,
-                            'question' => $templateQuestion->question,
-                            'order' => $templateQuestion->order ?? ($index + 1),
-                        ]);
+                        if ($template->questions->count() > 0) {
+                            foreach ($template->questions as $index => $templateQuestion) {
+                                Question::create([
+                                    'feedback_template_id' => $data['template_id'],
+                                    'feedback_id' => $survey->id,
+                                    'question_template_id' => $templateQuestion->question_template_id ?? null,
+                                    'question' => $templateQuestion->question,
+                                    'order' => $templateQuestion->order ?? ($index + 1),
+                                ]);
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        throw ServiceException::database(
+                            'Failed to create default questions from template',
+                            [
+                                'survey_id' => $survey->id,
+                                'template_id' => $data['template_id'],
+                                'questions_count' => $template->questions->count() ?? 0
+                            ],
+                            $e
+                        );
                     }
                 }
-            }
 
-            return $survey;
-        });
+                return $survey;
+            });
+        } catch (ServiceException $e) {
+            // Re-throw ServiceExceptions as they're already properly formatted
+            throw $e;
+        } catch (\Exception $e) {
+            // Wrap any other exceptions in our ServiceException
+            throw ServiceException::fromException(
+                $e,
+                ServiceException::CATEGORY_UNEXPECTED,
+                ['user_id' => $userId, 'template_id' => $data['template_id'] ?? null]
+            );
+        }
     }
 
     /**
@@ -87,19 +133,45 @@ class SurveyService
      * Validate if survey can be answered (not expired, within limits)
      *
      * @param Feedback $survey The survey to check
-     * @return bool True if the survey can be answered, false otherwise
+     * @return bool True if the survey can be answered
+     * @throws SurveyNotAvailableException If the survey cannot be answered due to expiration or limits
+     * @throws ServiceException If there's an unexpected error during validation
      */
     public function canBeAnswered(Feedback $survey): bool
     {
-        if ($survey->expire_date < Carbon::now()) {
-            return false;
-        }
+        try {
+            if ($survey->expire_date < Carbon::now()) {
+                throw new SurveyNotAvailableException(
+                    __('surveys.survey_expired')
+                );
+            }
 
-        if ($survey->limit > 0 && $survey->submission_count >= $survey->limit) {
-            return false;
-        }
+            if ($survey->limit > 0 && $survey->submission_count >= $survey->limit) {
+                throw new SurveyNotAvailableException(
+                    __('surveys.survey_limit_reached')
+                );
+            }
 
-        return true;
+            return true;
+        } catch (SurveyNotAvailableException $e) {
+            // Log the exception with additional context
+            Log::warning($e->getMessage(), [
+                'survey_id' => $survey->id,
+                'expire_date' => $survey->expire_date,
+                'limit' => $survey->limit,
+                'submission_count' => $survey->submission_count
+            ]);
+
+            // Re-throw the exception
+            throw $e;
+        } catch (\Exception $e) {
+            // Wrap any unexpected exceptions
+            throw ServiceException::fromException(
+                $e,
+                ServiceException::CATEGORY_UNEXPECTED,
+                ['survey_id' => $survey->id]
+            );
+        }
     }
 
     /**
@@ -107,16 +179,8 @@ class SurveyService
      *
      * @param Feedback $survey The survey to store responses for
      * @param array $responses The responses to store
-     * @return bool True if responses were stored successfully, false otherwise
-     * @throws \Exception If there's an error during response storage
-     */
-    /**
-     * Store survey responses
-     *
-     * @param Feedback $survey The survey to store responses for
-     * @param array $responses The responses to store
-     * @return bool True if responses were stored successfully, false otherwise
-     * @throws \Exception If there's an error during response storage
+     * @return bool True if responses were stored successfully
+     * @throws ServiceException If there's an error during response storage
      */
     public function storeResponses(Feedback $survey, array $responses): bool
     {
@@ -163,8 +227,14 @@ class SurveyService
                 return true;
             });
         } catch (\Exception $e) {
-            $this->logResponseError($survey, $responses, $e);
-            return false;
+            throw ServiceException::fromException(
+                $e,
+                ServiceException::CATEGORY_DATABASE,
+                [
+                    'survey_id' => $survey->id,
+                    'responses' => $responses
+                ]
+            );
         }
     }
 
@@ -189,12 +259,15 @@ class SurveyService
                 $templateStrategy->storeResponses($survey, $responses['json_data'], $submissionId);
                 return true;
             } catch (\Exception $e) {
-                Log::error('Error processing structured JSON data: ' . $e->getMessage(), [
-                    'survey_id' => $survey->id,
-                    'response_data' => $responses['json_data'],
-                    'exception' => $e
-                ]);
-                return false;
+                throw ServiceException::businessLogic(
+                    'Error processing structured JSON data',
+                    [
+                        'survey_id' => $survey->id,
+                        'template_name' => $templateName,
+                        'response_data' => $responses['json_data']
+                    ],
+                    $e
+                );
             }
         }
 
@@ -212,12 +285,16 @@ class SurveyService
                     return true;
                 }
             } catch (\Exception $e) {
-                Log::error('Error parsing JSON response: ' . $e->getMessage(), [
-                    'survey_id' => $survey->id,
-                    'response_data' => $responses[0],
-                    'exception' => $e
-                ]);
-                return false;
+                throw ServiceException::businessLogic(
+                    'Error parsing legacy JSON response',
+                    [
+                        'survey_id' => $survey->id,
+                        'template_name' => $templateName ?? 'unknown',
+                        'json_error' => json_last_error_msg(),
+                        'response_data' => $responses[0]
+                    ],
+                    $e
+                );
             }
         }
 
@@ -391,13 +468,15 @@ class SurveyService
     private function validateResponseValue(Feedback $survey, $question, string $valueType, $value): bool
     {
         if ($valueType === 'number' && !is_numeric($value)) {
-            Log::warning("Invalid rating_value for number type", [
-                'survey_id' => $survey->id,
-                'question_id' => $question->id,
-                'value_type' => $valueType,
-                'provided_value' => $value,
-            ]);
-            return false;
+            throw ServiceException::validation(
+                "Invalid rating_value for number type",
+                [
+                    'survey_id' => $survey->id,
+                    'question_id' => $question->id,
+                    'value_type' => $valueType,
+                    'provided_value' => $value,
+                ]
+            );
         }
 
         return true;
@@ -459,12 +538,14 @@ class SurveyService
             });
 
             if (empty($validValues)) {
-                Log::warning("No valid values found in checkbox response", [
-                    'survey_id' => $survey->id,
-                    'question_id' => $question->id,
-                    'values' => $value
-                ]);
-                return 0;
+                throw ServiceException::validation(
+                    "No valid values found in checkbox response",
+                    [
+                        'survey_id' => $survey->id,
+                        'question_id' => $question->id,
+                        'values' => $value
+                    ]
+                );
             }
 
             // For each selected checkbox option, create a separate result
@@ -486,13 +567,15 @@ class SurveyService
 
                 return count($validValues);
             } catch (\Exception $e) {
-                Log::error("Failed to store checkbox options", [
-                    'survey_id' => $survey->id,
-                    'question_id' => $question->id,
-                    'values' => $validValues,
-                    'error' => $e->getMessage()
-                ]);
-                return 0;
+                throw ServiceException::database(
+                    "Failed to store checkbox options",
+                    [
+                        'survey_id' => $survey->id,
+                        'question_id' => $question->id,
+                        'values' => $validValues
+                    ],
+                    $e
+                );
             }
         } else if (is_string($value) || is_numeric($value)) {
             // Handle case where a single value is submitted instead of an array
@@ -532,24 +615,6 @@ class SurveyService
         if (in_array($survey->status, ['draft', 'running'])) {
             $survey->update(['status' => 'running']);
         }
-    }
-
-    /**
-     * Log error when storing responses fails
-     *
-     * @param Feedback $survey The survey
-     * @param array $responses The responses that failed to be stored
-     * @param \Exception $e The exception
-     */
-    private function logResponseError(Feedback $survey, array $responses, \Exception $e): void
-    {
-        Log::error('Error storing survey responses: ' . $e->getMessage(), [
-            'survey_id' => $survey->id,
-            'exception' => $e,
-            'exception_class' => get_class($e),
-            'exception_trace' => $e->getTraceAsString(),
-            'responses' => $responses
-        ]);
     }
 
     /**
