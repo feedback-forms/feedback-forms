@@ -1,9 +1,4 @@
 <div class="flex flex-col gap-2 p-20">
-    <!-- Header -->
-    <a class="flex flex-row gap-2 items-center w-fit text-2xl px-2" href="/admin-panel">
-        <x-fas-arrow-left class="w-4 h-4 text-gray-500 dark:text-gray-300" />
-        <span class="text-gray-500 dark:text-gray-400">{{__('templates.templates')}}</span>
-    </a>
 
     <div class="bg-gray-50 dark:bg-gray-800 flex flex-col gap-10 p-10">
         <!-- Templates Gallery Section -->
@@ -45,11 +40,11 @@
                 >
                     @foreach($templates as $template)
                         <div class="flex-none w-64">
-                            <div class="aspect-video bg-white dark:bg-gray-700 rounded-lg mb-2 overflow-hidden shadow-sm relative group">
+                            <div class="flex items-center aspect-video bg-white dark:bg-gray-700 rounded-lg mb-2 overflow-hidden shadow-sm relative group">
                                 <img
                                     src="{{ asset($template['image']) }}"
                                     alt="{{ $template['title'] }}"
-                                    class="w-full h-full object-cover"
+                                    class="w-auto h-[80%] mx-auto object-cover"
                                 />
 
                                 <!-- Preview and Create buttons overlay -->
@@ -100,13 +95,7 @@
                             @endif
                         </div>
                         <div class="flex-grow">
-                            @if(isset($item['route']))
-                                <a href="{{ $item['route'] }}">
-                                    <h3 class="font-medium text-gray-900 dark:text-gray-100">{{ $item['title'] }}</h3>
-                                </a>
-                            @else
-                                <h3 class="font-medium text-gray-900 dark:text-gray-100">{{ $item['title'] }}</h3>
-                            @endif
+                            <h3 class="font-medium text-gray-900 dark:text-gray-100">{{ $item['title'] }}</h3>
                             <p class="text-sm text-gray-500 dark:text-gray-400">{{ $item['description'] ?? '' }}</p>
                         </div>
                         <div class="flex flex-col gap-2">

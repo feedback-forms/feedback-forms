@@ -2,12 +2,7 @@
 
 namespace App\Livewire\Surveys;
 
-use App\Models\Feedback;
-use App\Models\SchoolYear;
-use App\Models\Department;
-use App\Models\GradeLevel;
-use App\Models\SchoolClass;
-use App\Models\Subject;
+use App\Models\{Feedback, SchoolYear, Department, GradeLevel, SchoolClass, Subject};
 use Carbon\Carbon;
 use Livewire\Component;
 
@@ -91,6 +86,6 @@ class Overview extends Component
     {
         return view('livewire.surveys.overview', [
             'surveys' => $this->surveys
-        ]);
+        ])->title(__('title.survey.overview'));
     }
 }

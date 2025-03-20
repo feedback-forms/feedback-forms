@@ -1,4 +1,8 @@
 <x-app-layout>
+    <x-slot name="title">
+        {{ __('title.survey.create') }}
+    </x-slot>
+
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -27,12 +31,12 @@
                         <div class="mb-6">
                             <x-input-label for="school_year" :value="__('surveys.select_school_year')" />
                             <select id="school_year"
-                                    name="school_year"
+                                    name="school_year_id"
                                     class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
                                     required>
                                 <option value="">{{ __('surveys.select_school_year_placeholder') }}</option>
                                 @foreach($schoolYears as $year)
-                                    <option value="{{ $year->name }}">{{ $year->name }}</option>
+                                    <option value="{{ $year->id }}">{{ $year->name }}</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('school_year')" class="mt-2" />
@@ -42,12 +46,12 @@
                         <div class="mb-6">
                             <x-input-label for="department" :value="__('surveys.select_department')" />
                             <select id="department"
-                                    name="department"
+                                    name="department_id"
                                     class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
                                     required>
                                 <option value="">{{ __('surveys.select_department_placeholder') }}</option>
                                 @foreach($departments as $dept)
-                                    <option value="{{ $dept->name }}">{{ $dept->name }}</option>
+                                    <option value="{{ $dept->id }}">{{ $dept->name }}</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('department')" class="mt-2" />
@@ -57,12 +61,12 @@
                         <div class="mb-6">
                             <x-input-label for="grade_level" :value="__('surveys.select_grade_level')" />
                             <select id="grade_level"
-                                    name="grade_level"
+                                    name="grade_level_id"
                                     class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
                                     required>
                                 <option value="">{{ __('surveys.select_grade_level_placeholder') }}</option>
                                 @foreach($gradeLevels as $grade)
-                                    <option value="{{ $grade->name }}">{{ $grade->name }}</option>
+                                    <option value="{{ $grade->id }}">{{ $grade->name }}</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('grade_level')" class="mt-2" />
@@ -72,12 +76,12 @@
                         <div class="mb-6">
                             <x-input-label for="class" :value="__('surveys.select_class')" />
                             <select id="class"
-                                    name="class"
+                                    name="school_class_id"
                                     class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
                                     required>
                                 <option value="">{{ __('surveys.select_class_placeholder') }}</option>
                                 @foreach($schoolClasses as $class)
-                                    <option value="{{ $class->name }}">{{ $class->name }}</option>
+                                    <option value="{{ $class->id }}">{{ $class->name }}</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('class')" class="mt-2" />
@@ -87,12 +91,12 @@
                         <div class="mb-6">
                             <x-input-label for="subject" :value="__('surveys.select_subject')" />
                             <select id="subject"
-                                    name="subject"
+                                    name="subject_id"
                                     class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
                                     required>
                                 <option value="">{{ __('surveys.select_subject_placeholder') }}</option>
                                 @foreach($subjects as $subject)
-                                    <option value="{{ $subject->name }}">{{ $subject->name }}</option>
+                                    <option value="{{ $subject->id }}">{{ $subject->name }}</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('subject')" class="mt-2" />

@@ -69,6 +69,10 @@ Route::middleware(['auth'])->group(function () {
         // Add the missing store route
         Route::post('/', [SurveyController::class, 'store'])
             ->name('surveys.store');
+
+        // Add the preview and create routes
+        Route::get('/preview/{template}', [SurveyController::class, 'preview'])->name('surveys.preview');
+        Route::get('/create/{template?}', [SurveyController::class, 'create'])->name('surveys.create');
     });
 
     // ------ ADMIN ------ \\

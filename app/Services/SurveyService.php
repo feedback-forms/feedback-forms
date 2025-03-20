@@ -24,11 +24,11 @@ class SurveyService
                 'accesskey' => $this->generateUniqueAccessKey(),
                 'limit' => $data['response_limit'] ?? -1,
                 'expire_date' => Carbon::parse($data['expire_date']),
-                'school_year' => $data['school_year'] ?? null,
-                'department' => $data['department'] ?? null,
-                'grade_level' => $data['grade_level'] ?? null,
-                'class' => $data['class'] ?? null,
-                'subject' => $data['subject'] ?? null,
+                'school_year_id' => $data['school_year_id'] ?? null,
+                'department_id' => $data['department_id'] ?? null,
+                'grade_level_id' => $data['grade_level_id'] ?? null,
+                'school_class_id' => $data['school_class_id'] ?? null,
+                'subject_id' => $data['subject_id'] ?? null,
             ]);
 
             // Get the template and its associated question templates
@@ -132,13 +132,15 @@ class SurveyService
      * Generate a unique 8-character access key
      */
     private function generateUniqueAccessKey(): string
-    {
-        do {
-            $key = strtoupper(substr(md5(uniqid()), 0, 8));
-        } while (Feedback::where('accesskey', $key)->exists());
+{
+    do {
+        $key = strtoupper(substr(md5(uniqid()), 0, 8));
+        $formattedKey = substr($key, 0, 4) . '-' . substr($key, 4, 4);
 
-        return $key;
-    }
+    } while (Feedback::where('accesskey', $formattedKey)->exists());
+
+    return $formattedKey;
+}
 
     /**
      * Validate if survey can be answered (not expired, within limits)

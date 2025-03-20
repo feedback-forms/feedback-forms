@@ -1,4 +1,8 @@
 <x-survey-layout>
+    <x-slot name="title">
+        {{__('title.respond')}}
+    </x-slot>
+
     <div x-data="tableFeedback()">
         <form method="POST" action="{{ route('surveys.submit', $survey->accesskey) }}" id="surveyForm">
             @csrf
@@ -24,21 +28,21 @@
                                     @if($survey->subject)
                                         <div>
                                             <span class="font-semibold">{{ __('surveys.subject') }}:</span>
-                                            <span>{{ $survey->subject }}</span>
+                                            <span>{{ $survey->subject->name }}</span>
                                         </div>
                                     @endif
 
                                     @if($survey->grade_level)
                                         <div>
                                             <span class="font-semibold">{{ __('surveys.grade_level') }}:</span>
-                                            <span>{{ $survey->grade_level }}</span>
+                                            <span>{{ $survey->grade_level->name }}</span>
                                         </div>
                                     @endif
 
                                     @if($survey->class)
                                         <div>
                                             <span class="font-semibold">{{ __('surveys.class') }}:</span>
-                                            <span>{{ $survey->class }}</span>
+                                            <span>{{ $survey->class->name }}</span>
                                         </div>
                                     @endif
                                 </div>

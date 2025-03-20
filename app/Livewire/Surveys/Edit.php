@@ -26,21 +26,21 @@ class Edit extends Component
     public ?string $name;
     public ?string $expire_date;
     public ?int $response_limit;
-    public ?string $school_year;
-    public ?string $department;
-    public ?string $grade_level;
-    public ?string $class;
-    public ?string $subject;
+    public int $school_year;
+    public int $department;
+    public int $grade_level;
+    public int $class;
+    public int $subject;
 
     protected $rules = [
         'name' => 'required|string|max:255',
         'expire_date' => 'required|date|after:now',
         'response_limit' => 'nullable|integer|min:-1',
-        'school_year' => 'required|string',
-        'department' => 'required|string',
-        'grade_level' => 'required|string',
-        'class' => 'required|string',
-        'subject' => 'required|string',
+        'school_year' => 'required|exists:school_years,id',
+        'department' => 'required|exists:departments,id',
+        'grade_level' => 'required|exists:grade_levels,id',
+        'class' => 'required|exists:school_classes,id',
+        'subject' => 'required|exists:subjects,id',
     ];
 
     public function mount($id)
@@ -78,11 +78,11 @@ class Edit extends Component
         }
 
         $this->response_limit = $this->survey->limit;
-        $this->school_year = $this->survey->school_year;
-        $this->department = $this->survey->department;
-        $this->grade_level = $this->survey->grade_level;
-        $this->class = $this->survey->class;
-        $this->subject = $this->survey->subject;
+        $this->school_year = $this->survey->year->id;
+        $this->department = $this->survey->department->id;
+        $this->grade_level = $this->survey->grade_level->id;
+        $this->class = $this->survey->class->id;
+        $this->subject = $this->survey->subject->id;
     }
 
     public function save()
@@ -94,11 +94,11 @@ class Edit extends Component
                 'name' => $this->name,
                 'expire_date' => Carbon::parse($this->expire_date),
                 'limit' => $this->response_limit,
-                'school_year' => $this->school_year,
-                'department' => $this->department,
-                'grade_level' => $this->grade_level,
-                'class' => $this->class,
-                'subject' => $this->subject,
+                'school_year_id' => $this->school_year,
+                'department_id' => $this->department,
+                'grade_level_id' => $this->grade_level,
+                'school_class_id' => $this->class,
+                'subject_id' => $this->subject,
             ]);
 
             session()->flash('success', __('surveys.updated_successfully'));
@@ -112,6 +112,7 @@ class Edit extends Component
 
     public function render()
     {
-        return view('livewire.surveys.edit');
+        return view('livewire.surveys.edit')
+            ->title(__('title.survey.edit', ['name' => $this->name]));
     }
 }
