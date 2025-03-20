@@ -35,4 +35,8 @@ class RegisterKeyService
     {
         return Registerkey::find($id);
     }
+
+    public function delete($id) {
+        return Registerkey::find($id)->delete();
+    }
 }
