@@ -36,7 +36,7 @@ class Option extends Component
 
     public function render()
     {
-        return view('livewire/admin/options');
+        return view('livewire/admin/options')->title(__('title.admin.options'));
     }
 
     public function editOption($key, $id)

@@ -112,6 +112,7 @@ class Edit extends Component
 
     public function render()
     {
-        return view('livewire.surveys.edit');
+        return view('livewire.surveys.edit')
+            ->title(__('title.survey.edit', ['name' => $this->name]));
     }
 }

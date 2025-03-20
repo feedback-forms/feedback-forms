@@ -27,7 +27,7 @@ class InviteToken extends Component
 
         return view('livewire.admin.invite-token', [
             'registerKeys' => $this->registerKeys
-        ]);
+        ])->title(__('title.admin.invite-token'));
     }
 
     public function addToken(RegisterKeyService $keyService)

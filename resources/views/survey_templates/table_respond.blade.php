@@ -1,4 +1,8 @@
 <x-survey-layout>
+    <x-slot name="title">
+        {{__('title.respond')}}
+    </x-slot>
+
     <div x-data="tableFeedback()">
         <form method="POST" action="{{ route('surveys.submit', $survey->accesskey) }}" id="surveyForm">
             @csrf

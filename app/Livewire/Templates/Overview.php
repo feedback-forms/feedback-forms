@@ -83,6 +83,6 @@ class Overview extends Component
 
     public function render()
     {
-        return view('livewire.templates.overview');
+        return view('livewire.templates.overview')->title(__('title.template.choose'));
     }
 }

@@ -17,6 +17,6 @@ class Panel extends Component
         return view('livewire/admin/panel', [
             'users' => $users,
             'registerKeys' => $registerKeys,
-        ]);
+        ])->title(__('title.admin.panel'));
     }
 }

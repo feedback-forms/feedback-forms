@@ -45,6 +45,10 @@ new #[Layout('layouts.guest')] class extends Component {
     }
 }; ?>
 
+<x-slot name="title">
+    {{__('title.register')}}
+</x-slot>
+
 <div>
     <form wire:submit="register">
         <!-- Name -->

@@ -65,6 +65,6 @@ class Users extends Component
     {
         return view('livewire.admin.users', [
             'users' => $this->users,
-        ]);
+        ])->title(__('title.admin.users'));
     }
 }

@@ -1,4 +1,8 @@
 <x-app-layout>
+    <x-slot name="title">
+        {{ __('title.survey.table') }}
+    </x-slot>
+
     <!-- Create Survey Button -->
     <div class="fixed bottom-8 right-8 z-50">
         <form action="{{ route('surveys.create') }}" method="GET">
