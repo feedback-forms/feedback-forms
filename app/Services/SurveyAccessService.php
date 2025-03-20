@@ -12,12 +12,12 @@ class SurveyAccessService
     /**
      * Number of characters in the access key (before formatting)
      */
-    const ACCESS_KEY_LENGTH = 12;
+    const ACCESS_KEY_LENGTH = 7;
 
     /**
-     * Format: Group size for formatting the access key (XXXX-XXXX-XXXX)
+     * Format: Group size for formatting the access key (XXX-XXXX)
      */
-    const ACCESS_KEY_GROUP_SIZE = 4;
+    const ACCESS_KEY_GROUP_SIZE = [3, 4];
 
     /**
      * Maximum attempts allowed within the time window
@@ -32,7 +32,7 @@ class SurveyAccessService
     /**
      * Generate a cryptographically secure unique access key
      *
-     * @return string Formatted access key in the pattern XXXX-XXXX-XXXX
+     * @return string Formatted access key in the pattern XXX-XXXX
      */
     public function generateAccessKey(): string
     {
@@ -43,7 +43,7 @@ class SurveyAccessService
             // Convert to uppercase for readability
             $rawKey = strtoupper($rawKey);
 
-            // Format the key with hyphens for better readability (XXXX-XXXX-XXXX)
+            // Format the key with hyphens for better readability (XXX-XXXX)
             $formattedKey = $this->formatAccessKey($rawKey);
 
             // Check if this key already exists in the database
@@ -60,11 +60,13 @@ class SurveyAccessService
      */
     private function formatAccessKey(string $rawKey): string
     {
+        $groups = self::ACCESS_KEY_GROUP_SIZE;
         $parts = [];
-        $groupSize = self::ACCESS_KEY_GROUP_SIZE;
 
-        for ($i = 0; $i < strlen($rawKey); $i += $groupSize) {
-            $parts[] = substr($rawKey, $i, $groupSize);
+        $currentPos = 0;
+        foreach ($groups as $size) {
+            $parts[] = substr($rawKey, $currentPos, $size);
+            $currentPos += $size;
         }
 
         return implode('-', $parts);

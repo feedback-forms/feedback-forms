@@ -16,7 +16,8 @@ return [
         'create' => 'Umfrage erstellen',
         'smiley' => 'Smiley',
         'target' => 'Zielscheibe',
-        'table' => 'Tabelle'
+        'table' => 'Tabelle',
+        'checkbox' => 'Checkbox-Feedback'
     ],
 
     'template' => [

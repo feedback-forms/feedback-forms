@@ -57,7 +57,15 @@ class Overview extends Component
     protected function loadSurveys()
     {
         // Start with a base query for the authenticated user
-        $query = Feedback::with(['feedback_template', 'user'])
+        $query = Feedback::with([
+            'feedback_template',
+            'user',
+            'year',
+            'department',
+            'gradeLevel',
+            'class',
+            'subject'
+        ])
             ->where('user_id', auth()->id())
             ->orderBy('created_at', 'desc');
 
@@ -75,6 +83,9 @@ class Overview extends Component
             // Add computed status attributes
             $survey->isExpired = $isExpired;
             $survey->isRunning = $isRunning;
+
+            // Set already_answered for backward compatibility with the view
+            $survey->already_answered = $survey->submission_count;
 
             // Add translated status text
             $survey->statusText = $isExpired

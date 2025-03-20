@@ -152,6 +152,7 @@ return [
     'no_categories_available' => 'No Categories Available',
     'no_categories_generated_description' => 'No categories could be generated from the survey questions.',
     'text_responses_count' => ':count text response(s) received',
+    'untitled_survey' => 'Untitled Survey',
     'general_feedback' => 'General Feedback',
     'detailed_feedback' => 'Detailed Feedback',
     'additional_comments' => 'Additional Comments',

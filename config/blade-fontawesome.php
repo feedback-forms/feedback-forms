@@ -11,8 +11,9 @@ return [
         'class' => '',
 
         'attributes' => [
-            // 'width' => 50,
-            // 'height' => 50,
+            'width' => 24,
+            'height' => 24,
+            'style' => 'max-width: 100%; height: auto;',
         ],
 
     ],
@@ -26,8 +27,9 @@ return [
         'class' => '',
 
         'attributes' => [
-            // 'width' => 50,
-            // 'height' => 50,
+            'width' => 24,
+            'height' => 24,
+            'style' => 'max-width: 100%; height: auto;',
         ],
 
     ],
@@ -41,8 +43,9 @@ return [
         'class' => '',
 
         'attributes' => [
-            // 'width' => 50,
-            // 'height' => 50,
+            'width' => 24,
+            'height' => 24,
+            'style' => 'max-width: 100%; height: auto;',
         ],
 
     ],
@@ -68,8 +71,9 @@ return [
         'class' => '',
 
         'attributes' => [
-            // 'width' => 50,
-            // 'height' => 50,
+            'width' => 24,
+            'height' => 24,
+            'style' => 'max-width: 100%; height: auto;',
         ],
 
     ],
@@ -83,8 +87,9 @@ return [
         'class' => '',
 
         'attributes' => [
-            // 'width' => 50,
-            // 'height' => 50,
+            'width' => 24,
+            'height' => 24,
+            'style' => 'max-width: 100%; height: auto;',
         ],
 
     ],
@@ -98,8 +103,9 @@ return [
         'class' => '',
 
         'attributes' => [
-            // 'width' => 50,
-            // 'height' => 50,
+            'width' => 24,
+            'height' => 24,
+            'style' => 'max-width: 100%; height: auto;',
         ],
 
     ],
@@ -113,8 +119,9 @@ return [
         'class' => '',
 
         'attributes' => [
-            // 'width' => 50,
-            // 'height' => 50,
+            'width' => 24,
+            'height' => 24,
+            'style' => 'max-width: 100%; height: auto;',
         ],
 
     ],
@@ -128,8 +135,9 @@ return [
         'class' => '',
 
         'attributes' => [
-            // 'width' => 50,
-            // 'height' => 50,
+            'width' => 24,
+            'height' => 24,
+            'style' => 'max-width: 100%; height: auto;',
         ],
 
     ],
@@ -143,8 +151,9 @@ return [
         'class' => '',
 
         'attributes' => [
-            // 'width' => 50,
-            // 'height' => 50,
+            'width' => 24,
+            'height' => 24,
+            'style' => 'max-width: 100%; height: auto;',
         ],
 
     ],
@@ -158,8 +167,9 @@ return [
         'class' => '',
 
         'attributes' => [
-            // 'width' => 50,
-            // 'height' => 50,
+            'width' => 24,
+            'height' => 24,
+            'style' => 'max-width: 100%; height: auto;',
         ],
 
     ],
@@ -173,8 +183,9 @@ return [
         'class' => '',
 
         'attributes' => [
-            // 'width' => 50,
-            // 'height' => 50,
+            'width' => 24,
+            'height' => 24,
+            'style' => 'max-width: 100%; height: auto;',
         ],
 
     ],
@@ -200,8 +211,9 @@ return [
         'class' => '',
 
         'attributes' => [
-            // 'width' => 50,
-            // 'height' => 50,
+            'width' => 24,
+            'height' => 24,
+            'style' => 'max-width: 100%; height: auto;',
         ],
 
     ],

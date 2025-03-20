@@ -39,7 +39,7 @@
                            dark:[&::-webkit-scrollbar-track]:bg-gray-700 dark:[&::-webkit-scrollbar-thumb]:bg-gray-500"
                     x-ref="scrollContainer" @scroll.throttle="updateScroll()">
                     @foreach($templates as $template)
-                    <a href="#" title="#" class="flex-none w-20">
+                    <a href="#" title="{{ __('teacherInterface.overview.featured-item') }}" class="flex-none w-20">
                         <div
                             class="w-20 h-20 bg-white dark:bg-gray-700 rounded-full mb-2 overflow-hidden shadow-sm flex items-center justify-center">
                             <img src="{{ asset($template['image']) }}" alt="{{ $template['title'] }}"
@@ -86,7 +86,7 @@
                            dark:[&::-webkit-scrollbar-track]:bg-gray-700 dark:[&::-webkit-scrollbar-thumb]:bg-gray-500"
                     x-ref="scrollContainerSurveys" @scroll.throttle="updateScrollSurveys()">
                     @foreach($featuredItems as $item)
-                    <a href="#" title="#" style="width: 15rem;"
+                    <a href="#" title="{{ __('teacherInterface.overview.item') }}" style="width: 15rem;"
                         class="min-w-3xs w-3xs flex items-start gap-4 flex-col p-4 hover:bg-white dark:hover:bg-gray-700 rounded-lg transition-colors">
                         <div
                             class="w-3xs h-auto min-w-3xs bg-white dark:bg-gray-700 rounded overflow-hidden flex-none shadow-sm">

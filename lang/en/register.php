@@ -10,5 +10,6 @@ return [
     'register_key' => 'Invitation Code',
     'invalid_code_format' => 'Invalid invitation code format: xxxx-xxxx (alphanumeric)',
     'invalid_code' => 'Invalid invitation code',
-    'expired_code' => 'Invitation code has expired'
+    'expired_code' => 'Invitation code has expired',
+    'login-page-title' => 'Go to login page'
 ];

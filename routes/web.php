@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{WelcomeController, SurveyController, SurveyResponseController};
+use App\Http\Controllers\{HealthCheckController, WelcomeController, SurveyController, SurveyResponseController};
 use Livewire\Volt\Volt;
 
 // Root route for welcome page and survey access
@@ -111,5 +111,8 @@ Route::get('/test-translation', function () {
 Route::get('/test-aggregation', [\App\Http\Controllers\TestController::class, 'testAggregation']);
 Route::get('/test-question-categories', [\App\Http\Controllers\TestController::class, 'questionCategories']);
 Route::get('/test-tab-categories', [\App\Http\Controllers\TestController::class, 'testTabCategories']);
+
+// Health check route to verify dependency injection fixes
+Route::get('/system/health-check', HealthCheckController::class)->name('system.health-check');
 
 require __DIR__.'/auth.php';

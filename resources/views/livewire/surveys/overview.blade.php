@@ -87,7 +87,7 @@
                     <!-- Image container with edit button -->
                     <div class="flex flex-row items-start gap-3">
                         <div class="relative flex-grow">
-                            <img src="{{asset('img/preview.png')}}" alt="Survey preview" class="rounded-3xl w-full" />
+                            <img src="{{asset('img/preview.png')}}" alt="Survey preview" class="rounded-3xl w-full h-auto object-contain" style="max-height: 100px;" />
                         </div>
                         <!-- Edit button positioned beside the image -->
                         <div class="flex-shrink-0 -mt-3">
@@ -101,14 +101,14 @@
                     <!-- Content section -->
                     <div class="flex flex-col flex-grow">
                         <p class="text-ellipsis text-gray-600 dark:text-gray-500">
-                            <b x-text="survey.name || (survey.feedback_template ? survey.feedback_template.title : 'Untitled Survey')"></b>
+                            <b x-text="survey.name || (survey.feedback_template ? survey.feedback_template.title : '{{__('surveys.untitled_survey')}}')"></b>
                         </p>
                         <p class="text-ellipsis text-gray-500 dark:text-gray-400" x-text="`Updated ${survey.updated_at_diff}`"></p>
 
                         <!-- Display survey status with proper styling -->
                         <p class="text-sm mt-1">
                             <span
-                                x-text="survey.statusText"
+                                x-text="survey.isExpired ? '{{__('surveys.status.expired')}}' : (survey.isRunning ? '{{__('surveys.status.running')}}' : '{{__('surveys.status.cancelled')}}')"
                                 x-bind:class="{
                                     'text-red-500': survey.isExpired,
                                     'text-green-500': survey.isRunning,

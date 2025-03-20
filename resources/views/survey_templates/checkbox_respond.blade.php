@@ -88,20 +88,24 @@
 
                                             @if($templateType === 'checkbox')
                                                 <div class="space-y-2">
-                                                    @foreach([
-                                                        'Yes',
-                                                        'No',
-                                                        'Not applicable'
-                                                    ] as $option)
+                                                    @php
+                                                        $options = [
+                                                            'Yes' => __('surveys.checkbox_options.yes'),
+                                                            'No' => __('surveys.checkbox_options.no'),
+                                                            'Not applicable' => __('surveys.checkbox_options.na')
+                                                        ];
+                                                    @endphp
+
+                                                    @foreach($options as $value => $label)
                                                         <label class="flex items-center space-x-2 cursor-pointer">
                                                             <input
                                                                 type="radio"
                                                                 name="responses[{{ $question->id }}]"
-                                                                value="{{ $option }}"
+                                                                value="{{ $value }}"
                                                                 class="form-radio"
                                                                 required
                                                             >
-                                                            <span>{{ $option }}</span>
+                                                            <span>{{ $label }}</span>
                                                         </label>
                                                     @endforeach
                                                 </div>
@@ -153,20 +157,24 @@
 
                                             @if($templateType === 'checkbox')
                                                 <div class="space-y-2">
-                                                    @foreach([
-                                                        'Yes',
-                                                        'No',
-                                                        'Not applicable'
-                                                    ] as $option)
+                                                    @php
+                                                        $options = [
+                                                            'Yes' => __('surveys.checkbox_options.yes'),
+                                                            'No' => __('surveys.checkbox_options.no'),
+                                                            'Not applicable' => __('surveys.checkbox_options.na')
+                                                        ];
+                                                    @endphp
+
+                                                    @foreach($options as $value => $label)
                                                         <label class="flex items-center space-x-2 cursor-pointer">
                                                             <input
                                                                 type="radio"
                                                                 name="responses[{{ $question->id }}]"
-                                                                value="{{ $option }}"
+                                                                value="{{ $value }}"
                                                                 class="form-radio"
                                                                 required
                                                             >
-                                                            <span>{{ $option }}</span>
+                                                            <span>{{ $label }}</span>
                                                         </label>
                                                     @endforeach
                                                 </div>
@@ -215,20 +223,24 @@
 
                                             @if($templateType === 'checkbox')
                                                 <div class="space-y-2">
-                                                    @foreach([
-                                                        'Yes',
-                                                        'No',
-                                                        'Not applicable'
-                                                    ] as $option)
+                                                    @php
+                                                        $options = [
+                                                            'Yes' => __('surveys.checkbox_options.yes'),
+                                                            'No' => __('surveys.checkbox_options.no'),
+                                                            'Not applicable' => __('surveys.checkbox_options.na')
+                                                        ];
+                                                    @endphp
+
+                                                    @foreach($options as $value => $label)
                                                         <label class="flex items-center space-x-2 cursor-pointer">
                                                             <input
                                                                 type="radio"
                                                                 name="responses[{{ $question->id }}]"
-                                                                value="{{ $option }}"
+                                                                value="{{ $value }}"
                                                                 class="form-radio"
                                                                 required
                                                             >
-                                                            <span>{{ $option }}</span>
+                                                            <span>{{ $label }}</span>
                                                         </label>
                                                     @endforeach
                                                 </div>

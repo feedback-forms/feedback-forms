@@ -29,6 +29,7 @@ class ErrorLogger
     const CATEGORY_SECURITY = 'security';
     const CATEGORY_UNEXPECTED = 'unexpected';
     const CATEGORY_USER_INPUT = 'user_input';
+    const CATEGORY_DEPENDENCY_INJECTION = 'dependency_injection';
 
     /**
      * Fields that should be redacted from logs for security/privacy
@@ -279,5 +280,41 @@ class ErrorLogger
 
         // Log with the appropriate level
         Log::$logLevel($logMessage, $logContext);
+    }
+
+    /**
+     * Log a dependency injection error
+     *
+     * @param string $className The class with missing or invalid dependencies
+     * @param string $message The detailed error message
+     * @param array $missingDependencies Array of missing dependency details
+     * @param array $context Additional context data
+     * @return void
+     */
+    public static function logDependencyInjectionError(
+        string $className,
+        string $message,
+        array $missingDependencies = [],
+        array $context = []
+    ): void {
+        $baseContext = [
+            'category' => self::CATEGORY_DEPENDENCY_INJECTION,
+            'class' => $className,
+            'missing_dependencies' => $missingDependencies,
+            'request_id' => request()->header('X-Request-ID') ?? uniqid('req-'),
+        ];
+
+        // Format message with specific DI context
+        $logMessage = sprintf('[%s] %s | Class: %s',
+            strtoupper(self::CATEGORY_DEPENDENCY_INJECTION),
+            $message,
+            $className
+        );
+
+        // Merge contexts and log
+        $logContext = static::redactSensitiveData(array_merge($baseContext, $context));
+
+        // Always use error level for dependency injection issues as they are critical
+        Log::error($logMessage, $logContext);
     }
 }

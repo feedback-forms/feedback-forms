@@ -16,7 +16,8 @@ return [
         'create' => 'Create Survey',
         'smiley' => 'Smiley',
         'target' => 'Target',
-        'table' => 'Table'
+        'table' => 'Table',
+        'checkbox' => 'Checkbox Feedback'
     ],
 
     'template' => [

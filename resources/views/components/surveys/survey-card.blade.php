@@ -5,7 +5,7 @@
     <!-- Image container with edit button -->
     <div class="flex flex-row items-start gap-3">
         <div class="relative flex-grow">
-            <img src="{{asset('img/preview.png')}}" alt="Survey preview" class="rounded-3xl w-full" />
+            <img src="{{asset('img/preview.png')}}" alt="Survey preview" class="rounded-3xl w-full h-auto object-contain" style="max-height: 150px;" />
         </div>
         <!-- Edit button positioned beside the image -->
         <div class="flex-shrink-0 -mt-3">
@@ -19,7 +19,7 @@
     <!-- Content section -->
     <div class="flex flex-col flex-grow">
         <p class="text-ellipsis text-gray-600 dark:text-gray-500">
-            <b x-text="survey.name || (survey.feedback_template ? survey.feedback_template.title : 'Untitled Survey')"></b>
+            <b x-text="survey.name || (survey.feedback_template ? survey.feedback_template.title : '{{__('surveys.untitled_survey')}}')"></b>
         </p>
         <p class="text-ellipsis text-gray-500 dark:text-gray-400" x-text="`Updated ${survey.updated_at_diff}`"></p>
 
