@@ -17,7 +17,6 @@ class Feedback extends Model
         'feedback_template_id',
         'accesskey',
         'limit',
-        'already_answered',
         'expire_date',
         'status',
         'school_year_id',
