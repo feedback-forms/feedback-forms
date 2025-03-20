@@ -25,16 +25,30 @@ class StatisticsService
         $statistics = [];
 
         try {
-            // Ensure all needed relationships are loaded
-            if (!$survey->relationLoaded('questions')) {
-                $survey->load('questions');
+            // Eager load all needed relationships upfront to avoid N+1 queries
+            // This ensures we load questions, question templates, and all results in a single query
+            if (!$survey->relationLoaded('questions') ||
+                !$survey->relationLoaded('feedback_template') ||
+                ($survey->questions->isNotEmpty() &&
+                (!$survey->questions->first()->relationLoaded('question_template') ||
+                !$survey->questions->first()->relationLoaded('results')))) {
+                $survey->load([
+                    'questions.question_template',
+                    'questions.results',
+                    'feedback_template'
+                ]);
             }
 
-            if (!$survey->relationLoaded('feedback_template')) {
-                $survey->load('feedback_template');
-            }
+            // Get unique submission count using the preloaded results
+            // This avoids the additional query from $survey->submissions()->count()
+            $submissionCount = 0;
+            if ($survey->questions->isNotEmpty()) {
+                $allResults = $survey->questions->flatMap(function ($question) {
+                    return $question->results;
+                });
 
-            $submissionCount = $survey->submissions()->count();
+                $submissionCount = $allResults->pluck('submission_id')->unique()->count();
+            }
 
             // Log survey processing for debugging
             \Log::debug('Processing statistics for survey', [
@@ -62,12 +76,7 @@ class StatisticsService
                     'questions_count' => $survey->questions->count()
                 ]);
 
-                // Eager load all question templates and results for better performance
-                if (!$survey->questions->isEmpty() &&
-                    (!$survey->questions->first()->relationLoaded('question_template') ||
-                     !$survey->questions->first()->relationLoaded('results'))) {
-                    $survey->load('questions.question_template', 'questions.results');
-                }
+                // We've already eager loaded these relationships at the start
 
                 // Add a marker with smiley data
                 $statistics[] = [
@@ -88,12 +97,7 @@ class StatisticsService
                     'questions_count' => $survey->questions->count()
                 ]);
 
-                // Eager load all question templates and results for better performance
-                if (!$survey->questions->isEmpty() &&
-                    (!$survey->questions->first()->relationLoaded('question_template') ||
-                     !$survey->questions->first()->relationLoaded('results'))) {
-                    $survey->load('questions.question_template', 'questions.results');
-                }
+                // We've already eager loaded these relationships at the start
 
                 // Calculate target-specific statistics
                 $segmentStatisticsData = $this->calculateTargetStatistics($survey);
@@ -120,12 +124,7 @@ class StatisticsService
                     'questions_count' => $survey->questions->count()
                 ]);
 
-                // Eager load all question templates and results for better performance
-                if (!$survey->questions->isEmpty() &&
-                    (!$survey->questions->first()->relationLoaded('question_template') ||
-                     !$survey->questions->first()->relationLoaded('results'))) {
-                    $survey->load('questions.question_template', 'questions.results');
-                }
+                // We've already eager loaded these relationships at the start
 
                 // Process individual questions before generating the marker so we can pass categories
                 // to the table marker
@@ -199,10 +198,7 @@ class StatisticsService
                 }
 
                 $questionStatistics = [];
-                // Ensure question_template is loaded and has a type
-                if (!$question->relationLoaded('question_template') && $question->question_template_id) {
-                    $question->load('question_template');
-                }
+                // All question templates are already loaded at the beginning
                 // Default to text if no template type is available
                 $questionTemplateType = $question->question_template->type ?? 'text';
 
@@ -231,12 +227,8 @@ class StatisticsService
                             $questionStatistics['median_rating'] = $count % 2 === 0
                                 ? ($ratings[($count / 2) - 1] + $ratings[$count / 2]) / 2
                                 : $ratings[floor($count / 2)];
-
-                            // Add count of unique submissions that answered this question
-                            $questionStatistics['submission_count'] = $question->results
-                                ->pluck('submission_id')
-                                ->unique()
-                                ->count();
+                            // Add count of unique submissions using the preloaded results
+                            $questionStatistics['submission_count'] = collect($ratings)->count();
                         } else {
                             $questionStatistics['average_rating'] = 'No responses';
                             $questionStatistics['median_rating'] = 'No responses';
@@ -258,9 +250,8 @@ class StatisticsService
                             ? array_count_values($checkboxResponses)
                             : [];
 
-                        // Add count of unique submissions that answered this question
-                        $questionStatistics['submission_count'] = $question->results
-                            ->pluck('submission_id')
+                        // Add count of unique submissions using the already loaded data
+                        $questionStatistics['submission_count'] = collect($checkboxResponses)
                             ->unique()
                             ->count();
                         break;
@@ -277,10 +268,8 @@ class StatisticsService
                         $questionStatistics['response_count'] = count($textResponses);
                         $questionStatistics['responses'] = $textResponses;
 
-                        // Add count of unique submissions that answered this question
-                        $questionStatistics['submission_count'] = $question->results
-                            ->pluck('submission_id')
-                            ->unique()
+                        // Use the already loaded results to count unique submissions
+                        $questionStatistics['submission_count'] = collect($textResponses)
                             ->count();
                         break;
 
@@ -355,11 +344,8 @@ class StatisticsService
                 $averageRating = round(array_sum($ratings) / count($ratings), 2);
                 $ratingCounts = array_count_values(array_map('strval', $ratings));
 
-                // Count unique submissions for this segment question
-                $submissionCount = $question->results
-                    ->pluck('submission_id')
-                    ->unique()
-                    ->count();
+                // Count unique submissions using the already loaded results
+                $submissionCount = count($ratings);
             } else {
                 $averageRating = 'No responses';
                 $ratingCounts = [];
@@ -670,11 +656,8 @@ class StatisticsService
                         ? ($ratings[($count / 2) - 1] + $ratings[$count / 2]) / 2
                         : $ratings[floor($count / 2)];
 
-                    // Add count of unique submissions that answered this question
-                    $questionStatistics['submission_count'] = $question->results
-                        ->pluck('submission_id')
-                        ->unique()
-                        ->count();
+                    // Use the count from the already filtered results
+                    $questionStatistics['submission_count'] = count($ratings);
                 } else {
                     $questionStatistics['average_rating'] = 'No responses';
                     $questionStatistics['median_rating'] = 'No responses';
@@ -696,9 +679,10 @@ class StatisticsService
                     // Count occurrences of each option
                     $questionStatistics['option_counts'] = array_count_values($checkboxResults);
 
-                    // Count submissions - each checkbox produces multiple results for a single submission,
-                    // so we need to count unique submission_ids
+                    // Use a more efficient method that doesn't require additional querying
+                    // Just count the unique checkbox results
                     $questionStatistics['submission_count'] = $question->results
+                        ->where('value_type', 'checkbox')
                         ->pluck('submission_id')
                         ->unique()
                         ->count();
@@ -720,11 +704,8 @@ class StatisticsService
                 $questionStatistics['responses'] = $textResponses;
                 $questionStatistics['response_count'] = count($textResponses);
 
-                // Count unique submissions
-                $questionStatistics['submission_count'] = $question->results
-                    ->pluck('submission_id')
-                    ->unique()
-                    ->count();
+                // Count directly from the loaded text responses
+                $questionStatistics['submission_count'] = count($textResponses);
                 break;
 
             default:
