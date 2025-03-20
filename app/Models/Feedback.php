@@ -49,9 +49,22 @@ class Feedback extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Get the feedback template that this feedback belongs to
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function feedbackTemplate(): BelongsTo
+    {
+        return $this->belongsTo(FeedbackTemplate::class);
+    }
+
+    /**
+     * @deprecated Use feedbackTemplate() instead
+     */
     public function feedback_template(): BelongsTo
     {
-        return $this->belongsTo(Feedback_template::class);
+        return $this->feedbackTemplate();
     }
 
     public function questions(): HasMany
@@ -77,9 +90,22 @@ class Feedback extends Model
         return $this->belongsTo(Department::class, 'department_id', 'id');
     }
 
-    public function grade_level(): BelongsTo
+    /**
+     * Get the grade level that this feedback belongs to
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function gradeLevel(): BelongsTo
     {
         return $this->belongsTo(GradeLevel::class, 'grade_level_id', 'id');
+    }
+
+    /**
+     * @deprecated Use gradeLevel() instead
+     */
+    public function grade_level(): BelongsTo
+    {
+        return $this->gradeLevel();
     }
 
     public function subject(): BelongsTo
