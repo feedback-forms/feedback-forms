@@ -11,9 +11,22 @@ use Illuminate\Support\Str;
 
 class SurveyResponseService
 {
+    /**
+     * @var Templates\TemplateStrategyFactory
+     */
     protected $templateStrategyFactory;
+
+    /**
+     * @var FeedbackRepository
+     */
     protected $feedbackRepository;
 
+    /**
+     * Constructor to initialize dependencies
+     *
+     * @param Templates\TemplateStrategyFactory $templateStrategyFactory Factory for creating template-specific strategies
+     * @param FeedbackRepository $feedbackRepository Repository for feedback data access
+     */
     public function __construct(
         Templates\TemplateStrategyFactory $templateStrategyFactory,
         FeedbackRepository $feedbackRepository
@@ -22,6 +35,14 @@ class SurveyResponseService
         $this->feedbackRepository = $feedbackRepository;
     }
 
+    /**
+     * Store survey responses for a given survey
+     *
+     * @param Feedback $survey The survey to store responses for
+     * @param array $responses The responses data to store
+     * @return bool True if responses were stored successfully
+     * @throws ServiceException If there's an error during response storage
+     */
     public function storeResponses(Feedback $survey, array $responses): bool
     {
         try {
@@ -87,6 +108,18 @@ class SurveyResponseService
         }
     }
 
+    /**
+     * Process template-specific response data
+     *
+     * This method handles specialized response formats like JSON data
+     * that need to be processed using template-specific strategies.
+     *
+     * @param Feedback $survey The survey being processed
+     * @param array $responses The response data
+     * @param string $submissionId Unique ID for this submission
+     * @return bool True if template-specific processing was performed
+     * @throws ServiceException If there's an error during template processing
+     */
     private function processTemplateSpecificData(Feedback $survey, array $responses, string $submissionId): bool
     {
         if (isset($responses['json_data']) && is_array($responses['json_data'])) {
@@ -134,6 +167,16 @@ class SurveyResponseService
         return false;
     }
 
+    /**
+     * Process regular (non-template-specific) responses
+     *
+     * @param Feedback $survey The survey being processed
+     * @param array $responses The response data
+     * @param \Illuminate\Database\Eloquent\Collection $questions The survey questions
+     * @param string $submissionId Unique ID for this submission
+     * @return int Number of responses successfully processed
+     * @throws ServiceException If there's an error during response processing
+     */
     private function processRegularResponses(Feedback $survey, array $responses, $questions, string $submissionId): int
     {
         $responseCount = 0;
@@ -190,6 +233,17 @@ class SurveyResponseService
         return $responseCount;
     }
 
+    /**
+     * Find a question within a survey by ID or index
+     *
+     * This method tries to find a question by its ID, and if not found,
+     * will attempt to find it by index position in the questions collection.
+     *
+     * @param Feedback $survey The survey containing the questions
+     * @param \Illuminate\Database\Eloquent\Collection $questions Collection of survey questions
+     * @param int|string $questionId Question ID or index to find
+     * @return \App\Models\Question|null The found question or null if not found
+     */
     private function findQuestionInSurvey(Feedback $survey, $questions, $questionId)
     {
         $question = $questions->firstWhere('id', $questionId);
@@ -216,6 +270,12 @@ class SurveyResponseService
         return $question;
     }
 
+    /**
+     * Determine the appropriate value type based on question template type
+     *
+     * @param string $questionTemplateType The template type (range, checkboxes, etc.)
+     * @return string The appropriate value type (number, checkbox, text)
+     */
     private function determineValueType(string $questionTemplateType): string
     {
         if ($questionTemplateType === 'range') {
@@ -227,6 +287,21 @@ class SurveyResponseService
         return 'text';
     }
 
+    /**
+     * Process a specific question response based on its type
+     *
+     * This method handles the processing logic for different question types,
+     * routing to the appropriate handler method based on the question template type.
+     *
+     * @param Feedback $survey The survey being processed
+     * @param \App\Models\Question $question The question being answered
+     * @param string $questionTemplateType The type of question template
+     * @param string $valueType The type of value being stored
+     * @param mixed $responseValue The response value provided by the user
+     * @param string $submissionId Unique ID for this submission
+     * @return int Number of individual responses stored (can be >1 for checkboxes)
+     * @throws ServiceException If there's an error during response processing
+     */
     private function processQuestionResponse(
         Feedback $survey,
         $question,
@@ -254,6 +329,16 @@ class SurveyResponseService
         }
     }
 
+    /**
+     * Validate that a response value matches its expected type
+     *
+     * @param Feedback $survey The survey being processed
+     * @param \App\Models\Question $question The question being answered
+     * @param string $valueType The expected value type
+     * @param mixed $responseValue The response value to validate
+     * @return bool True if the value is valid
+     * @throws ServiceException If the response value is invalid
+     */
     private function validateResponseValue(Feedback $survey, $question, string $valueType, $responseValue): bool
     {
         if ($valueType === 'number' && !is_numeric($responseValue)) {
@@ -271,6 +356,15 @@ class SurveyResponseService
         return true;
     }
 
+    /**
+     * Store a range-type response
+     *
+     * @param \App\Models\Question $question The question being answered
+     * @param string $valueType The type of value (typically 'number')
+     * @param mixed $rangeValue The numeric range value
+     * @param string $submissionId Unique ID for this submission
+     * @return void
+     */
     private function storeRangeResponse($question, string $valueType, $rangeValue, string $submissionId): void
     {
         Result::create([
@@ -281,6 +375,15 @@ class SurveyResponseService
         ]);
     }
 
+    /**
+     * Store a text-type response
+     *
+     * @param \App\Models\Question $question The question being answered
+     * @param string $valueType The type of value (typically 'text')
+     * @param mixed $textValue The text value
+     * @param string $submissionId Unique ID for this submission
+     * @return void
+     */
     private function storeTextResponse($question, string $valueType, $textValue, string $submissionId): void
     {
         Result::create([
@@ -291,6 +394,17 @@ class SurveyResponseService
         ]);
     }
 
+    /**
+     * Store checkbox responses, which can be multiple values
+     *
+     * @param Feedback $survey The survey being processed
+     * @param \App\Models\Question $question The question being answered
+     * @param string $valueType The type of value (typically 'checkbox')
+     * @param mixed $checkboxValues Array or string of checkbox values
+     * @param string $submissionId Unique ID for this submission
+     * @return int Number of checkbox values successfully stored
+     * @throws ServiceException If the checkbox values are invalid
+     */
     private function storeCheckboxResponse(Feedback $survey, $question, string $valueType, $checkboxValues, string $submissionId): int
     {
         if (is_array($checkboxValues)) {
@@ -386,6 +500,12 @@ class SurveyResponseService
         return 0;
     }
 
+    /**
+     * Update the survey status after receiving responses
+     *
+     * @param Feedback $survey The survey to update
+     * @return void
+     */
     private function updateSurveyStatus(Feedback $survey): void
     {
         if (in_array($survey->status, ['draft', 'running'])) {
