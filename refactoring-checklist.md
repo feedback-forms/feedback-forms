@@ -43,7 +43,7 @@ This document outlines recommended improvements to enhance code quality, maintai
 
 - [ ] **Internationalize hardcoded strings** - Various hardcoded strings throughout the codebase should use Laravel's localization
 - [ ] **Remove commented-out code** - Clean up commented code and "TODO" items that are no longer relevant
-- [ ] **Standardize method return type declarations** - Many methods lack proper return type declarations
+- [x] ~~**Standardize method return type declarations** - Many methods lack proper return type declarations~~
 - [ ] **Improve variable naming** - Some variables have generic names (`$data`, `$result`, etc.) that could be more descriptive
 
 ## Security Considerations

@@ -2,8 +2,8 @@
 
 namespace App\Services;
 use App\Repositories\{
-    SubjectRepository, 
-    DepartmentRepository, 
+    SubjectRepository,
+    DepartmentRepository,
     SchoolClassRepository,
     SchoolYearRepository,
     GradeLevelRepository
@@ -31,7 +31,7 @@ class OptionService {
         $this->grade_level_repository = $grade_level_repository;
     }
 
-    public function get()
+    public function get(): array
     {
         $combined = [];
         $combined[__('options.subject.name_plural')] = $this->subject_repository->get()->map(function ($item) {
@@ -41,7 +41,7 @@ class OptionService {
                 'code' => $item->code
             ];
         })->toArray();
-        
+
         $combined[__('options.department.name_plural')] = $this->department_repository->get()->map(function ($item) {
             return [
                 'id' => $item->id,
@@ -49,15 +49,15 @@ class OptionService {
                 'code' => $item->code
             ];
         })->toArray();
-        
+
         $combined[__('options.school_class.name_plural')] = $this->school_class_repository->get()->toArray();
         $combined[__('options.school_year.name_plural')] = $this->school_year_repository->get()->toArray();
         $combined[__('options.grade_level.name_plural')] = $this->grade_level_repository->get()->toArray();
-        
+
         return $combined;
     }
 
-    public function handleModalRequest($editingKey, $editingId, $editingName, $editingCode)
+    public function handleModalRequest($editingKey, $editingId, $editingName, $editingCode): mixed
     {
         switch ($editingKey) {
             case __('options.subject.name_plural'):
@@ -93,7 +93,7 @@ class OptionService {
         }
     }
 
-    public function handleDeleteRequest($editingKey, $editingId)
+    public function handleDeleteRequest($editingKey, $editingId): void
     {
         switch ($editingKey) {
             case __('options.subject.name_plural'):
@@ -124,7 +124,7 @@ class OptionService {
         }
     }
 
-    public function createSubject($data)
+    public function createSubject($data): \App\Models\Subject
     {
         return $this->subject_repository->create([
             'name' => $data['name'],
@@ -132,7 +132,7 @@ class OptionService {
         ]);
     }
 
-    public function createDepartment($data)
+    public function createDepartment($data): \App\Models\Department
     {
         return $this->department_repository->create([
             'name' => $data['name'],
@@ -140,17 +140,17 @@ class OptionService {
         ]);
     }
 
-    public function createSchoolYear($name)
+    public function createSchoolYear($name): \App\Models\SchoolYear
     {
         return $this->school_year_repository->create(['name' => $name]);
     }
 
-    public function createGradeLevel($name)
+    public function createGradeLevel($name): \App\Models\GradeLevel
     {
         return $this->grade_level_repository->create(['name' => $name]);
     }
 
-    public function createSchoolClass($name, $gradeLevelId)
+    public function createSchoolClass($name, $gradeLevelId): \App\Models\SchoolClass
     {
         return $this->school_class_repository->create([
             'name' => $name,
