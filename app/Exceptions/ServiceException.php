@@ -3,18 +3,19 @@
 namespace App\Exceptions;
 
 use Exception;
-use Illuminate\Support\Facades\Log;
+use App\Services\ErrorLogger;
 
 class ServiceException extends Exception
 {
     /**
      * Error categories for better classification
      */
-    const CATEGORY_DATABASE = 'database';
-    const CATEGORY_VALIDATION = 'validation';
-    const CATEGORY_BUSINESS_LOGIC = 'business_logic';
-    const CATEGORY_EXTERNAL_SERVICE = 'external_service';
-    const CATEGORY_UNEXPECTED = 'unexpected';
+    // Use error categories from the ErrorLogger service
+    const CATEGORY_DATABASE = ErrorLogger::CATEGORY_DATABASE;
+    const CATEGORY_VALIDATION = ErrorLogger::CATEGORY_VALIDATION;
+    const CATEGORY_BUSINESS_LOGIC = ErrorLogger::CATEGORY_BUSINESS_LOGIC;
+    const CATEGORY_EXTERNAL_SERVICE = ErrorLogger::CATEGORY_EXTERNAL_SERVICE;
+    const CATEGORY_UNEXPECTED = ErrorLogger::CATEGORY_UNEXPECTED;
 
     /**
      * The error category
@@ -76,14 +77,19 @@ class ServiceException extends Exception
     }
 
     /**
-     * Log the exception with appropriate level and context
+     * Log the exception with appropriate level and context using the ErrorLogger service
      */
     protected function logException(): void
     {
         $logLevel = $this->determineLogLevel();
-        $logContext = $this->buildLogContext();
 
-        Log::$logLevel($this->message, $logContext);
+        // Use the ErrorLogger service to log the exception with proper structure
+        ErrorLogger::logException(
+            $this,
+            $this->category,
+            $logLevel,
+            $this->context
+        );
     }
 
     /**
@@ -108,37 +114,7 @@ class ServiceException extends Exception
         }
     }
 
-    /**
-     * Build the context array for logging
-     *
-     * @return array
-     */
-    protected function buildLogContext(): array
-    {
-        $logContext = [
-            'exception' => get_class($this),
-            'category' => $this->category,
-            'file' => $this->getFile(),
-            'line' => $this->getLine(),
-        ];
-
-        // Include previous exception if available
-        if ($this->getPrevious()) {
-            $logContext['previous_exception'] = [
-                'class' => get_class($this->getPrevious()),
-                'message' => $this->getPrevious()->getMessage(),
-                'code' => $this->getPrevious()->getCode(),
-            ];
-        }
-
-        // Include stack trace in non-production environments
-        if (config('app.env') !== 'production') {
-            $logContext['trace'] = $this->getTraceAsString();
-        }
-
-        // Merge with user-provided context
-        return array_merge($logContext, $this->context);
-    }
+    // Removed buildLogContext() as ErrorLogger now handles this
 
     /**
      * Create a new service exception from an existing exception

@@ -7,8 +7,8 @@ use App\Models\Feedback;
 use App\Repositories\FeedbackRepository;
 use App\Exceptions\ServiceException;
 use App\Exceptions\SurveyNotAvailableException;
+use App\Services\ErrorLogger;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class SurveyService

@@ -5,7 +5,7 @@ namespace App\Exceptions;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Log;
+use App\Services\ErrorLogger;
 
 class SurveyNotAvailableException extends Exception
 {
@@ -56,12 +56,17 @@ class SurveyNotAvailableException extends Exception
         $message = !empty($this->getMessage())
             ? $this->getMessage()
             : __('surveys.survey_not_available');
+// Use the ErrorLogger service for structured logging
+ErrorLogger::logException(
+    $this,
+    ErrorLogger::CATEGORY_USER_INPUT,
+    ErrorLogger::LOG_LEVEL_WARNING,
+    array_merge(
+        ['message' => $message],
+        $this->context
+    )
+);
 
-        // Log the exception with additional context
-        Log::warning('Survey not available', array_merge(
-            ['message' => $message],
-            $this->context
-        ));
 
         return redirect()->route('welcome')
             ->with('error', $message);
