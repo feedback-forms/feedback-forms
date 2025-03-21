@@ -247,4 +247,23 @@ class FeedbackRepository
                     ->orWhereRaw('submission_count < `limit`'); // Under limit
             });
     }
+
+    /**
+     * Update the status of a survey
+     *
+     * This method updates the status field of a survey. Commonly used
+     * statuses include: 'draft', 'running', 'completed', 'cancelled'.
+     *
+     * @param Feedback|int $survey The survey or survey ID to update
+     * @param string $status The new status to set
+     * @return bool True if the update was successful
+     */
+    public function updateStatus($survey, string $status): bool
+    {
+        if ($survey instanceof Feedback) {
+            return $survey->update(['status' => $status]);
+        }
+
+        return $this->model->where('id', $survey)->update(['status' => $status]);
+    }
 }
