@@ -13,6 +13,8 @@ use App\Services\SurveyValidationService;
 use App\Services\SurveyCreationService;
 use App\Services\SurveyResponseHandlerService;
 use App\Services\SurveyStatisticsService;
+use App\Services\StatisticsService;
+use App\Services\CacheService;
 use App\Services\Templates\TemplateStrategyFactory;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -28,6 +30,18 @@ class AppServiceProvider extends ServiceProvider
         // Register the DependencyInjectionMonitor service
         $this->app->singleton(DependencyInjectionMonitor::class, function ($app) {
             return new DependencyInjectionMonitor();
+        });
+
+        // Register CacheService
+        $this->app->singleton(CacheService::class, function ($app) {
+            return new CacheService();
+        });
+
+        // Register StatisticsService with CacheService dependency
+        $this->app->singleton(StatisticsService::class, function ($app) {
+            return new StatisticsService(
+                $app->make(CacheService::class)
+            );
         });
 
         // Register services
@@ -49,7 +63,8 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton(SurveyStatisticsService::class, function ($app) {
             return new SurveyStatisticsService(
-                $app->make(StatisticsService::class)
+                $app->make(StatisticsService::class),
+                $app->make(CacheService::class)
             );
         });
 

@@ -9,6 +9,21 @@ use Illuminate\Support\Str;
 class StatisticsService
 {
     /**
+     * @var CacheService
+     */
+    protected $cacheService;
+
+    /**
+     * Constructor
+     *
+     * @param CacheService $cacheService
+     */
+    public function __construct(CacheService $cacheService)
+    {
+        $this->cacheService = $cacheService;
+    }
+
+    /**
      * Calculate statistics for a survey
      *
      * This method processes all questions in a survey and calculates appropriate
@@ -21,292 +36,309 @@ class StatisticsService
      */
     public function calculateStatisticsForSurvey(Feedback $survey): array
     {
-        // Format: statsArray[questionIndex] = ['question' => Question, 'template_type' => templateType, 'data' => [...]]
-        $statistics = [];
+        // Build a cache key based on the survey ID and updated_at timestamp to invalidate when data changes
+        $cacheKey = $this->cacheService->buildKey('survey_statistics', $survey->id, $survey->updated_at->timestamp);
 
-        try {
-            // Eager load all needed relationships upfront to avoid N+1 queries
-            // This ensures we load questions, question templates, and all results in a single query
-            if (!$survey->relationLoaded('questions') ||
-                !$survey->relationLoaded('feedback_template') ||
-                ($survey->questions->isNotEmpty() &&
-                (!$survey->questions->first()->relationLoaded('question_template') ||
-                !$survey->questions->first()->relationLoaded('results')))) {
-                $survey->load([
-                    'questions.question_template',
-                    'questions.results',
-                    'feedback_template'
-                ]);
-            }
+        // Define cache tags for efficient invalidation
+        $cacheTags = [
+            $this->cacheService::TAG_STATISTICS,
+            $this->cacheService::TAG_SURVEY . ':' . $survey->id
+        ];
 
-            // Get unique submission count using the preloaded results
-            // This avoids the additional query from $survey->submissions()->count()
-            $submissionCount = 0;
-            if ($survey->questions->isNotEmpty()) {
-                $allResults = $survey->questions->flatMap(function ($question) {
-                    return $question->results;
-                });
+        // Remember the calculated statistics with a medium duration (30 minutes)
+        return $this->cacheService->remember(
+            $cacheKey,
+            $this->cacheService::DURATION_MEDIUM,
+            function () use ($survey) {
+                // Format: statsArray[questionIndex] = ['question' => Question, 'template_type' => templateType, 'data' => [...]]
+                $statistics = [];
 
-                $submissionCount = $allResults->pluck('submission_id')->unique()->count();
-            }
+                try {
+                    // Eager load all needed relationships upfront to avoid N+1 queries
+                    // This ensures we load questions, question templates, and all results in a single query
+                    if (!$survey->relationLoaded('questions') ||
+                        !$survey->relationLoaded('feedback_template') ||
+                        ($survey->questions->isNotEmpty() &&
+                        (!$survey->questions->first()->relationLoaded('question_template') ||
+                        !$survey->questions->first()->relationLoaded('results')))) {
+                        $survey->load([
+                            'questions.question_template',
+                            'questions.results',
+                            'feedback_template'
+                        ]);
+                    }
 
-            // Log survey processing for debugging
-            \Log::debug('Processing statistics for survey', [
-                'survey_id' => $survey->id,
-                'submission_count' => $submissionCount,
-                'template' => $survey->feedback_template->name ?? 'unknown'
-            ]);
+                    // Get unique submission count using the preloaded results
+                    // This avoids the additional query from $survey->submissions()->count()
+                    $submissionCount = 0;
+                    if ($survey->questions->isNotEmpty()) {
+                        $allResults = $survey->questions->flatMap(function ($question) {
+                            return $question->results;
+                        });
 
-            if ($submissionCount == 0) {
-                // If there are no submissions, return empty statistics
-                \Log::debug('No submissions found for survey', ['survey_id' => $survey->id]);
-                return $statistics;
-            }
+                        $submissionCount = $allResults->pluck('submission_id')->unique()->count();
+                    }
 
-            // Get the feedback template name (used to determine special processing)
-            $templateName = $survey->feedback_template->name ?? '';
-            $isTableSurvey = str_contains($templateName, 'templates.feedback.table');
-
-            // Special handling for certain template types
-            if (str_contains($templateName, 'templates.feedback.smiley')) {
-                // For smiley template, we need to calculate the average smiley rating
-                // and collect positive and negative feedback
-                \Log::debug('Processing smiley survey statistics', [
-                    'survey_id' => $survey->id,
-                    'questions_count' => $survey->questions->count()
-                ]);
-
-                // We've already eager loaded these relationships at the start
-
-                // Add a marker with smiley data
-                $statistics[] = [
-                    'question' => null,
-                    'template_type' => 'smiley',
-                    'data' => [
+                    // Log survey processing for debugging
+                    \Log::debug('Processing statistics for survey', [
+                        'survey_id' => $survey->id,
                         'submission_count' => $submissionCount,
-                    ],
-                ];
-
-                // We'll still process individual questions below in the generic loop
-                // and NOT skip them, so the smiley_survey view can find and display them
-            }
-            else if (str_contains($templateName, 'templates.feedback.target')) {
-                // For target template, we need to calculate statistics for each segment
-                \Log::debug('Processing target survey statistics', [
-                    'survey_id' => $survey->id,
-                    'questions_count' => $survey->questions->count()
-                ]);
-
-                // We've already eager loaded these relationships at the start
-
-                // Calculate target-specific statistics
-                $segmentStatisticsData = $this->calculateTargetStatistics($survey);
-
-                // Add a marker with target diagram data
-                $statistics[] = [
-                    'question' => null,
-                    'template_type' => 'target',
-                    'data' => [
-                        'submission_count' => $submissionCount,
-                        'segment_statistics' => $segmentStatisticsData,
-                    ],
-                ];
-
-                // We'll still process individual questions below in the generic loop,
-                // but the template-specific display will use the segment_statistics data
-            }
-            else if ($isTableSurvey) {
-                // For table templates, we need to calculate statistics for each question,
-                // as table templates are composed of multiple range-type questions
-
-                \Log::debug('Processing table survey statistics', [
-                    'survey_id' => $survey->id,
-                    'questions_count' => $survey->questions->count()
-                ]);
-
-                // We've already eager loaded these relationships at the start
-
-                // Process individual questions before generating the marker so we can pass categories
-                // to the table marker
-                $tempStats = [];
-                foreach ($survey->questions as $question) {
-                    // Get the template type, fallback to text if not available
-                    $questionTemplateType = $question->question_template->type ?? 'text';
-
-                    // Calculate question-specific statistics
-                    $questionStatistics = $this->calculateQuestionStatistics($question, $questionTemplateType);
-
-                    // Log question statistics for debugging
-                    \Log::debug('Question statistics', [
-                        'question_id' => $question->id,
-                        'question' => $question->question,
-                        'template_type' => $questionTemplateType,
-                        'has_results' => $question->results->count() > 0,
-                        'stats' => array_keys($questionStatistics)
+                        'template' => $survey->feedback_template->name ?? 'unknown'
                     ]);
 
-                    // Add to temporary stats array
-                    if (!empty($questionStatistics)) {
-                        $tempStats[] = [
+                    if ($submissionCount == 0) {
+                        // If there are no submissions, return empty statistics
+                        \Log::debug('No submissions found for survey', ['survey_id' => $survey->id]);
+                        return $statistics;
+                    }
+
+                    // Get the feedback template name (used to determine special processing)
+                    $templateName = $survey->feedback_template->name ?? '';
+                    $isTableSurvey = str_contains($templateName, 'templates.feedback.table');
+
+                    // Special handling for certain template types
+                    if (str_contains($templateName, 'templates.feedback.smiley')) {
+                        // For smiley template, we need to calculate the average smiley rating
+                        // and collect positive and negative feedback
+                        \Log::debug('Processing smiley survey statistics', [
+                            'survey_id' => $survey->id,
+                            'questions_count' => $survey->questions->count()
+                        ]);
+
+                        // We've already eager loaded these relationships at the start
+
+                        // Add a marker with smiley data
+                        $statistics[] = [
+                            'question' => null,
+                            'template_type' => 'smiley',
+                            'data' => [
+                                'submission_count' => $submissionCount,
+                            ],
+                        ];
+
+                        // We'll still process individual questions below in the generic loop
+                        // and NOT skip them, so the smiley_survey view can find and display them
+                    }
+                    else if (str_contains($templateName, 'templates.feedback.target')) {
+                        // For target template, we need to calculate statistics for each segment
+                        \Log::debug('Processing target survey statistics', [
+                            'survey_id' => $survey->id,
+                            'questions_count' => $survey->questions->count()
+                        ]);
+
+                        // We've already eager loaded these relationships at the start
+
+                        // Calculate target-specific statistics
+                        $segmentStatisticsData = $this->calculateTargetStatistics($survey);
+
+                        // Add a marker with target diagram data
+                        $statistics[] = [
+                            'question' => null,
+                            'template_type' => 'target',
+                            'data' => [
+                                'submission_count' => $submissionCount,
+                                'segment_statistics' => $segmentStatisticsData,
+                            ],
+                        ];
+
+                        // We'll still process individual questions below in the generic loop,
+                        // but the template-specific display will use the segment_statistics data
+                    }
+                    else if ($isTableSurvey) {
+                        // For table templates, we need to calculate statistics for each question,
+                        // as table templates are composed of multiple range-type questions
+
+                        \Log::debug('Processing table survey statistics', [
+                            'survey_id' => $survey->id,
+                            'questions_count' => $survey->questions->count()
+                        ]);
+
+                        // We've already eager loaded these relationships at the start
+
+                        // Process individual questions before generating the marker so we can pass categories
+                        // to the table marker
+                        $tempStats = [];
+                        foreach ($survey->questions as $question) {
+                            // Get the template type, fallback to text if not available
+                            $questionTemplateType = $question->question_template->type ?? 'text';
+
+                            // Calculate question-specific statistics
+                            $questionStatistics = $this->calculateQuestionStatistics($question, $questionTemplateType);
+
+                            // Log question statistics for debugging
+                            \Log::debug('Question statistics', [
+                                'question_id' => $question->id,
+                                'question' => $question->question,
+                                'template_type' => $questionTemplateType,
+                                'has_results' => $question->results->count() > 0,
+                                'stats' => array_keys($questionStatistics)
+                            ]);
+
+                            // Add to temporary stats array
+                            if (!empty($questionStatistics)) {
+                                $tempStats[] = [
+                                    'question' => $question,
+                                    'template_type' => $questionTemplateType,
+                                    'data' => $questionStatistics,
+                                ];
+                            }
+                        }
+
+                        // Categorize the questions
+                        $tableCategories = $this->categorizeTableSurveyQuestions($tempStats);
+
+                        // Log table categories for debugging
+                        \Log::debug('Table categories', [
+                            'categories_count' => count($tableCategories),
+                            'category_keys' => array_keys($tableCategories),
+                            'first_category_questions_count' => isset($tableCategories[array_key_first($tableCategories)]) ?
+                                count($tableCategories[array_key_first($tableCategories)]['questions'] ?? []) : 0,
+                            'categories_structure' => json_encode(array_map(function($cat) {
+                                return [
+                                    'title' => $cat['title'] ?? 'No Title',
+                                    'questions_count' => count($cat['questions'] ?? []),
+                                    'has_responses' => $cat['hasResponses'] ?? false,
+                                ];
+                            }, $tableCategories))
+                        ]);
+
+                        // Add the marker with table categories
+                        $statistics[] = [
+                            'question' => null,
+                            'template_type' => 'table',
+                            'data' => [
+                                'submission_count' => $submissionCount,
+                                'table_survey' => true,
+                                'table_categories' => $tableCategories,
+                            ],
+                        ];
+
+                        // Add individual question stats to main stats array
+                        $statistics = array_merge($statistics, $tempStats);
+                    }
+
+                    // Original statistics calculation for other templates or in addition to template-specific stats
+                    foreach ($survey->questions as $question) {
+                        // Skip template-specific questions that have already been handled above
+                        if ((str_contains($templateName, 'templates.feedback.target') &&
+                            $question->question_template && $question->question_template->type === 'range')) {
+                            // Skip these questions as they're already handled in template-specific stats
+                            continue;
+                        }
+
+                        $questionStatistics = [];
+                        // All question templates are already loaded at the beginning
+                        // Default to text if no template type is available
+                        $questionTemplateType = $question->question_template->type ?? 'text';
+
+                        switch ($questionTemplateType) {
+                            case 'range':
+                                // Get only the numeric results for range questions
+                                $ratings = $question->results
+                                    ->where('value_type', 'number')
+                                    ->pluck('rating_value')
+                                    ->filter()
+                                    ->toArray();
+
+                                if (!empty($ratings)) {
+                                    // Convert to numeric values
+                                    $ratings = array_map('floatval', $ratings);
+
+                                    // Calculate average (mean) rating
+                                    $questionStatistics['average_rating'] = round(array_sum($ratings) / count($ratings), 2);
+
+                                    // Count occurrences of each rating value
+                                    $questionStatistics['rating_counts'] = array_count_values(array_map('strval', $ratings));
+
+                                    // Calculate median rating
+                                    sort($ratings);
+                                    $count = count($ratings);
+                                    $questionStatistics['median_rating'] = $count % 2 === 0
+                                        ? ($ratings[($count / 2) - 1] + $ratings[$count / 2]) / 2
+                                        : $ratings[floor($count / 2)];
+                                    // Add count of unique submissions using the preloaded results
+                                    $questionStatistics['submission_count'] = collect($ratings)->count();
+                                } else {
+                                    $questionStatistics['average_rating'] = 'No responses';
+                                    $questionStatistics['median_rating'] = 'No responses';
+                                    $questionStatistics['rating_counts'] = [];
+                                    $questionStatistics['submission_count'] = 0;
+                                }
+                                break;
+
+                            case 'checkboxes':
+                            case 'checkbox':
+                                // For checkbox questions, only get checkbox type results
+                                $checkboxResponses = $question->results
+                                    ->where('value_type', 'checkbox')
+                                    ->pluck('rating_value')
+                                    ->filter()
+                                    ->toArray();
+
+                                $questionStatistics['option_counts'] = !empty($checkboxResponses)
+                                    ? array_count_values($checkboxResponses)
+                                    : [];
+
+                                // Add count of unique submissions using the already loaded data
+                                $questionStatistics['submission_count'] = collect($checkboxResponses)
+                                    ->unique()
+                                    ->count();
+                                break;
+
+                            case 'textarea':
+                            case 'text':
+                                // Only get text type results
+                                $textResponses = $question->results
+                                    ->where('value_type', 'text')
+                                    ->pluck('rating_value')
+                                    ->filter()
+                                    ->toArray();
+
+                                $questionStatistics['response_count'] = count($textResponses);
+                                $questionStatistics['responses'] = $textResponses;
+
+                                // Use the already loaded results to count unique submissions
+                                $questionStatistics['submission_count'] = collect($textResponses)
+                                    ->count();
+                                break;
+
+                            default:
+                                // Handle unknown question types gracefully
+                                $questionStatistics['message'] = 'Statistics not implemented for this question type.';
+                                $questionStatistics['submission_count'] = 0;
+                        }
+
+                        // Build the complete statistics object for this question
+                        $statistics[] = [
                             'question' => $question,
                             'template_type' => $questionTemplateType,
                             'data' => $questionStatistics,
                         ];
                     }
+                } catch (\Exception $e) {
+                    // Log the error but return a graceful empty result with more specific error information
+                    \Log::error('Error calculating survey statistics: ' . $e->getMessage(), [
+                        'survey_id' => $survey->id,
+                        'exception' => $e
+                    ]);
+
+                    return [
+                        [
+                            'question' => null,
+                            'template_type' => 'error',
+                            'data' => [
+                                'message' => 'An error occurred while calculating statistics: ' . $e->getMessage(),
+                                'error_type' => get_class($e),
+                                'survey_id' => $survey->id
+                            ]
+                        ]
+                    ];
                 }
 
-                // Categorize the questions
-                $tableCategories = $this->categorizeTableSurveyQuestions($tempStats);
-
-                // Log table categories for debugging
-                \Log::debug('Table categories', [
-                    'categories_count' => count($tableCategories),
-                    'category_keys' => array_keys($tableCategories),
-                    'first_category_questions_count' => isset($tableCategories[array_key_first($tableCategories)]) ?
-                        count($tableCategories[array_key_first($tableCategories)]['questions'] ?? []) : 0,
-                    'categories_structure' => json_encode(array_map(function($cat) {
-                        return [
-                            'title' => $cat['title'] ?? 'No Title',
-                            'questions_count' => count($cat['questions'] ?? []),
-                            'has_responses' => $cat['hasResponses'] ?? false,
-                        ];
-                    }, $tableCategories))
-                ]);
-
-                // Add the marker with table categories
-                $statistics[] = [
-                    'question' => null,
-                    'template_type' => 'table',
-                    'data' => [
-                        'submission_count' => $submissionCount,
-                        'table_survey' => true,
-                        'table_categories' => $tableCategories,
-                    ],
-                ];
-
-                // Add individual question stats to main stats array
-                $statistics = array_merge($statistics, $tempStats);
-            }
-
-            // Original statistics calculation for other templates or in addition to template-specific stats
-            foreach ($survey->questions as $question) {
-                // Skip template-specific questions that have already been handled above
-                if ((str_contains($templateName, 'templates.feedback.target') &&
-                    $question->question_template && $question->question_template->type === 'range')) {
-                    // Skip these questions as they're already handled in template-specific stats
-                    continue;
-                }
-
-                $questionStatistics = [];
-                // All question templates are already loaded at the beginning
-                // Default to text if no template type is available
-                $questionTemplateType = $question->question_template->type ?? 'text';
-
-                switch ($questionTemplateType) {
-                    case 'range':
-                        // Get only the numeric results for range questions
-                        $ratings = $question->results
-                            ->where('value_type', 'number')
-                            ->pluck('rating_value')
-                            ->filter()
-                            ->toArray();
-
-                        if (!empty($ratings)) {
-                            // Convert to numeric values
-                            $ratings = array_map('floatval', $ratings);
-
-                            // Calculate average (mean) rating
-                            $questionStatistics['average_rating'] = round(array_sum($ratings) / count($ratings), 2);
-
-                            // Count occurrences of each rating value
-                            $questionStatistics['rating_counts'] = array_count_values(array_map('strval', $ratings));
-
-                            // Calculate median rating
-                            sort($ratings);
-                            $count = count($ratings);
-                            $questionStatistics['median_rating'] = $count % 2 === 0
-                                ? ($ratings[($count / 2) - 1] + $ratings[$count / 2]) / 2
-                                : $ratings[floor($count / 2)];
-                            // Add count of unique submissions using the preloaded results
-                            $questionStatistics['submission_count'] = collect($ratings)->count();
-                        } else {
-                            $questionStatistics['average_rating'] = 'No responses';
-                            $questionStatistics['median_rating'] = 'No responses';
-                            $questionStatistics['rating_counts'] = [];
-                            $questionStatistics['submission_count'] = 0;
-                        }
-                        break;
-
-                    case 'checkboxes':
-                    case 'checkbox':
-                        // For checkbox questions, only get checkbox type results
-                        $checkboxResponses = $question->results
-                            ->where('value_type', 'checkbox')
-                            ->pluck('rating_value')
-                            ->filter()
-                            ->toArray();
-
-                        $questionStatistics['option_counts'] = !empty($checkboxResponses)
-                            ? array_count_values($checkboxResponses)
-                            : [];
-
-                        // Add count of unique submissions using the already loaded data
-                        $questionStatistics['submission_count'] = collect($checkboxResponses)
-                            ->unique()
-                            ->count();
-                        break;
-
-                    case 'textarea':
-                    case 'text':
-                        // Only get text type results
-                        $textResponses = $question->results
-                            ->where('value_type', 'text')
-                            ->pluck('rating_value')
-                            ->filter()
-                            ->toArray();
-
-                        $questionStatistics['response_count'] = count($textResponses);
-                        $questionStatistics['responses'] = $textResponses;
-
-                        // Use the already loaded results to count unique submissions
-                        $questionStatistics['submission_count'] = collect($textResponses)
-                            ->count();
-                        break;
-
-                    default:
-                        // Handle unknown question types gracefully
-                        $questionStatistics['message'] = 'Statistics not implemented for this question type.';
-                        $questionStatistics['submission_count'] = 0;
-                }
-
-                // Build the complete statistics object for this question
-                $statistics[] = [
-                    'question' => $question,
-                    'template_type' => $questionTemplateType,
-                    'data' => $questionStatistics,
-                ];
-            }
-        } catch (\Exception $e) {
-            // Log the error but return a graceful empty result with more specific error information
-            \Log::error('Error calculating survey statistics: ' . $e->getMessage(), [
-                'survey_id' => $survey->id,
-                'exception' => $e
-            ]);
-
-            return [
-                [
-                    'question' => null,
-                    'template_type' => 'error',
-                    'data' => [
-                        'message' => 'An error occurred while calculating statistics: ' . $e->getMessage(),
-                        'error_type' => get_class($e),
-                        'survey_id' => $survey->id
-                    ]
-                ]
-            ];
-        }
-
-        return $statistics;
+                return $statistics;
+            },
+            $cacheTags
+        );
     }
 
     /**
@@ -628,98 +660,117 @@ class StatisticsService
      */
     protected function calculateQuestionStatistics($question, string $questionTemplateType): array
     {
-        $questionStatistics = [];
+        // Use caching for individual question statistics when they're computationally expensive
+        $cacheKey = $this->cacheService->buildKey(
+            'question_statistics',
+            $question->id,
+            $question->updated_at->timestamp
+        );
 
-        switch ($questionTemplateType) {
-            case 'range':
-                // Get only the numeric results for range questions
-                $ratings = $question->results
-                    ->where('value_type', 'number')
-                    ->pluck('rating_value')
-                    ->filter()
-                    ->toArray();
+        $cacheTags = [
+            $this->cacheService::TAG_STATISTICS,
+            $this->cacheService::TAG_SURVEY . ':' . $question->feedback_id
+        ];
 
-                if (!empty($ratings)) {
-                    // Convert to numeric values
-                    $ratings = array_map('floatval', $ratings);
+        return $this->cacheService->remember(
+            $cacheKey,
+            $this->cacheService::DURATION_MEDIUM,
+            function () use ($question, $questionTemplateType) {
+                $questionStatistics = [];
 
-                    // Calculate average (mean) rating
-                    $questionStatistics['average_rating'] = round(array_sum($ratings) / count($ratings), 2);
+                switch ($questionTemplateType) {
+                    case 'range':
+                        // Get only the numeric results for range questions
+                        $ratings = $question->results
+                            ->where('value_type', 'number')
+                            ->pluck('rating_value')
+                            ->filter()
+                            ->toArray();
 
-                    // Count occurrences of each rating value
-                    $questionStatistics['rating_counts'] = array_count_values(array_map('strval', $ratings));
+                        if (!empty($ratings)) {
+                            // Convert to numeric values
+                            $ratings = array_map('floatval', $ratings);
 
-                    // Calculate median rating
-                    sort($ratings);
-                    $count = count($ratings);
-                    $questionStatistics['median_rating'] = $count % 2 === 0
-                        ? ($ratings[($count / 2) - 1] + $ratings[$count / 2]) / 2
-                        : $ratings[floor($count / 2)];
+                            // Calculate average (mean) rating
+                            $questionStatistics['average_rating'] = round(array_sum($ratings) / count($ratings), 2);
 
-                    // Use the count from the already filtered results
-                    $questionStatistics['submission_count'] = count($ratings);
-                } else {
-                    $questionStatistics['average_rating'] = 'No responses';
-                    $questionStatistics['median_rating'] = 'No responses';
-                    $questionStatistics['rating_counts'] = [];
-                    $questionStatistics['submission_count'] = 0;
+                            // Count occurrences of each rating value
+                            $questionStatistics['rating_counts'] = array_count_values(array_map('strval', $ratings));
+
+                            // Calculate median rating
+                            sort($ratings);
+                            $count = count($ratings);
+                            $questionStatistics['median_rating'] = $count % 2 === 0
+                                ? ($ratings[($count / 2) - 1] + $ratings[$count / 2]) / 2
+                                : $ratings[floor($count / 2)];
+
+                            // Use the count from the already filtered results
+                            $questionStatistics['submission_count'] = count($ratings);
+                        } else {
+                            $questionStatistics['average_rating'] = 'No responses';
+                            $questionStatistics['median_rating'] = 'No responses';
+                            $questionStatistics['rating_counts'] = [];
+                            $questionStatistics['submission_count'] = 0;
+                        }
+                        break;
+
+                    case 'checkboxes':
+                    case 'checkbox':
+                        // For checkbox questions, only get checkbox type results
+                        $checkboxResults = $question->results
+                            ->where('value_type', 'checkbox')
+                            ->pluck('rating_value')
+                            ->filter()
+                            ->toArray();
+
+                        if (!empty($checkboxResults)) {
+                            // Count occurrences of each option
+                            $questionStatistics['option_counts'] = array_count_values($checkboxResults);
+
+                            // Use a more efficient method that doesn't require additional querying
+                            // Just count the unique checkbox results
+                            $questionStatistics['submission_count'] = $question->results
+                                ->where('value_type', 'checkbox')
+                                ->pluck('submission_id')
+                                ->unique()
+                                ->count();
+                        } else {
+                            $questionStatistics['option_counts'] = [];
+                            $questionStatistics['submission_count'] = 0;
+                        }
+                        break;
+
+                    case 'textarea':
+                    case 'text':
+                        // Get text responses
+                        $textResponses = $question->results
+                            ->where('value_type', 'text')
+                            ->pluck('rating_value')
+                            ->filter()
+                            ->toArray();
+
+                        $questionStatistics['responses'] = $textResponses;
+                        $questionStatistics['response_count'] = count($textResponses);
+
+                        // Count directly from the loaded text responses
+                        $questionStatistics['submission_count'] = count($textResponses);
+                        break;
+
+                    default:
+                        // For other or unknown question types, just include submission count
+                        $questionStatistics['submission_count'] = $question->results
+                            ->pluck('submission_id')
+                            ->unique()
+                            ->count();
+
+                        // Set a message for unknown question types
+                        $questionStatistics['message'] = 'No statistics available for this question type.';
+                        break;
                 }
-                break;
 
-            case 'checkboxes':
-            case 'checkbox':
-                // For checkbox questions, only get checkbox type results
-                $checkboxResults = $question->results
-                    ->where('value_type', 'checkbox')
-                    ->pluck('rating_value')
-                    ->filter()
-                    ->toArray();
-
-                if (!empty($checkboxResults)) {
-                    // Count occurrences of each option
-                    $questionStatistics['option_counts'] = array_count_values($checkboxResults);
-
-                    // Use a more efficient method that doesn't require additional querying
-                    // Just count the unique checkbox results
-                    $questionStatistics['submission_count'] = $question->results
-                        ->where('value_type', 'checkbox')
-                        ->pluck('submission_id')
-                        ->unique()
-                        ->count();
-                } else {
-                    $questionStatistics['option_counts'] = [];
-                    $questionStatistics['submission_count'] = 0;
-                }
-                break;
-
-            case 'textarea':
-            case 'text':
-                // Get text responses
-                $textResponses = $question->results
-                    ->where('value_type', 'text')
-                    ->pluck('rating_value')
-                    ->filter()
-                    ->toArray();
-
-                $questionStatistics['responses'] = $textResponses;
-                $questionStatistics['response_count'] = count($textResponses);
-
-                // Count directly from the loaded text responses
-                $questionStatistics['submission_count'] = count($textResponses);
-                break;
-
-            default:
-                // For other or unknown question types, just include submission count
-                $questionStatistics['submission_count'] = $question->results
-                    ->pluck('submission_id')
-                    ->unique()
-                    ->count();
-
-                // Set a message for unknown question types
-                $questionStatistics['message'] = 'No statistics available for this question type.';
-                break;
-        }
-
-        return $questionStatistics;
+                return $questionStatistics;
+            },
+            $cacheTags
+        );
     }
 }

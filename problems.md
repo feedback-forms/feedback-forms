@@ -190,7 +190,7 @@ foreach ($template->questions as $index => $templateQuestion) {
 - Updated existing repository methods to utilize the new eager loading functionality
 - Maintained backward compatibility with existing code while providing improved performance
 
-### 5.2 Inconsistent Caching Strategy (MEDIUM)
+### 5.2 Inconsistent Caching Strategy (MEDIUM) - RESOLVED
 
 **Issue:** Caching is implemented inconsistently:
 
@@ -208,6 +208,15 @@ return cache()->remember(
 But similar patterns aren't used for other expensive operations, leading to inconsistent performance.
 
 **Solution:** Implement a consistent caching strategy across the application, identify expensive operations for caching, and use cache tags for efficient cache invalidation.
+
+**Resolution:**
+- Created a dedicated CacheService to standardize caching operations across the application
+- Implemented multi-level caching for statistics calculations, with appropriate invalidation strategies
+- Added cache tag support for targeted cache invalidation (by survey, statistic type, etc.)
+- Implemented configurable cache durations (short, medium, long) for different types of data
+- Enhanced StatisticsService and SurveyStatisticsService to utilize caching for expensive operations
+- Provided methods to selectively clear caches when data is updated
+- Added performance optimization by caching individual question statistics separately
 
 ## 6. Maintainability & Technical Debt
 
