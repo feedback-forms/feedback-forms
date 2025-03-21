@@ -3,35 +3,32 @@
 namespace App\Repositories;
 
 use App\Models\Feedback;
-use App\Exceptions\SurveyNotAvailableException;
-use App\Services\SurveyAccessService;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Repository for feedback surveys data access
+ *
+ * This class follows the repository pattern to abstract all data access operations
+ * for the Feedback model. It adheres to the single responsibility principle by focusing
+ * exclusively on data access without mixing in business logic.
+ */
 class FeedbackRepository
 {
     /**
      * @var Feedback
      */
-    private $feedback;
-
-    /**
-     * @var SurveyAccessService
-     */
-    private $surveyAccessService;
+    private $model;
 
     /**
      * Constructor
      *
-     * @param Feedback $feedback
-     * @param SurveyAccessService $surveyAccessService
+     * @param Feedback $model The Feedback model
      */
-    public function __construct(Feedback $feedback, SurveyAccessService $surveyAccessService)
+    public function __construct(Feedback $model)
     {
-        $this->feedback = $feedback;
-        $this->surveyAccessService = $surveyAccessService;
+        $this->model = $model;
     }
 
     /**
@@ -39,9 +36,9 @@ class FeedbackRepository
      *
      * @return Collection
      */
-    public function get()
+    public function getAll(): Collection
     {
-        return $this->feedback->get();
+        return $this->model->get();
     }
 
     /**
@@ -50,9 +47,9 @@ class FeedbackRepository
      * @param int $id
      * @return Feedback|null
      */
-    public function find(int $id)
+    public function find(int $id): ?Feedback
     {
-        return $this->feedback->find($id);
+        return $this->model->find($id);
     }
 
     /**
@@ -62,9 +59,9 @@ class FeedbackRepository
      * @param array $relations
      * @return Feedback|null
      */
-    public function findWithRelations(int $id, array $relations = [])
+    public function findWithRelations(int $id, array $relations = []): ?Feedback
     {
-        return $this->feedback->with($relations)->find($id);
+        return $this->model->with($relations)->find($id);
     }
 
     /**
@@ -73,9 +70,20 @@ class FeedbackRepository
      * @param string $accessKey
      * @return Feedback|null
      */
-    public function findByAccessKey(string $accessKey)
+    public function findByAccessKey(string $accessKey): ?Feedback
     {
-        return $this->feedback->where('accesskey', $accessKey)->first();
+        return $this->model->where('accesskey', $accessKey)->first();
+    }
+
+    /**
+     * Check if an access key exists
+     *
+     * @param string $accessKey
+     * @return bool
+     */
+    public function accessKeyExists(string $accessKey): bool
+    {
+        return $this->model->where('accesskey', $accessKey)->exists();
     }
 
     /**
@@ -84,9 +92,9 @@ class FeedbackRepository
      * @param array $data
      * @return Feedback
      */
-    public function create(array $data)
+    public function create(array $data): Feedback
     {
-        return $this->feedback->create($data);
+        return $this->model->create($data);
     }
 
     /**
@@ -96,9 +104,21 @@ class FeedbackRepository
      * @param array $data
      * @return bool
      */
-    public function update(int $id, array $data)
+    public function update(int $id, array $data): bool
     {
-        return $this->feedback->where('id', $id)->update($data);
+        return $this->model->where('id', $id)->update($data);
+    }
+
+    /**
+     * Update a survey model instance
+     *
+     * @param Feedback $survey
+     * @param array $data
+     * @return bool
+     */
+    public function updateModel(Feedback $survey, array $data): bool
+    {
+        return $survey->update($data);
     }
 
     /**
@@ -107,9 +127,9 @@ class FeedbackRepository
      * @param int $id
      * @return bool
      */
-    public function delete(int $id)
+    public function delete(int $id): bool
     {
-        return $this->feedback->where('id', $id)->delete();
+        return $this->model->where('id', $id)->delete();
     }
 
     /**
@@ -118,78 +138,9 @@ class FeedbackRepository
      * @param int $userId
      * @return Collection
      */
-    public function getForUser(int $userId)
+    public function getForUser(int $userId): Collection
     {
-        return $this->feedback->where('user_id', $userId)->get();
-    }
-
-    /**
-     * Generate a unique access key for a survey
-     *
-     * @return string
-     */
-    public function generateUniqueAccessKey(): string
-    {
-        return $this->surveyAccessService->generateAccessKey();
-    }
-
-    /**
-     * Validate an access key and return the associated survey
-     *
-     * @param string $accessKey The access key to validate
-     * @param string $ipAddress The IP address of the requester for rate limiting
-     * @return Feedback|null The survey if found and valid
-     * @throws \App\Exceptions\InvalidAccessKeyException If the key is invalid or rate limited
-     */
-    public function validateAccessKey(string $accessKey, string $ipAddress)
-    {
-        return $this->surveyAccessService->validateAccessKey($accessKey, $ipAddress);
-    }
-
-    /**
-     * Check if a survey can be answered (not expired, within limits)
-     *
-     * @param Feedback $survey
-     * @return bool
-     * @throws SurveyNotAvailableException If the survey cannot be answered
-     */
-    public function canBeAnswered(Feedback $survey): bool
-    {
-        if ($survey->expire_date < Carbon::now()) {
-            throw new SurveyNotAvailableException(
-                __('surveys.survey_expired')
-            );
-        }
-
-        if ($survey->limit > 0 && $survey->submission_count >= $survey->limit) {
-            throw new SurveyNotAvailableException(
-                __('surveys.survey_limit_reached')
-            );
-        }
-
-        return true;
-    }
-
-    /**
-     * Update survey status
-     *
-     * @param Feedback $survey
-     * @param string $status
-     * @return bool
-     */
-    public function updateStatus(Feedback $survey, string $status): bool
-    {
-        return $survey->update(['status' => $status]);
-    }
-
-    /**
-     * Get all surveys with their questions
-     *
-     * @return Collection
-     */
-    public function getAllWithQuestions()
-    {
-        return $this->getAllWithQuestionsAndRelations();
+        return $this->model->where('user_id', $userId)->get();
     }
 
     /**
@@ -197,11 +148,11 @@ class FeedbackRepository
      *
      * @param array $filters Array of filter criteria
      * @param array $relations Array of relationships to eager load
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
-    public function getWithFilters(array $filters = [], array $relations = [])
+    public function getWithFilters(array $filters = [], array $relations = []): Builder
     {
-        $query = $this->feedback->query();
+        $query = $this->model->query();
 
         // Apply eager loading if relations are specified
         if (!empty($relations)) {
@@ -240,15 +191,25 @@ class FeedbackRepository
     }
 
     /**
+     * Get all surveys with their questions
+     *
+     * @return Collection
+     */
+    public function getAllWithQuestions(): Collection
+    {
+        return $this->getAllWithQuestionsAndRelations();
+    }
+
+    /**
      * Get all surveys with their questions and optional additional relations
      *
      * @param array $additionalRelations Additional relationships to eager load
      * @return Collection
      */
-    public function getAllWithQuestionsAndRelations(array $additionalRelations = [])
+    public function getAllWithQuestionsAndRelations(array $additionalRelations = []): Collection
     {
         $relations = array_merge(['questions'], $additionalRelations);
-        return $this->feedback->with($relations)->get();
+        return $this->model->with($relations)->get();
     }
 
     /**
@@ -257,9 +218,33 @@ class FeedbackRepository
      * @param array $filters
      * @return int
      */
-    public function countWithFilters(array $filters = [])
+    public function countWithFilters(array $filters = []): int
     {
         // We don't need to eager load relations for counting
         return $this->getWithFilters($filters)->count();
+    }
+
+    /**
+     * Generate a query for upcoming surveys
+     *
+     * @return Builder
+     */
+    public function getUpcomingSurveysQuery(): Builder
+    {
+        return $this->model->where('expire_date', '>', now());
+    }
+
+    /**
+     * Generate a query for active surveys (not expired and with responses available)
+     *
+     * @return Builder
+     */
+    public function getActiveSurveysQuery(): Builder
+    {
+        return $this->model->where('expire_date', '>', now())
+            ->where(function ($query) {
+                $query->where('limit', '<=', 0) // No limit
+                    ->orWhereRaw('submission_count < `limit`'); // Under limit
+            });
     }
 }

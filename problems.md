@@ -86,7 +86,7 @@ Schema::table('feedback', function (Blueprint $table) {
 - Followed existing indexing patterns for consistency and added proper error handling to prevent index creation errors
 - Ensured compatibility with both MySQL and PostgreSQL database systems
 
-### 2.2 Repository Pattern Implementation Inconsistencies (HIGH)
+### 2.2 Repository Pattern Implementation Inconsistencies (HIGH) - RESOLVED
 
 **Issue:** The Repository implementation has inconsistencies and anti-patterns:
 - Some repositories delegate to services (`surveyAccessService`) while others don't
@@ -95,6 +95,15 @@ Schema::table('feedback', function (Blueprint $table) {
 - Some business logic embedded in repositories instead of services
 
 **Solution:** Refactor repositories to have consistent interfaces, ensure proper separation of concerns, and move business logic to service layers.
+
+**Resolution:**
+- Created a dedicated SurveyValidationService to handle business logic that was previously in the repository
+- Standardized property naming in repositories (using `model` instead of the specific model name)
+- Added proper return type hints to all repository methods
+- Improved method naming for clarity and consistency (e.g., `getAll()` instead of `get()`)
+- Ensured repositories focus solely on data access with consistent interfaces
+- Added dedicated methods for query building to improve reusability
+- Maintained backward compatibility while encouraging proper separation of concerns
 
 ## 3. Service Layer Issues
 

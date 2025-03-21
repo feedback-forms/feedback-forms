@@ -8,7 +8,10 @@ use App\Repositories\FeedbackRepository;
 use App\Exceptions\ServiceException;
 use App\Exceptions\SurveyNotAvailableException;
 use App\Services\ErrorLogger;
+use App\Services\SurveyAccessService;
+use App\Services\SurveyValidationService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class SurveyService
@@ -34,38 +37,62 @@ class SurveyService
     protected $feedbackRepository;
 
     /**
+     * @var SurveyAccessService
+     */
+    protected $surveyAccessService;
+
+    /**
+     * @var SurveyValidationService
+     */
+    protected $surveyValidationService;
+
+    /**
      * Constructor to initialize dependencies
      *
      * @param StatisticsService $statisticsService
      * @param Templates\TemplateStrategyFactory $templateStrategyFactory
      * @param SurveyResponseService $surveyResponseService
      * @param FeedbackRepository $feedbackRepository
+     * @param SurveyAccessService $surveyAccessService
+     * @param SurveyValidationService $surveyValidationService
      */
     public function __construct(
         StatisticsService $statisticsService,
         Templates\TemplateStrategyFactory $templateStrategyFactory,
         SurveyResponseService $surveyResponseService,
-        FeedbackRepository $feedbackRepository
+        FeedbackRepository $feedbackRepository,
+        SurveyAccessService $surveyAccessService,
+        SurveyValidationService $surveyValidationService
     ) {
         $this->statisticsService = $statisticsService;
         $this->templateStrategyFactory = $templateStrategyFactory;
         $this->surveyResponseService = $surveyResponseService;
         $this->feedbackRepository = $feedbackRepository;
+        $this->surveyAccessService = $surveyAccessService;
+        $this->surveyValidationService = $surveyValidationService;
     }
     /**
      * Create a new survey from template
+     *
+     * @param array $surveyConfig The survey configuration data
+     * @param int $userId The ID of the user creating the survey
+     * @return Feedback The created survey
+     * @throws ServiceException If there's an error during survey creation
      */
     public function createFromTemplate(array $surveyConfig, int $userId): Feedback
     {
         try {
             return DB::transaction(function () use ($surveyConfig, $userId) {
                 try {
+                    // Generate a unique access key using the access service
+                    $accessKey = $this->surveyAccessService->generateAccessKey();
+
                     // Create the feedback/survey
                     $survey = $this->feedbackRepository->create([
                         'name' => $surveyConfig['name'] ?? null,
                         'user_id' => $userId,
                         'feedback_template_id' => $surveyConfig['template_id'],
-                        'accesskey' => $this->feedbackRepository->generateUniqueAccessKey(),
+                        'accesskey' => $accessKey,
                         'limit' => $surveyConfig['response_limit'] ?? -1,
                         'expire_date' => Carbon::parse($surveyConfig['expire_date']),
                         'school_year_id' => $surveyConfig['school_year_id'] ?? null,
@@ -163,7 +190,7 @@ class SurveyService
     public function canBeAnswered(Feedback $survey): bool
     {
         try {
-            return $this->feedbackRepository->canBeAnswered($survey);
+            return $this->surveyValidationService->canBeAnswered($survey);
         } catch (SurveyNotAvailableException $e) {
             // Log the exception with additional context
             Log::warning($e->getMessage(), [

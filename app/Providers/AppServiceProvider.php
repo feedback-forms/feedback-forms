@@ -9,6 +9,7 @@ use App\Repositories\FeedbackRepository;
 use App\Services\DependencyInjectionMonitor;
 use App\Services\ErrorLogger;
 use App\Services\SurveyAccessService;
+use App\Services\SurveyValidationService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Throwable;
@@ -25,21 +26,30 @@ class AppServiceProvider extends ServiceProvider
             return new DependencyInjectionMonitor();
         });
 
-        // Register SurveyAccessService first since FeedbackRepository depends on it
+        // Register services
         $this->app->singleton(SurveyAccessService::class, function ($app) {
             return new SurveyAccessService();
         });
 
-        // Register repositories with improved error handling
+        $this->app->singleton(SurveyValidationService::class, function ($app) {
+            return new SurveyValidationService();
+        });
+
+        // Register FeedbackRepository
+        $this->registerFeedbackRepository();
+    }
+
+    /**
+     * Register the feedback repository with error handling
+     */
+    private function registerFeedbackRepository(): void
+    {
         try {
             $this->app->singleton(FeedbackRepository::class, function ($app) {
                 try {
-                    return new FeedbackRepository(
-                        $app->make(Feedback::class),
-                        $app->make(SurveyAccessService::class)
-                    );
+                    $model = $app->make(Feedback::class);
+                    return new FeedbackRepository($model);
                 } catch (Throwable $e) {
-                    // Log the error using our specialized error logger
                     ErrorLogger::logDependencyInjectionError(
                         FeedbackRepository::class,
                         "Failed to instantiate FeedbackRepository: {$e->getMessage()}",
@@ -50,16 +60,14 @@ class AppServiceProvider extends ServiceProvider
                 }
             });
 
-            // Use DependencyInjectionMonitor to validate the binding
+            // Monitor binding
             $monitor = $this->app->make(DependencyInjectionMonitor::class);
             $monitor->monitor(FeedbackRepository::class);
 
-            // Only run validation in non-production environments
             if (app()->environment('local', 'testing', 'development')) {
                 try {
                     $monitor->verifyBinding(FeedbackRepository::class);
                 } catch (Throwable $e) {
-                    // Just log the error, don't rethrow to avoid breaking the application
                     ErrorLogger::logDependencyInjectionError(
                         FeedbackRepository::class,
                         "Binding verification failed: {$e->getMessage()}",
@@ -69,15 +77,12 @@ class AppServiceProvider extends ServiceProvider
                 }
             }
         } catch (Throwable $e) {
-            // Log the error using our specialized error logger
             ErrorLogger::logDependencyInjectionError(
                 FeedbackRepository::class,
                 "Failed to register FeedbackRepository binding: {$e->getMessage()}",
                 [],
                 ['exception' => $e]
             );
-
-            // Rethrow the exception to maintain Laravel's error handling flow
             throw $e;
         }
     }
@@ -92,7 +97,6 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Register the owns-survey gate - kept for backward compatibility
-        // but should use authorize('view', $survey) etc. going forward
         Gate::define('owns-survey', [FeedbackPolicy::class, 'ownsSurvey']);
 
         // Register the feedback policy
