@@ -29,8 +29,9 @@ interface TemplateStrategy
     /**
      * Check if this strategy can handle the given template
      *
-     * @param string $templateName The name of the template
+     * @param string|null $templateType The type of the template
+     * @param string|null $templateName The name of the template (for backward compatibility)
      * @return bool
      */
-    public function canHandle(string $templateName): bool;
+    public function canHandle(?string $templateType = null, ?string $templateName = null): bool;
 }

@@ -16,11 +16,13 @@ class DefaultTemplateStrategy extends AbstractTemplateStrategy
      * Override the default implementation to always return true for templates
      * not handled by other strategies
      *
-     * @param string $templateName The name of the template
+     * @param string|null $templateType The type of the template
+     * @param string|null $templateName The name of the template (for backward compatibility)
      * @return bool
      */
-    public function canHandle(string $templateName): bool
+    public function canHandle(?string $templateType = null, ?string $templateName = null): bool
     {
+        // DefaultTemplateStrategy handles any template not handled by specialized strategies
         return true;
     }
 

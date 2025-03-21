@@ -125,7 +125,8 @@ class SurveyResponseService
         if (isset($responses['json_data']) && is_array($responses['json_data'])) {
             try {
                 $templateName = $survey->feedback_template->name ?? '';
-                $templateStrategy = $this->templateStrategyFactory->getStrategy($templateName);
+                $templateType = $survey->feedback_template->type;
+                $templateStrategy = $this->templateStrategyFactory->getStrategy($templateType, $templateName);
                 $templateStrategy->storeResponses($survey, $responses['json_data'], $submissionId);
                 return true;
             } catch (\Exception $e) {
@@ -146,7 +147,8 @@ class SurveyResponseService
                 $jsonData = json_decode($responses[0], true);
                 if (json_last_error() === JSON_ERROR_NONE && is_array($jsonData)) {
                     $templateName = $survey->feedback_template->name ?? '';
-                    $templateStrategy = $this->templateStrategyFactory->getStrategy($templateName);
+                    $templateType = $survey->feedback_template->type;
+                    $templateStrategy = $this->templateStrategyFactory->getStrategy($templateType, $templateName);
                     $templateStrategy->storeResponses($survey, $jsonData, $submissionId);
                     return true;
                 }

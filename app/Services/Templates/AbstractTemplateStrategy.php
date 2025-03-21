@@ -18,12 +18,23 @@ abstract class AbstractTemplateStrategy implements TemplateStrategy
     /**
      * Check if this strategy can handle the given template
      *
-     * @param string $templateName The name of the template
+     * @param string|null $templateType The type of the template
+     * @param string|null $templateName The name of the template (for backward compatibility)
      * @return bool
      */
-    public function canHandle(string $templateName): bool
+    public function canHandle(?string $templateType = null, ?string $templateName = null): bool
     {
-        return preg_match('/templates\.feedback\.' . $this->templateType . '$/', $templateName) === 1;
+        // First check if the explicit type matches
+        if ($templateType !== null && $templateType === $this->templateType) {
+            return true;
+        }
+
+        // For backward compatibility, fall back to checking the name pattern if type doesn't match
+        if ($templateName !== null) {
+            return preg_match('/templates\.feedback\.' . $this->templateType . '$/', $templateName) === 1;
+        }
+
+        return false;
     }
 
     /**

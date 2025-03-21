@@ -14,7 +14,17 @@ class FeedbackTemplate extends Model
 
     protected $fillable = [
         'name',
+        'type',
         'title'
+    ];
+
+    /**
+     * Valid template types
+     */
+    const VALID_TYPES = [
+        'smiley',
+        'target',
+        'table'
     ];
 
     public function feedbacks(): HasMany

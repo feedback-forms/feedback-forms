@@ -92,9 +92,11 @@ class SurveyCreationService
                     // Get the template
                     $template = FeedbackTemplate::findOrFail($surveyConfig['template_id']);
                     $templateName = $template->name ?? '';
+                    $templateType = $template->type;
 
                     // Get the appropriate template strategy for this template
-                    $templateStrategy = $this->templateStrategyFactory->getStrategy($templateName);
+                    // Use the explicit type field first, then fall back to name-based matching for backward compatibility
+                    $templateStrategy = $this->templateStrategyFactory->getStrategy($templateType, $templateName);
 
                     // Use the strategy to create questions
                     $templateStrategy->createQuestions($survey, $surveyConfig);
