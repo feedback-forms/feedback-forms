@@ -1,3 +1,12 @@
+@php
+    $templateImage = [
+        'templates.feedback.target' => asset('img/bullseye-arrow.svg'),
+        'templates.feedback.table' => asset('img/table-list.svg'),
+        'templates.feedback.smiley' => asset('img/smile.svg'),
+        'templates.feedback.checkbox' => asset('img/checkbox.svg'),
+    ];
+@endphp
+
 <div class="flex flex-col gap-2 p-20">
 
     <div class="bg-gray-50 dark:bg-gray-800 flex flex-col gap-10 p-10"
@@ -112,44 +121,44 @@
             </button>
         </div>
 
-        <div class="flex flex-row gap-10 flex-wrap justify-start">
+        <div class="flex flex-row gap-10 flex-wrap justify-start" x-data="{imageUrls: {{json_encode($templateImage)}}}">
             <template x-for="survey in filteredSurveys" :key="survey.id">
-                <div class="flex flex-col gap-2 lg:w-[17%] md:w-[30%] sm:w-full min-w-0 survey-wrapper h-full" 
+                <div class="flex flex-col gap-2 lg:w-[17%] md:w-[30%] sm:w-full min-w-0 survey-wrapper h-full"
                      :filter-type="survey.isExpired ? 'expired' : 'running'">
                     <!-- Image container with edit button -->
                     <div class="flex flex-row items-start gap-3">
                         <div class="relative flex-grow">
-                            <img src="{{asset('img/preview.png')}}" alt="a" class="rounded-3xl w-full" />
+                            <img x-bind:src="imageUrls[survey.feedback_template.name]" alt="a" class="lg:w-1/2 md:w-2/3 dark:invert-[1] mx-auto" />
                         </div>
                         <!-- Edit button positioned beside the image -->
                         <div class="flex-shrink-0 -mt-3">
-                            <a :href="`/surveys/${survey.id}/edit`" 
+                            <a :href="`/surveys/${survey.id}/edit`"
                                class="inline-flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-full transition-colors shadow-lg">
                                 <x-fas-edit class="w-5 h-5" />
                             </a>
                         </div>
                     </div>
-                    
+
                     <!-- Content section -->
                     <div class="flex flex-col flex-grow">
                         <p class="text-ellipsis text-gray-600 dark:text-gray-500">
                             <b x-text="survey.name || (survey.feedback_template ? survey.feedback_template.title : 'Untitled Survey')"></b>
                         </p>
                         <p class="text-ellipsis text-gray-500 dark:text-gray-400" x-text="`Updated ${survey.updated_at_diff}`"></p>
-                        
+
                         <!-- Responses section -->
                         <div class="flex items-center mt-2">
                             <span class="text-sm text-gray-500 dark:text-gray-400">
                                 <span x-text="survey.already_answered"></span> / <span x-text="survey.limit == -1 ? '∞' : survey.limit"></span> {{__('surveys.responses')}}
                             </span>
-                            <button type="button" 
-                                @click="window.dispatchEvent(new CustomEvent('open-qr-modal', { detail: { accesskey: survey.accesskey }}))" 
+                            <button type="button"
+                                @click="window.dispatchEvent(new CustomEvent('open-qr-modal', { detail: { accesskey: survey.accesskey }}))"
                                 class="ml-2 px-2 py-1 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded">
                                 {{__('surveys.show_qr')}}
                             </button>
                         </div>
                     </div>
-                    
+
                     <!-- Footer section -->
                     <div class="flex justify-start gap-2 mt-auto pt-2">
                         <a :href="`/surveys/${survey.id}/statistics`" class="text-green-500 hover:text-green-600 text-sm">

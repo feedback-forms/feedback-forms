@@ -44,7 +44,7 @@
                                 <img
                                     src="{{ asset($template['image']) }}"
                                     alt="{{ $template['title'] }}"
-                                    class="w-auto h-[80%] mx-auto object-cover"
+                                    class="w-auto h-[80%] mx-auto object-cover dark:invert-[1]"
                                 />
 
                                 <!-- Preview and Create buttons overlay -->
@@ -83,14 +83,14 @@
                                     <img
                                         src="{{ asset($item['image']) }}"
                                         alt="{{ $item['title'] }}"
-                                        class="w-full h-full object-cover"
+                                        class="w-full h-full object-cover dark:invert-[1]"
                                     />
                                 </a>
                             @else
                                 <img
                                     src="{{ asset($item['image']) }}"
                                     alt="{{ $item['title'] }}"
-                                    class="w-full h-full object-cover"
+                                    class="w-full h-full object-cover dark:invert-[1]"
                                 />
                             @endif
                         </div>
