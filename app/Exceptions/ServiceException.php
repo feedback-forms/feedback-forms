@@ -5,31 +5,23 @@ namespace App\Exceptions;
 use Exception;
 use App\Services\ErrorLogger;
 
+/**
+ * ServiceException is the base exception class for all service-level exceptions.
+ *
+ * It provides consistent error categorization, logging, and context management.
+ */
 class ServiceException extends Exception
 {
+    use LoggableException;
+
     /**
-     * Error categories for better classification
+     * Error categories for better classification (constants for backward compatibility)
      */
-    // Use error categories from the ErrorLogger service
     const CATEGORY_DATABASE = ErrorLogger::CATEGORY_DATABASE;
     const CATEGORY_VALIDATION = ErrorLogger::CATEGORY_VALIDATION;
     const CATEGORY_BUSINESS_LOGIC = ErrorLogger::CATEGORY_BUSINESS_LOGIC;
     const CATEGORY_EXTERNAL_SERVICE = ErrorLogger::CATEGORY_EXTERNAL_SERVICE;
     const CATEGORY_UNEXPECTED = ErrorLogger::CATEGORY_UNEXPECTED;
-
-    /**
-     * The error category
-     *
-     * @var string
-     */
-    protected $category;
-
-    /**
-     * Additional context data for the error
-     *
-     * @var array
-     */
-    protected $context;
 
     /**
      * Create a new service exception
@@ -51,70 +43,11 @@ class ServiceException extends Exception
 
         $this->category = $category;
         $this->context = $context;
+        $this->logLevel = $this->determineLogLevel();
 
         // Log the exception when it's created
         $this->logException();
     }
-
-    /**
-     * Get the error category
-     *
-     * @return string
-     */
-    public function getCategory(): string
-    {
-        return $this->category;
-    }
-
-    /**
-     * Get the error context
-     *
-     * @return array
-     */
-    public function getContext(): array
-    {
-        return $this->context;
-    }
-
-    /**
-     * Log the exception with appropriate level and context using the ErrorLogger service
-     */
-    protected function logException(): void
-    {
-        $logLevel = $this->determineLogLevel();
-
-        // Use the ErrorLogger service to log the exception with proper structure
-        ErrorLogger::logException(
-            $this,
-            $this->category,
-            $logLevel,
-            $this->context
-        );
-    }
-
-    /**
-     * Determine the appropriate log level based on the error category
-     *
-     * @return string The log level method name (error, warning, critical, etc.)
-     */
-    protected function determineLogLevel(): string
-    {
-        switch ($this->category) {
-            case self::CATEGORY_VALIDATION:
-                return 'warning';
-
-            case self::CATEGORY_DATABASE:
-            case self::CATEGORY_BUSINESS_LOGIC:
-            case self::CATEGORY_EXTERNAL_SERVICE:
-                return 'error';
-
-            case self::CATEGORY_UNEXPECTED:
-            default:
-                return 'critical';
-        }
-    }
-
-    // Removed buildLogContext() as ErrorLogger now handles this
 
     /**
      * Create a new service exception from an existing exception
@@ -148,7 +81,7 @@ class ServiceException extends Exception
      */
     public static function database(string $message, array $context = [], \Throwable $previous = null): self
     {
-        return new static($message, self::CATEGORY_DATABASE, $context, 0, $previous);
+        return static::forCategory($message, self::CATEGORY_DATABASE, $context, 0, $previous);
     }
 
     /**
@@ -161,7 +94,7 @@ class ServiceException extends Exception
      */
     public static function validation(string $message, array $context = [], \Throwable $previous = null): self
     {
-        return new static($message, self::CATEGORY_VALIDATION, $context, 0, $previous);
+        return static::forCategory($message, self::CATEGORY_VALIDATION, $context, 0, $previous);
     }
 
     /**
@@ -174,7 +107,7 @@ class ServiceException extends Exception
      */
     public static function businessLogic(string $message, array $context = [], \Throwable $previous = null): self
     {
-        return new static($message, self::CATEGORY_BUSINESS_LOGIC, $context, 0, $previous);
+        return static::forCategory($message, self::CATEGORY_BUSINESS_LOGIC, $context, 0, $previous);
     }
 
     /**
@@ -187,6 +120,32 @@ class ServiceException extends Exception
      */
     public static function externalService(string $message, array $context = [], \Throwable $previous = null): self
     {
-        return new static($message, self::CATEGORY_EXTERNAL_SERVICE, $context, 0, $previous);
+        return static::forCategory($message, self::CATEGORY_EXTERNAL_SERVICE, $context, 0, $previous);
+    }
+
+    /**
+     * Create a security error exception
+     *
+     * @param string $message The error message
+     * @param array $context Additional context data
+     * @param \Throwable|null $previous The previous exception
+     * @return static
+     */
+    public static function security(string $message, array $context = [], \Throwable $previous = null): self
+    {
+        return static::forCategory($message, ErrorLogger::CATEGORY_SECURITY, $context, 0, $previous);
+    }
+
+    /**
+     * Create a user input error exception
+     *
+     * @param string $message The error message
+     * @param array $context Additional context data
+     * @param \Throwable|null $previous The previous exception
+     * @return static
+     */
+    public static function userInput(string $message, array $context = [], \Throwable $previous = null): self
+    {
+        return static::forCategory($message, ErrorLogger::CATEGORY_USER_INPUT, $context, 0, $previous);
     }
 }

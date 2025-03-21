@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\InvalidAccessKeyException;
 use App\Models\Feedback;
+use App\Services\ErrorLogger;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
@@ -85,7 +86,7 @@ class SurveyAccessService
     {
         // Check for rate limiting
         if ($this->isRateLimited($ipAddress)) {
-            throw new InvalidAccessKeyException(
+            throw InvalidAccessKeyException::rateLimited(
                 'Too many invalid attempts. Please try again later.',
                 [
                     'ip_address' => $ipAddress,
@@ -101,11 +102,13 @@ class SurveyAccessService
             // Increment the failed attempt counter
             $this->recordFailedAttempt($ipAddress);
 
-            throw new InvalidAccessKeyException(
+            throw InvalidAccessKeyException::forCategory(
                 __('surveys.invalid_access_key'),
+                ErrorLogger::CATEGORY_SECURITY,
                 [
                     'attempted_key' => $accessKey,
-                    'ip_address' => $ipAddress
+                    'ip_address' => $ipAddress,
+                    'attempts' => Cache::get("survey_access:attempts:{$ipAddress}", 0)
                 ]
             );
         }

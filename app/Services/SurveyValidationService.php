@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Feedback;
 use App\Exceptions\SurveyNotAvailableException;
+use App\Exceptions\ExceptionHandler;
+use App\Services\ErrorLogger;
 use Carbon\Carbon;
 
 /**
@@ -24,17 +26,40 @@ class SurveyValidationService
     public function canBeAnswered(Feedback $survey): bool
     {
         if ($survey->expire_date < Carbon::now()) {
-            throw new SurveyNotAvailableException(
-                __('surveys.survey_expired')
-            );
+            throw SurveyNotAvailableException::expired([
+                'survey_id' => $survey->id,
+                'expire_date' => $survey->expire_date->toIso8601String(),
+                'current_date' => Carbon::now()->toIso8601String()
+            ]);
         }
 
         if ($survey->limit > 0 && $survey->submission_count >= $survey->limit) {
-            throw new SurveyNotAvailableException(
-                __('surveys.survey_limit_reached')
-            );
+            throw SurveyNotAvailableException::limitReached([
+                'survey_id' => $survey->id,
+                'limit' => $survey->limit,
+                'submission_count' => $survey->submission_count
+            ]);
         }
 
         return true;
+    }
+
+    /**
+     * Try to determine if a survey can be answered, wrapping exceptions in a consistent way
+     *
+     * @param Feedback $survey
+     * @return bool True if the survey can be answered, false otherwise
+     */
+    public function trySurveyAvailability(Feedback $survey): bool
+    {
+        try {
+            return ExceptionHandler::tryExecute(
+                fn() => $this->canBeAnswered($survey),
+                ErrorLogger::CATEGORY_USER_INPUT
+            );
+        } catch (SurveyNotAvailableException $e) {
+            // We expect this exception, so return false
+            return false;
+        }
     }
 }

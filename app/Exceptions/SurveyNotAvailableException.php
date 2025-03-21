@@ -7,14 +7,17 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use App\Services\ErrorLogger;
 
+/**
+ * Exception thrown when a survey is not available for submission
+ *
+ * This exception handles various reasons why a survey might not be available:
+ * - Expired survey
+ * - Submission limit reached
+ * - Survey closed or disabled
+ */
 class SurveyNotAvailableException extends Exception
 {
-    /**
-     * Additional context data for the error
-     *
-     * @var array
-     */
-    protected $context;
+    use LoggableException;
 
     /**
      * Constructor to initialize with message and context
@@ -30,18 +33,20 @@ class SurveyNotAvailableException extends Exception
         int $code = 0,
         \Throwable $previous = null
     ) {
-        parent::__construct($message, $code, $previous);
-        $this->context = $context;
-    }
+        // Use the default message if not provided
+        if (empty($message)) {
+            $message = __('surveys.survey_not_available');
+        }
 
-    /**
-     * Get the error context
-     *
-     * @return array
-     */
-    public function getContext(): array
-    {
-        return $this->context;
+        parent::__construct($message, $code, $previous);
+
+        // Set default category and log level
+        $this->category = ErrorLogger::CATEGORY_USER_INPUT;
+        $this->logLevel = ErrorLogger::LOG_LEVEL_WARNING;
+        $this->context = $context;
+
+        // Note: We don't log in constructor to avoid duplicate logging when render() is called
+        // which happens with HTTP requests. This class only logs in render().
     }
 
     /**
@@ -52,23 +57,32 @@ class SurveyNotAvailableException extends Exception
      */
     public function render(Request $request): RedirectResponse
     {
-        // Use the specific message if one was provided, otherwise use the default
-        $message = !empty($this->getMessage())
-            ? $this->getMessage()
-            : __('surveys.survey_not_available');
-// Use the ErrorLogger service for structured logging
-ErrorLogger::logException(
-    $this,
-    ErrorLogger::CATEGORY_USER_INPUT,
-    ErrorLogger::LOG_LEVEL_WARNING,
-    array_merge(
-        ['message' => $message],
-        $this->context
-    )
-);
-
+        // Log the exception when rendering the response
+        $this->logException();
 
         return redirect()->route('welcome')
-            ->with('error', $message);
+            ->with('error', $this->getMessage());
+    }
+
+    /**
+     * Create an exception for an expired survey
+     *
+     * @param array $context Additional context data
+     * @return static
+     */
+    public static function expired(array $context = []): self
+    {
+        return static::forCategory(__('surveys.survey_expired'), ErrorLogger::CATEGORY_USER_INPUT, $context);
+    }
+
+    /**
+     * Create an exception for a survey that reached its submission limit
+     *
+     * @param array $context Additional context data
+     * @return static
+     */
+    public static function limitReached(array $context = []): self
+    {
+        return static::forCategory(__('surveys.survey_limit_reached'), ErrorLogger::CATEGORY_USER_INPUT, $context);
     }
 }
