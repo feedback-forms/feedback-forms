@@ -84,9 +84,6 @@ class Overview extends Component
             $survey->isExpired = $isExpired;
             $survey->isRunning = $isRunning;
 
-            // Set already_answered for backward compatibility with the view
-            $survey->already_answered = $survey->submission_count;
-
             // Add translated status text
             $survey->statusText = $isExpired
                 ? __('surveys.status.expired')

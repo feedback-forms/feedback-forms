@@ -38,7 +38,7 @@
         <!-- Responses section -->
         <div class="flex items-center mt-2">
             <span class="text-sm text-gray-500 dark:text-gray-400">
-                <span x-text="survey.already_answered"></span> / <span x-text="survey.limit == -1 ? '∞' : survey.limit"></span> {{__('surveys.responses')}}
+                <span x-text="survey.submission_count"></span> / <span x-text="survey.limit == -1 ? '∞' : survey.limit"></span> {{__('surveys.responses')}}
             </span>
             <button type="button"
                 @click="window.dispatchEvent(new CustomEvent('open-qr-modal', { detail: { accesskey: survey.accesskey }}))"

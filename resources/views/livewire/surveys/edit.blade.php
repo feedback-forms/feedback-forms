@@ -121,7 +121,7 @@
                         </p>
                     </div>
                     <div>
-                        <p class="text-gray-600 dark:text-gray-400">{{__('surveys.responses')}}: {{ $survey->already_answered }} / {{ $survey->limit == -1 ? '∞' : $survey->limit }}</p>
+                        <p class="text-gray-600 dark:text-gray-400">{{__('surveys.responses')}}: {{ $survey->submission_count }} / {{ $survey->limit == -1 ? '∞' : $survey->limit }}</p>
                     </div>
                     <div>
                         <p class="text-gray-600 dark:text-gray-400">{{__('surveys.created_at')}}: {{ $survey->created_at->format('d.m.Y H:i') }}</p>

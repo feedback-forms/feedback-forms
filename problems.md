@@ -211,7 +211,7 @@ But similar patterns aren't used for other expensive operations, leading to inco
 
 ## 6. Maintainability & Technical Debt
 
-### 6.1 Deprecated But Active Code (HIGH)
+### 6.1 Deprecated But Active Code (HIGH) - RESOLVED
 
 **Issue:** Numerous deprecated methods and attributes are still in active use:
 
@@ -228,6 +228,14 @@ public function getAlreadyAnsweredAttribute()
 This indicates incomplete refactoring and creates confusion about which code paths should be used.
 
 **Solution:** Complete the migration away from deprecated methods, remove deprecated code that's no longer needed, and update all references to use the new methods.
+
+**Resolution:**
+- Removed the deprecated `getAlreadyAnsweredAttribute()` accessor method from the Feedback model
+- Updated all references to use `submission_count` instead of `already_answered` in:
+  - WelcomeController logging statements
+  - Livewire components (removing backward compatibility code in Overview component)
+  - View templates (overview.blade.php, edit.blade.php, and survey-card.blade.php)
+- Ensures consistent attribute usage throughout the application, improving code clarity and maintainability
 
 ### 6.2 View Component Duplication (MEDIUM)
 

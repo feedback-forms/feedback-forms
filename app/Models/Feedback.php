@@ -159,17 +159,6 @@ class Feedback extends Model
     }
 
     /**
-     * Get the already_answered attribute dynamically
-     *
-     * @deprecated Use submission_count instead
-     * @return int
-     */
-    public function getAlreadyAnsweredAttribute()
-    {
-        return $this->submission_count;
-    }
-
-    /**
      * Get all unique submission IDs for this feedback
      * Uses query caching to improve performance
      *
