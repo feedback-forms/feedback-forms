@@ -6,6 +6,12 @@ erDiagram
     FEEDBACKS ||--o{ QUESTIONS : contains
     QUESTION_TEMPLATES ||--o{ QUESTIONS : formats
     QUESTIONS ||--o{ RESULTS : receives
+    SCHOOL_YEARS ||--o{ FEEDBACKS : only_for
+    DEPARTMENTS ||--o{ FEEDBACKS: only_for
+    GRADE_LEVELS ||--o{ FEEDBACKS: only_for
+    SCHOOL_CLASSES ||--o{ FEEDBACKS: only_for
+    GRADE_LEVELS ||--o{ SCHOOL_CLASSES: in
+    SUBJECTS ||--o{ FEEDBACKS: only_for
     USERS {
         int id PK
         int registerkey_id FK
@@ -17,6 +23,7 @@ erDiagram
     REGISTERKEYS {
         int id PK
         string code
+        date expire_at
     }
     FEEDBACKS {
         int id PK
@@ -26,15 +33,16 @@ erDiagram
         int limit
         date expire_date
         string status
-        string school_year
-        string department
-        string grade_level
-        string class
-        string subject
+        int school_year_id FK
+        int department_id FK
+        int grade_level_id FK
+        int school_class_id FK
+        int subject_id FK
     }
     FEEDBACK_TEMPLATES {
         int id PK
         string name
+        string title
     }
     QUESTIONS {
         int id PK
@@ -43,6 +51,7 @@ erDiagram
         int feedback_id FK
         string question
         int order
+        string category
     }
     QUESTION_TEMPLATES {
         int id PK
@@ -56,6 +65,29 @@ erDiagram
         string submission_id
         string value_type
         string rating_value
+    }
+    SCHOOL_YEARS {
+        int id PK
+        string name
+    }
+    DEPARTMENTS {
+        int id PK
+        string name
+        string code
+    }
+    GRADE_LEVELS {
+        int id PK
+        string name
+    }
+    SCHOOL_CLASSES {
+        int id PK
+        int grade_level_id FK
+        string name
+    }
+    SUBJECTS {
+        int id PK
+        string code
+        string name
     }
 ```
 
@@ -79,6 +111,7 @@ This table stores information about users who participate in the feedback system
 - **Primary Key (PK)**: `id`
 - **Attributes**:
   - `code`
+  - `expire_at`
 
 This table holds **registration keys** that might be used for user account creation.
 
@@ -89,17 +122,17 @@ This table holds **registration keys** that might be used for user account creat
 - **Foreign Keys (FK)**:
   - `user_id` → Links to the `users` table.
   - `feedback_template_id` → Links to the `feedback_templates` table.
+  - `school_year_id` → Links to the `school_years` table.
+  - `department_id` → Links to the `departments` table.
+  - `grade_level_id` → Links to the `grade_levels` table.
+  - `school_class_id` → Links to the `school_classes` table.
+  - `subject_id` → Links to the `subjects` table.
 - **Attributes**:
   - `accesskey`
   - `limit`
   - `already_answered` (nullable) - Now dynamically calculated using distinct submission_ids from the results table
   - `expire_date`
   - `status` - Lifecycle status of the feedback (e.g., 'draft', 'running', 'expired')
-  - `school_year` (nullable)
-  - `department` (nullable)
-  - `grade_level` (nullable)
-  - `class` (nullable)
-  - `subject` (nullable)
 
 This table represents **feedback forms** created by users, linked to specific feedback templates. Each form can be answered multiple times up to the specified limit. The status field controls the form's lifecycle, determining whether it's available for responses.
 
@@ -109,6 +142,7 @@ This table represents **feedback forms** created by users, linked to specific fe
 - **Primary Key (PK)**: `id`
 - **Attributes**:
   - `name`
+  - `title`
 
 This table stores different **feedback templates** that can be used to create questionnaires.
 
@@ -152,6 +186,55 @@ This table stores **responses or ratings** provided by users for specific questi
 
 ---
 
+#### **8. school_years**
+- **Primary Key (PK)**: `id`
+- **Attributes**:
+    - `name`
+    
+This table stores **school years**.
+
+---
+
+#### **9. departments**
+- **Primary Key (PK)**: `id`
+- **Attributes**:
+    - `name`
+    - `code`
+
+This table stores **departments**.
+
+---
+
+#### **10. grade_levels**
+- **Primary Key (PK)**: `id`
+- **Attributes**:
+    - `name`
+
+This table stores **departments**.
+
+---
+
+#### **11. school_classes**
+- **Primary Key (PK)**: `id`
+- **Foreign Keys (FK)**:
+    - `grade_level_id` → Links to `grade_levels`
+- **Attributes**:
+    - `name`
+
+This table stores **school classes**.
+
+---
+
+#### **11. subjects**
+- **Primary Key (PK)**: `id`
+- **Attributes**:
+    - `name`
+    - `code`
+
+This table stores **subjects**.
+
+---
+
 ### **Relationships:**
 1. **users → feedbacks** (1:N)
    - A user can create **multiple feedback forms**, but each form belongs to one user.
@@ -175,6 +258,23 @@ This table stores **responses or ratings** provided by users for specific questi
    - Results with the same submission_id form a logical group representing a single submission response to a feedback form.
    - This enables tracking the number of submissions for each feedback form by counting distinct submission_ids.
 
+8. **school_years → feedbacks** (1:N)
+    - A **school year** can be associated with multiple feedbacks.
+
+9. **departments → feedbacks** (1:N)
+    - A **department** can be associated with multiple feedbacks.
+
+10. **grade_levels → feedbacks** (1:N)
+     - A **grade_level** can be associated with multiple feedbacks.
+
+11. **school_classes → feedbacks** (1:N)
+     - A **school classes** can be associated with multiple feedbacks.
+
+12. **subjects → feedbacks** (1:N)
+    - A **subject** can be associated with multiple feedbacks.
+
+13. **grade_levels → school_classes** (1:N)
+    - A **grade_level** can be associated with multiple school_classes.
 ---
 
 *Note: Laravel's internal tables (sessions, cache, jobs, etc.) are intentionally omitted from this document as they are not part of the core application domain model.*
