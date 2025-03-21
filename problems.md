@@ -246,7 +246,7 @@ This indicates incomplete refactoring and creates confusion about which code pat
   - View templates (overview.blade.php, edit.blade.php, and survey-card.blade.php)
 - Ensures consistent attribute usage throughout the application, improving code clarity and maintainability
 
-### 6.2 View Component Duplication (MEDIUM)
+### 6.2 View Component Duplication (MEDIUM) - RESOLVED
 
 **Issue:** The statistics view implementation suggests significant duplication:
 
@@ -267,6 +267,22 @@ This indicates incomplete refactoring and creates confusion about which code pat
 Each template likely has significant duplicate code for similar functionality.
 
 **Solution:** Refactor view components to use shared partials for common functionality, implement a more robust template inheritance system, and reduce duplication.
+
+**Resolution:**
+- Created a dedicated component hierarchy for survey statistics views in `resources/views/components/surveys/statistics`
+- Implemented reusable components for common elements:
+  - `stat-card.blade.php`: A basic card component for consistent styling
+  - `survey-info.blade.php`: A standardized survey info display panel
+  - `text-responses.blade.php`: A reusable component for displaying text responses
+  - `rating-statistics.blade.php`: A component for displaying rating metrics and distribution
+  - `emotion-feedback-card.blade.php`: A specialized component for emotion-based feedback
+  - `tabbed-categories.blade.php`: A reusable tabbed interface for category-based data
+- Refactored existing template files to use these components:
+  - `smiley_survey.blade.php`: Now uses stat-card and emotion-feedback-card components
+  - `table_survey.blade.php`: Now uses stat-card and tabbed-categories components
+  - `default_survey.blade.php`: Now uses stat-card, rating-statistics, and text-responses components
+- Maintained the same visual appearance and functionality while significantly reducing code duplication
+- Improved maintainability by centralizing common UI patterns and establishing clear component interfaces
 
 ## 7. Code Quality Issues
 
