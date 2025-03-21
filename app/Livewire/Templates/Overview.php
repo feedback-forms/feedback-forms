@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Templates;
 
-use App\Models\Feedback_template;
+use App\Models\FeedbackTemplate;
 use Livewire\Component;
 
 class Overview extends Component
@@ -14,7 +14,7 @@ class Overview extends Component
     public function mount()
     {
         // Get templates from database
-        $this->dbTemplates = Feedback_template::all()->toArray();
+        $this->dbTemplates = FeedbackTemplate::all()->toArray();
 
         // Map database templates to display format
         $templateTypes = [

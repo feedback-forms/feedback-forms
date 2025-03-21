@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\Feedback;
-use App\Models\Feedback_template;
-use App\Models\Question_template;
+use App\Models\FeedbackTemplate;
+use App\Models\QuestionTemplate;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -25,8 +25,8 @@ class QuestionFactory extends Factory
         ];
 
         return [
-            'feedback_template_id' => Feedback_template::factory(),
-            'question_template_id' => Question_template::inRandomOrder()->first() ?? 1,
+            'feedback_template_id' => FeedbackTemplate::factory(),
+            'question_template_id' => QuestionTemplate::inRandomOrder()->first() ?? 1,
             'feedback_id' => Feedback::factory(),
             'question' => $this->faker->sentence() . '?',
             'order' => $this->faker->numberBetween(1, 20),

@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Models\{Department, GradeLevel, SchoolClass, SchoolYear, Subject, User, Feedback_template};
+use App\Models\{Department, GradeLevel, SchoolClass, SchoolYear, Subject, User, FeedbackTemplate};
 
 return new class extends Migration
 {
@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('feedback', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(User::class);
-            $table->foreignIdFor(Feedback_template::class);
+            $table->foreignIdFor(FeedbackTemplate::class);
             $table->string('accesskey', 9);
             $table->integer('limit');
             $table->integer('already_answered');

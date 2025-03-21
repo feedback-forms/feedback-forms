@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Feedback_template;
+use App\Models\FeedbackTemplate;
 use App\Models\Question;
 
 class ListTableQuestions extends Command
@@ -27,7 +27,7 @@ class ListTableQuestions extends Command
      */
     public function handle()
     {
-        $tableTemplate = Feedback_template::where('name', 'templates.feedback.table')->first();
+        $tableTemplate = FeedbackTemplate::where('name', 'templates.feedback.table')->first();
 
         if (!$tableTemplate) {
             $this->error('Table template not found!');

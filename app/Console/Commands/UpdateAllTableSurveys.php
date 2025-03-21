@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Feedback;
 use App\Models\Question;
-use App\Models\Feedback_template;
+use App\Models\FeedbackTemplate;
 use Illuminate\Support\Facades\DB;
 
 class UpdateAllTableSurveys extends Command
@@ -30,7 +30,7 @@ class UpdateAllTableSurveys extends Command
     public function handle()
     {
         // Find the table template
-        $tableTemplate = Feedback_template::where('name', 'templates.feedback.table')->first();
+        $tableTemplate = FeedbackTemplate::where('name', 'templates.feedback.table')->first();
 
         if (!$tableTemplate) {
             $this->error("Table template not found!");

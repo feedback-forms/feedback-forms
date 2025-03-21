@@ -3,9 +3,9 @@
 namespace Tests\Unit;
 
 use App\Models\Feedback;
-use App\Models\Feedback_template;
+use App\Models\FeedbackTemplate;
 use App\Models\Question;
-use App\Models\Question_template;
+use App\Models\QuestionTemplate;
 use App\Models\Result;
 use App\Services\StatisticsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -31,13 +31,13 @@ class StatisticsServiceTest extends TestCase
     public function test_calculate_statistics_for_range_question(): void
     {
         // Create a feedback template
-        $template = Feedback_template::create([
+        $template = FeedbackTemplate::create([
             'name' => 'Test Template',
             'title' => 'Test Template Title',
         ]);
 
         // Create a question template for range type
-        $questionTemplate = Question_template::create([
+        $questionTemplate = QuestionTemplate::create([
             'type' => 'range',
             'min_value' => 1,
             'max_value' => 5,
@@ -103,13 +103,13 @@ class StatisticsServiceTest extends TestCase
     public function test_calculate_statistics_for_text_question(): void
     {
         // Create a feedback template
-        $template = Feedback_template::create([
+        $template = FeedbackTemplate::create([
             'name' => 'Test Template',
             'title' => 'Test Template Title',
         ]);
 
         // Create a question template for text type
-        $questionTemplate = Question_template::create([
+        $questionTemplate = QuestionTemplate::create([
             'type' => 'text',
         ]);
 
@@ -173,13 +173,13 @@ class StatisticsServiceTest extends TestCase
     public function test_calculate_statistics_for_checkbox_question(): void
     {
         // Create a feedback template
-        $template = Feedback_template::create([
+        $template = FeedbackTemplate::create([
             'name' => 'Test Template',
             'title' => 'Test Template Title',
         ]);
 
         // Create a question template for checkbox type
-        $questionTemplate = Question_template::create([
+        $questionTemplate = QuestionTemplate::create([
             'type' => 'checkbox',
         ]);
 
@@ -263,13 +263,13 @@ class StatisticsServiceTest extends TestCase
     public function test_calculate_statistics_for_target_template(): void
     {
         // Create a feedback template for target type
-        $template = Feedback_template::create([
+        $template = FeedbackTemplate::create([
             'name' => 'templates.feedback.target',
             'title' => 'Target Feedback Template',
         ]);
 
         // Create a question template for range type
-        $questionTemplate = Question_template::create([
+        $questionTemplate = QuestionTemplate::create([
             'type' => 'range',
             'min_value' => 1,
             'max_value' => 5,
@@ -344,19 +344,19 @@ class StatisticsServiceTest extends TestCase
     public function test_calculate_statistics_for_smiley_template(): void
     {
         // Create a feedback template for smiley type
-        $template = Feedback_template::create([
+        $template = FeedbackTemplate::create([
             'name' => 'templates.feedback.smiley',
             'title' => 'Smiley Feedback Template',
         ]);
 
         // Create question templates
-        $rangeTemplate = Question_template::create([
+        $rangeTemplate = QuestionTemplate::create([
             'type' => 'range',
             'min_value' => 1,
             'max_value' => 5,
         ]);
 
-        $textTemplate = Question_template::create([
+        $textTemplate = QuestionTemplate::create([
             'type' => 'text',
         ]);
 
@@ -447,13 +447,13 @@ class StatisticsServiceTest extends TestCase
     public function test_calculate_statistics_for_table_template(): void
     {
         // Create a feedback template for table type
-        $template = Feedback_template::create([
+        $template = FeedbackTemplate::create([
             'name' => 'templates.feedback.table',
             'title' => 'Table Feedback Template',
         ]);
 
         // Create a question template for range type
-        $questionTemplate = Question_template::create([
+        $questionTemplate = QuestionTemplate::create([
             'type' => 'range',
             'min_value' => 1,
             'max_value' => 5,
@@ -643,13 +643,13 @@ $this->assertGreaterThanOrEqual(3, count($questionStats));
     public function test_calculate_statistics_with_no_submissions(): void
     {
         // Create a feedback template
-        $template = Feedback_template::create([
+        $template = FeedbackTemplate::create([
             'name' => 'Test Template',
             'title' => 'Test Template Title',
         ]);
 
         // Create a question template
-        $questionTemplate = Question_template::create([
+        $questionTemplate = QuestionTemplate::create([
             'type' => 'range',
             'min_value' => 1,
             'max_value' => 5,

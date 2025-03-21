@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-use App\Models\{Feedback_template, Question_template, Feedback};
+use App\Models\{FeedbackTemplate, QuestionTemplate, Feedback};
 
 return new class extends Migration
 {
@@ -15,8 +15,8 @@ return new class extends Migration
     {
         Schema::create('questions', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Feedback_template::class);
-            $table->foreignIdFor(Question_template::class);
+            $table->foreignIdFor(FeedbackTemplate::class);
+            $table->foreignIdFor(QuestionTemplate::class);
             $table->foreignIdFor(Feedback::class)->nullable();
             $table->string('question');
             $table->timestamps();

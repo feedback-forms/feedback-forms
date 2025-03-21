@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Feedback;
-use App\Models\Feedback_template;
+use App\Models\FeedbackTemplate;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -20,7 +20,7 @@ class SurveyNamingTest extends TestCase
     public function test_survey_can_be_created_with_name(): void
     {
         // Create a template
-        $template = Feedback_template::create([
+        $template = FeedbackTemplate::create([
             'name' => 'templates.feedback.test'
         ]);
 

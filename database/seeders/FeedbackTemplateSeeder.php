@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Feedback_template;
+use App\Models\FeedbackTemplate;
 
 class FeedbackTemplateSeeder extends Seeder
 {
@@ -13,22 +13,22 @@ class FeedbackTemplateSeeder extends Seeder
      */
     public function run(): void
     {
-        Feedback_template::updateOrCreate(
+        FeedbackTemplate::updateOrCreate(
             ['name' => 'templates.feedback.target'],
             ['title' => 'Target Survey']
         );
 
-        Feedback_template::updateOrCreate(
+        FeedbackTemplate::updateOrCreate(
             ['name' => 'templates.feedback.smiley'],
             ['title' => 'Smiley Survey']
         );
 
-        Feedback_template::updateOrCreate(
+        FeedbackTemplate::updateOrCreate(
             ['name' => 'templates.feedback.checkbox'],
             ['title' => 'Checkbox Survey']
         );
 
-        Feedback_template::updateOrCreate(
+        FeedbackTemplate::updateOrCreate(
             ['name' => 'templates.feedback.table'],
             ['title' => 'Table Survey']
         );

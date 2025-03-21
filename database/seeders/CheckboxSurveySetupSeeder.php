@@ -4,8 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Feedback_template;
-use App\Models\Question_template;
+use App\Models\FeedbackTemplate;
+use App\Models\QuestionTemplate;
 use App\Models\Question;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -18,13 +18,13 @@ class CheckboxSurveySetupSeeder extends Seeder
     public function run(): void
     {
         // Create or update required question templates
-        $checkboxTemplate = Question_template::updateOrCreate(
+        $checkboxTemplate = QuestionTemplate::updateOrCreate(
             ['type' => 'checkbox'],
             ['max_value' => 3] // Yes=1, No=2, N/A=3
         );
 
         // Create or update feedback template
-        $feedbackTemplate = Feedback_template::updateOrCreate(
+        $feedbackTemplate = FeedbackTemplate::updateOrCreate(
             ['name' => 'templates.feedback.checkbox'],
             ['title' => 'Checkbox Survey']
         );

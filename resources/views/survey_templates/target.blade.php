@@ -222,7 +222,7 @@
                     <div class="flex justify-end mt-8">
                         <form action="{{ route('surveys.store') }}" method="POST">
                             @csrf
-                            <input type="hidden" name="template_id" value="{{ optional(App\Models\Feedback_template::where('name', 'templates.feedback.target')->first())->id ?? '' }}">
+                            <input type="hidden" name="template_id" value="{{ optional(App\Models\FeedbackTemplate::where('name', 'templates.feedback.target')->first())->id ?? '' }}">
                             <input type="hidden" name="expire_date" value="{{ \Carbon\Carbon::now()->addDays(30)->format('Y-m-d H:i:s') }}">
                             <input type="hidden" name="response_limit" value="30">
                             <input type="hidden" name="school_year" value="{{ App\Models\SchoolYear::first()->name ?? '2023/24' }}">
