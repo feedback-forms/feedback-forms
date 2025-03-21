@@ -132,7 +132,7 @@ This indicates the service has multiple responsibilities and is difficult to tes
 
 ## 5. Performance Issues
 
-### 5.1 N+1 Query Problems (HIGH)
+### 5.1 N+1 Query Problems (HIGH) - RESOLVED
 
 **Issue:** Several relationship access patterns suggest N+1 query issues:
 
@@ -147,6 +147,12 @@ foreach ($template->questions as $index => $templateQuestion) {
 ```
 
 **Solution:** Audit all relationship access, ensure proper eager loading with the `with()` method, and use database query monitoring tools to identify and fix N+1 queries.
+
+**Resolution:**
+- Enhanced the `FeedbackRepository::getWithFilters` method to support eager loading of relationships by adding an optional `$relations` parameter
+- Created a new `getAllWithQuestionsAndRelations` method for more flexible eager loading capability
+- Updated existing repository methods to utilize the new eager loading functionality
+- Maintained backward compatibility with existing code while providing improved performance
 
 ### 5.2 Inconsistent Caching Strategy (MEDIUM)
 

@@ -189,18 +189,24 @@ class FeedbackRepository
      */
     public function getAllWithQuestions()
     {
-        return $this->feedback->with('questions')->get();
+        return $this->getAllWithQuestionsAndRelations();
     }
 
     /**
-     * Get surveys with filtering options
+     * Get surveys with filtering options and optional eager loading
      *
-     * @param array $filters
+     * @param array $filters Array of filter criteria
+     * @param array $relations Array of relationships to eager load
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function getWithFilters(array $filters = [])
+    public function getWithFilters(array $filters = [], array $relations = [])
     {
         $query = $this->feedback->query();
+
+        // Apply eager loading if relations are specified
+        if (!empty($relations)) {
+            $query->with($relations);
+        }
 
         if (isset($filters['user_id'])) {
             $query->where('user_id', $filters['user_id']);
@@ -234,6 +240,18 @@ class FeedbackRepository
     }
 
     /**
+     * Get all surveys with their questions and optional additional relations
+     *
+     * @param array $additionalRelations Additional relationships to eager load
+     * @return Collection
+     */
+    public function getAllWithQuestionsAndRelations(array $additionalRelations = [])
+    {
+        $relations = array_merge(['questions'], $additionalRelations);
+        return $this->feedback->with($relations)->get();
+    }
+
+    /**
      * Get the count of surveys with filtering options
      *
      * @param array $filters
@@ -241,6 +259,7 @@ class FeedbackRepository
      */
     public function countWithFilters(array $filters = [])
     {
+        // We don't need to eager load relations for counting
         return $this->getWithFilters($filters)->count();
     }
 }
