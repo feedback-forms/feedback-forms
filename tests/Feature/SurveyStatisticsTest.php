@@ -3,9 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\Feedback;
-use App\Models\Feedback_template;
+use App\Models\FeedbackTemplate;
 use App\Models\Question;
-use App\Models\Question_template;
+use App\Models\QuestionTemplate;
 use App\Models\Result;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -27,13 +27,13 @@ class SurveyStatisticsTest extends TestCase
         ]);
 
         // Create a feedback template
-        $template = Feedback_template::create([
+        $template = FeedbackTemplate::create([
             'name' => 'Test Template',
             'title' => 'Test Template Title',
         ]);
 
         // Create a question template for range type
-        $questionTemplate = Question_template::create([
+        $questionTemplate = QuestionTemplate::create([
             'type' => 'range',
             'min_value' => 1,
             'max_value' => 5,
@@ -104,7 +104,7 @@ class SurveyStatisticsTest extends TestCase
         ]);
 
         // Create a feedback template
-        $template = Feedback_template::create([
+        $template = FeedbackTemplate::create([
             'name' => 'Test Template',
             'title' => 'Test Template Title',
         ]);
@@ -138,7 +138,7 @@ class SurveyStatisticsTest extends TestCase
         ]);
 
         // Create a feedback template
-        $template = Feedback_template::create([
+        $template = FeedbackTemplate::create([
             'name' => 'Test Template',
             'title' => 'Test Template Title',
         ]);

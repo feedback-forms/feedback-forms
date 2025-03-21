@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Repositories;
+
 use App\Models\SchoolClass;
 
 class SchoolClassRepository {
@@ -32,6 +33,6 @@ class SchoolClassRepository {
 
     public function delete($id)
     {
-        return $this->school_class->where('id', id)->delete();
+        return $this->school_class->where('id', $id)->delete();
     }
 }

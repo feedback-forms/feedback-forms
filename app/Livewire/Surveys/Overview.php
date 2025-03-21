@@ -57,7 +57,15 @@ class Overview extends Component
     protected function loadSurveys()
     {
         // Start with a base query for the authenticated user
-        $query = Feedback::with(['feedback_template', 'user'])
+        $query = Feedback::with([
+            'feedback_template',
+            'user',
+            'year',
+            'department',
+            'gradeLevel',
+            'class',
+            'subject'
+        ])
             ->where('user_id', auth()->id())
             ->orderBy('created_at', 'desc');
 
@@ -67,13 +75,19 @@ class Overview extends Component
         // Add computed properties for frontend filtering
         $now = Carbon::now();
         foreach ($surveys as $survey) {
-            // Add isExpired flag
-            $survey->isExpired = $survey->expire_date < $now;
+            // Compute status flags
+            $isExpired = $survey->expire_date < $now;
+            $isRunning = $survey->expire_date >= $now &&
+                ($survey->limit == -1 || $survey->submission_count < $survey->limit);
 
-            // Add isRunning flag
-            $survey->isRunning =
-                $survey->expire_date >= $now &&
-                ($survey->limit == -1 || $survey->already_answered < $survey->limit);
+            // Add computed status attributes
+            $survey->isExpired = $isExpired;
+            $survey->isRunning = $isRunning;
+
+            // Add translated status text
+            $survey->statusText = $isExpired
+                ? __('surveys.status.expired')
+                : ($isRunning ? __('surveys.status.running') : __('surveys.status.cancelled'));
 
             // Add formatted updated_at for display
             $survey->updated_at_diff = $survey->updated_at->diffForHumans();

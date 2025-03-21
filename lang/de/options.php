@@ -5,6 +5,8 @@ return [
     'title' => 'Optionen - Verwaltung',
     'add' => 'Hinzufügen',
     'manage' => 'Verwalten',
+    'delete' => 'Löschen',
+    'cancel' => 'Abbrechen',
     
     'subject' => [
         'name' => 'Fach',

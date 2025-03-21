@@ -172,11 +172,34 @@
                                             class="inline-flex items-center p-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
                                             <x-fas-pen-to-square class="w-4 h-4" />
                                         </button>
-                                        <button 
-                                            wire:click="deleteOption('{{ $key }}', {{ $option['id'] }})"
-                                            class="inline-flex items-center p-2 text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
-                                            <x-fas-trash class="w-4 h-4" />
-                                        </button>
+                                        <div x-data="{ isOpen: false }" class="relative">
+                                            <button 
+                                                @click.stop="isOpen = !isOpen"
+                                                class="inline-flex items-center p-2 text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
+                                                <x-fas-trash class="w-4 h-4" />
+                                            </button>
+
+                                            <div x-show="isOpen"
+                                                 @click.outside="isOpen = false"
+                                                 class="absolute z-10 right-0 mt-2 w-64 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5"
+                                                 x-cloak>
+                                                <div class="p-4 space-y-4">
+                                                    <div class="flex justify-end gap-3">
+                                                        <x-secondary-button 
+                                                            @click.stop="isOpen = false" 
+                                                            class="!px-4 !py-2 text-sm">
+                                                            {{ __('options.cancel') }}
+                                                        </x-secondary-button>
+                                                        <x-danger-button 
+                                                            wire:click="deleteOption('{{ $key }}', {{ $option['id'] }})" 
+                                                            @click.stop="isOpen = false" 
+                                                            class="!px-4 !py-2 text-sm">
+                                                            {{ __('options.delete') }}
+                                                        </x-danger-button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>

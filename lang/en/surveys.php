@@ -3,6 +3,11 @@
 return [
     'surveys' => 'Surveys',
     'expired' => 'Expired',
+    'status' => [
+        'expired' => 'Expired',
+        'running' => 'Running',
+        'cancelled' => 'Cancelled'
+    ],
     'cancelled' => 'Cancelled',
     'running' => 'Running',
     'create_new_survey' => 'Create New Survey',
@@ -147,6 +152,7 @@ return [
     'no_categories_available' => 'No Categories Available',
     'no_categories_generated_description' => 'No categories could be generated from the survey questions.',
     'text_responses_count' => ':count text response(s) received',
+    'untitled_survey' => 'Untitled Survey',
     'general_feedback' => 'General Feedback',
     'detailed_feedback' => 'Detailed Feedback',
     'additional_comments' => 'Additional Comments',
@@ -166,9 +172,13 @@ return [
     'enter_access_key_hint' => 'Enter the 8-character access key provided by your teacher',
     'invalid_access_key' => 'Invalid access key. Please check and try again.',
     'survey_not_available' => 'This survey is no longer available. It may have expired or reached its response limit.',
+    'survey_expired' => 'This survey has expired and is no longer accepting responses.',
+    'survey_limit_reached' => 'This survey has reached its maximum number of allowed responses.',
     'submit_response' => 'Submit Response',
     'response_submitted' => 'Your response has been submitted successfully.',
     'submission_failed' => 'Failed to submit your response.',
+    'submission_validation_error' => 'Failed to validate your response data. Please check your input and try again.',
+    'submission_database_error' => 'A database error occurred while saving your response. Please try again later.',
     'thank_you' => 'Thank You!',
     'response_received' => 'Your response has been received. Thank you for your feedback.',
     'access_another_survey' => 'Access Another Survey',
@@ -190,6 +200,19 @@ return [
     'scan_to_access' => 'Scan this QR code to access the survey',
     'close' => 'Close',
     'qr_code_error' => 'Failed to generate QR code. Please try again.',
+
+    // Error messages for service layer
+    'errors' => [
+        'database' => 'A database error occurred while processing your request.',
+        'validation' => 'The provided data failed validation checks.',
+        'business_logic' => 'An error occurred in the business logic processing your request.',
+        'external_service' => 'An error occurred while communicating with an external service.',
+        'unexpected' => 'An unexpected error occurred. Please try again later.',
+        'survey_creation_failed' => 'Failed to create the survey. Please check your input and try again.',
+        'survey_update_failed' => 'Failed to update the survey. Please check your input and try again.',
+        'template_error' => 'An error occurred while processing the survey template.',
+        'response_storage_failed' => 'Failed to store your survey responses. Please try again later.',
+    ],
 
     // Smiley template
     'smiley' => [

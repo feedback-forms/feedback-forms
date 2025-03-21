@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\InvalidAccessKeyException;
 use App\Exceptions\SurveyNotAvailableException;
+use App\Http\Requests\StoreSurveyResponseRequest;
 use App\Models\Feedback;
 use App\Models\Question;
 use App\Models\Result;
@@ -29,7 +30,7 @@ class SurveyResponseController extends Controller
      * @throws InvalidAccessKeyException
      * @throws SurveyNotAvailableException
      */
-    public function submitResponses(Request $request, string $accesskey): RedirectResponse
+    public function submitResponses(StoreSurveyResponseRequest $request, string $accesskey): RedirectResponse
     {
         Log::info("Survey submission attempt", [
             'accesskey' => $accesskey,
@@ -37,25 +38,8 @@ class SurveyResponseController extends Controller
             'response_type' => gettype($request->input('responses'))
         ]);
 
-        $survey = Feedback::where('accesskey', $accesskey)->first();
-
-        if (!$survey) {
-            Log::warning("Invalid access key used for survey submission", [
-                'accesskey' => $accesskey
-            ]);
-            throw new InvalidAccessKeyException();
-        }
-
-        if (!$this->surveyService->canBeAnswered($survey)) {
-            Log::warning("Attempt to submit to unavailable survey", [
-                'survey_id' => $survey->id,
-                'accesskey' => $accesskey,
-                'expire_date' => $survey->expire_date,
-                'limit' => $survey->limit,
-                'submission_count' => $survey->submission_count
-            ]);
-            throw new SurveyNotAvailableException();
-        }
+        // Survey is already validated and accessible through the request
+        $survey = $request->get('survey');
 
         try {
             // Load the survey with its questions to ensure we're working with the correct data
@@ -67,19 +51,13 @@ class SurveyResponseController extends Controller
             $responses = $request->input('responses');
             $success = false;
 
-            if (is_string($responses) && $this->isJson($responses)) {
+            if (is_string($responses) && $this->isValidJson($responses)) {
                 // Handle JSON string response
                 $jsonData = json_decode($responses, true);
                 $success = $this->storeJsonResponses($survey, $jsonData);
             } else {
-                // Validate the responses with more flexible validation for array inputs
-                $validated = $request->validate([
-                    'responses' => 'required|array',
-                    'responses.*' => 'required',
-                ]);
-
-                // Process and store the responses as an array
-                $success = $this->surveyService->storeResponses($survey, $validated['responses']);
+                // The response data is already validated by the form request
+                $success = $this->surveyService->storeResponses($survey, $request->validated()['responses']);
             }
 
             if (!$success) {
@@ -125,7 +103,7 @@ class SurveyResponseController extends Controller
      * @param mixed $string The string to check
      * @return bool True if the string is valid JSON, false otherwise
      */
-    private function isJson($string): bool
+    private function isValidJson($string): bool
     {
         if (!is_string($string)) {
             return false;

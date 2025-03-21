@@ -4,9 +4,9 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Feedback_template;
+use App\Models\FeedbackTemplate;
 use App\Models\Question;
-use App\Models\Question_template;
+use App\Models\QuestionTemplate;
 use Illuminate\Support\Facades\DB;
 
 class TableTemplateUpdateSeeder extends Seeder
@@ -16,16 +16,16 @@ class TableTemplateUpdateSeeder extends Seeder
      */
     public function run(): void
     {
-        $tableTemplate = Feedback_template::where('name', 'templates.feedback.table')->first();
+        $tableTemplate = FeedbackTemplate::where('name', 'templates.feedback.table')->first();
 
         if (!$tableTemplate) {
             $this->command->error('Table feedback template not found!');
             return;
         }
 
-        $rangeTemplate = Question_template::where('type', 'range')->first();
-        $textTemplate = Question_template::where('type', 'text')->first()
-            ?? Question_template::firstOrCreate(['type' => 'text']);
+        $rangeTemplate = QuestionTemplate::where('type', 'range')->first();
+        $textTemplate = QuestionTemplate::where('type', 'text')->first()
+            ?? QuestionTemplate::firstOrCreate(['type' => 'text']);
 
         if (!$rangeTemplate) {
             $this->command->error('Range question template not found!');

@@ -30,7 +30,8 @@ class LoginForm extends Form
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only(['name', 'password']), $this->remember)) {
+        // Use direct properties instead of only() method which isn't available in Form classes
+        if (! Auth::attempt(['name' => $this->name, 'password' => $this->password], $this->remember)) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([

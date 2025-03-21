@@ -3,9 +3,9 @@
 namespace Tests\Unit;
 
 use App\Models\Feedback;
-use App\Models\Feedback_template;
+use App\Models\FeedbackTemplate;
 use App\Models\Question;
-use App\Models\Question_template;
+use App\Models\QuestionTemplate;
 use App\Models\Result;
 use App\Models\ResponseValue;
 use App\Services\SurveyService;
@@ -30,13 +30,13 @@ class SurveyServiceTest extends TestCase
     public function test_calculate_statistics_for_range_question(): void
     {
         // Create a feedback template
-        $template = Feedback_template::create([
+        $template = FeedbackTemplate::create([
             'name' => 'Test Template',
             'title' => 'Test Template Title',
         ]);
 
         // Create a question template for range type
-        $questionTemplate = Question_template::create([
+        $questionTemplate = QuestionTemplate::create([
             'type' => 'range',
             'min_value' => 1,
             'max_value' => 5,
@@ -99,13 +99,13 @@ class SurveyServiceTest extends TestCase
     public function test_calculate_statistics_for_text_question(): void
     {
         // Create a feedback template
-        $template = Feedback_template::create([
+        $template = FeedbackTemplate::create([
             'name' => 'Test Template',
             'title' => 'Test Template Title',
         ]);
 
         // Create a question template for text type
-        $questionTemplate = Question_template::create([
+        $questionTemplate = QuestionTemplate::create([
             'type' => 'text',
         ]);
 

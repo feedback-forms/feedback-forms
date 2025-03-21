@@ -2,8 +2,9 @@ import './bootstrap';
 import Alpine from 'alpinejs';
 import QRCode from 'qrcode';
 
-// Import our survey-filter component
+// Import our components
 import './survey-filter';
+import './components/qr-code-modal';
 
 // Make QRCode globally available and add error handling
 window.QRCode = QRCode;

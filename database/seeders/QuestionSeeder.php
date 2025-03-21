@@ -5,8 +5,8 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Question;
-use App\Models\Feedback_template;
-use App\Models\Question_template;
+use App\Models\FeedbackTemplate;
+use App\Models\QuestionTemplate;
 
 class QuestionSeeder extends Seeder
 {
@@ -16,16 +16,16 @@ class QuestionSeeder extends Seeder
     public function run(): void
     {
         // Find the feedback templates
-        $targetTemplate = Feedback_template::where('name', 'templates.feedback.target')->first();
-        $smileyTemplate = Feedback_template::where('name', 'templates.feedback.smiley')->first();
-        $checkboxTemplate = Feedback_template::where('name', 'templates.feedback.checkbox')->first();
-        $tableTemplate = Feedback_template::where('name', 'templates.feedback.table')->first();
+        $targetTemplate = FeedbackTemplate::where('name', 'templates.feedback.target')->first();
+        $smileyTemplate = FeedbackTemplate::where('name', 'templates.feedback.smiley')->first();
+        $checkboxTemplate = FeedbackTemplate::where('name', 'templates.feedback.checkbox')->first();
+        $tableTemplate = FeedbackTemplate::where('name', 'templates.feedback.table')->first();
 
         // Find question templates
-        $rangeTemplate = Question_template::where('type', 'range')->first();
-        $textTemplate = Question_template::where('type', 'textarea')->first()
-            ?? Question_template::firstOrCreate(['type' => 'text']);
-        $checkboxTemplate = Question_template::where('type', 'checkboxes')->first();
+        $rangeTemplate = QuestionTemplate::where('type', 'range')->first();
+        $textTemplate = QuestionTemplate::where('type', 'textarea')->first()
+            ?? QuestionTemplate::firstOrCreate(['type' => 'text']);
+        $checkboxTemplate = QuestionTemplate::where('type', 'checkboxes')->first();
 
         // Clear existing questions that aren't linked to a feedback (survey)
         Question::whereNull('feedback_id')->delete();
@@ -138,8 +138,8 @@ class QuestionSeeder extends Seeder
             }
 
             // Create the text questions for feedback
-            $textTemplate = Question_template::where('type', 'text')->first()
-                ?? Question_template::firstOrCreate(['type' => 'text']);
+            $textTemplate = QuestionTemplate::where('type', 'text')->first()
+                ?? QuestionTemplate::firstOrCreate(['type' => 'text']);
 
             $feedbackQuestions = [
                 'Das hat mir besonders gut gefallen',

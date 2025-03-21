@@ -1,28 +1,31 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Http\Requests\SmileyRequest;
-use Illuminate\Support\Facades\{Log};
+use App\Http\Requests\{SmileyRequest, StoreSurveyRequest};
+use Illuminate\Support\Facades\{Log, Gate};
 
 use App\Services\SurveyService;
-use App\Models\{Feedback_template, Question_template, Feedback, SchoolYear, Department, GradeLevel, SchoolClass, Subject};
+use App\Models\{FeedbackTemplate, QuestionTemplate, Feedback, SchoolYear, Department, GradeLevel, SchoolClass, Subject};
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Auth\Access\AuthorizationException;
 
 class SurveyController extends Controller
 {
     public function __construct(
         protected SurveyService $surveyService
-    ) {}
+    ) {
+        $this->authorizeResource(Feedback::class, 'survey');
+    }
 
     /**
      * Show the survey creation form
      */
     public function create(Request $request): View|RedirectResponse
     {
-        $templates = Feedback_template::all();
-        $questionTemplates = Question_template::all();
+        $templates = FeedbackTemplate::all();
+        $questionTemplates = QuestionTemplate::all();
         $selectedTemplate = $request->route('template') ?? $request->query('template');
 
         // If no template is selected, redirect to templates page
@@ -60,20 +63,9 @@ class SurveyController extends Controller
     /**
      * Store a new survey
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreSurveyRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'template_id' => 'required|exists:feedback_templates,id',
-            'expire_date' => 'required|date|after:now',
-            'response_limit' => 'nullable|integer|min:-1',
-            'school_year_id' => 'required|exists:school_years,id',
-            'department_id' => 'required|exists:departments,id',
-            'grade_level_id' => 'required|exists:grade_levels,id',
-            'school_class_id' => 'required|exists:school_classes,id',
-            'subject_id' => 'required|exists:subjects,id',
-            'survey_data' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         try {
             // Process the survey data if it exists
@@ -110,9 +102,14 @@ class SurveyController extends Controller
 
     /**
      * Show survey details
+     *
+     * @param Feedback $survey
+     * @return View
+     * @throws AuthorizationException
      */
     public function show(Feedback $survey): View
     {
+        // Authorization is already handled by authorizeResource in constructor
         $canBeAnswered = $this->surveyService->canBeAnswered($survey);
 
         return view('surveys.show', [
@@ -134,6 +131,11 @@ class SurveyController extends Controller
     public function showTarget()
     {
         return view('survey_templates.target');
+    }
+
+    public function showCheckbox()
+    {
+        return view('survey_templates.checkbox');
     }
 
     public function retrieveSmiley(SmileyRequest $request)

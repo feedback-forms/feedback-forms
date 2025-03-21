@@ -4,7 +4,7 @@
 ])
 
 @php
-$show = fn($item) => $item->expire_at ? $item->expire_at->isFuture() : true;
+$show = fn($item) => true; // Always show options regardless of expiration status
 @endphp
 
 <div class="flex flex-col gap-4">
@@ -47,6 +47,7 @@ $show = fn($item) => $item->expire_at ? $item->expire_at->isFuture() : true;
                     </x-slot>
 
                     <x-slot name="content">
+                        @if (!$item->expire_at || $item->expire_at->isFuture())
                         <x-secondary-button class="w-full" wire:click="revokeToken({{$item->id}})">
                             {{__('invite_token.revoke')}}
                         </x-secondary-button>
@@ -59,6 +60,33 @@ $show = fn($item) => $item->expire_at ? $item->expire_at->isFuture() : true;
                         >
                             {{__('invite_token.change_duration')}}
                         </x-secondary-button>
+                        @endif
+
+                        <div x-data="{ isOpen: false }" class="relative">
+                            <x-danger-button
+                                class="w-full"
+                                @click.stop="isOpen = !isOpen"
+                            >
+                                {{__('invite_token.delete')}}
+                            </x-danger-button>
+
+                            <div x-show="isOpen"
+                                 @click.outside="isOpen = false"
+                                 class="absolute z-10 left-0 mt-2 min-w-full rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 p-4"
+                                 x-cloak>
+                                <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                                    {{ __('invite_token.confirm_delete') }}
+                                </p>
+                                <div class="flex justify-end gap-2">
+                                    <x-secondary-button @click.stop="isOpen = false" class="!px-3 !py-1">
+                                        {{ __('invite_token.cancel') }}
+                                    </x-secondary-button>
+                                    <x-danger-button wire:click="deleteToken({{$item->id}})" @click.stop class="!px-3 !py-1">
+                                        {{ __('invite_token.delete') }}
+                                    </x-danger-button>
+                                </div>
+                            </div>
+                        </div>
                     </x-slot>
                 </x-dropdown>
             @endif

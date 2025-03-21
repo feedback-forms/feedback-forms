@@ -63,7 +63,7 @@ class WelcomeController extends Controller
                 'accesskey' => $token,
                 'expire_date' => $survey->expire_date,
                 'limit' => $survey->limit,
-                'already_answered' => $survey->already_answered
+                'submission_count' => $survey->submission_count
             ]);
             return redirect()->route('welcome')
                 ->with('error', __('surveys.survey_not_available'));
@@ -107,7 +107,7 @@ class WelcomeController extends Controller
                 'accesskey' => $validated['token'],
                 'expire_date' => $survey->expire_date,
                 'limit' => $survey->limit,
-                'already_answered' => $survey->already_answered
+                'submission_count' => $survey->submission_count
             ]);
             return back()->with('error', __('surveys.survey_not_available'));
         }

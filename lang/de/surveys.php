@@ -93,7 +93,11 @@ return [
     'edit' => 'Bearbeiten',
     'survey_title' => 'Umfragetitel',
     'expires' => 'Läuft ab',
-    'status' => 'Status',
+    'status' => [
+        'expired' => 'Abgelaufen',
+        'running' => 'Läuft',
+        'cancelled' => 'Abgebrochen'
+    ],
     'active' => 'Aktiv',
     'statistics' => 'Statistiken',
 
@@ -126,6 +130,7 @@ return [
     'no_categories_available' => 'Keine Kategorien verfügbar',
     'no_categories_generated_description' => 'Aus den Umfragefragen konnten keine Kategorien generiert werden.',
     'text_responses_count' => ':count Textantwort(en) erhalten',
+    'untitled_survey' => 'Unbenannte Umfrage',
     'question_results' => 'Fragenergebnisse',
     'response' => 'Antwort',
     'no_feedback_responses' => 'Noch keine Feedback-Antworten',

@@ -25,9 +25,22 @@ class Question extends Model
         'order' => 'integer',
     ];
 
+    /**
+     * Get the feedback template that this question belongs to
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function feedbackTemplate(): BelongsTo
+    {
+        return $this->belongsTo(FeedbackTemplate::class, 'feedback_template_id');
+    }
+
+    /**
+     * @deprecated Use feedbackTemplate() instead
+     */
     public function feedback_template(): BelongsTo
     {
-        return $this->belongsTo(Feedback_template::class);
+        return $this->feedbackTemplate();
     }
 
     public function feedback(): BelongsTo
@@ -35,9 +48,22 @@ class Question extends Model
         return $this->belongsTo(Feedback::class);
     }
 
+    /**
+     * Get the question template that this question belongs to
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function questionTemplate(): BelongsTo
+    {
+        return $this->belongsTo(QuestionTemplate::class, 'question_template_id');
+    }
+
+    /**
+     * @deprecated Use questionTemplate() instead
+     */
     public function question_template(): BelongsTo
     {
-        return $this->belongsTo(Question_template::class);
+        return $this->questionTemplate();
     }
 
     public function results(): HasMany
