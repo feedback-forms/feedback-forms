@@ -10,6 +10,10 @@ use App\Services\DependencyInjectionMonitor;
 use App\Services\ErrorLogger;
 use App\Services\SurveyAccessService;
 use App\Services\SurveyValidationService;
+use App\Services\SurveyCreationService;
+use App\Services\SurveyResponseHandlerService;
+use App\Services\SurveyStatisticsService;
+use App\Services\Templates\TemplateStrategyFactory;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Throwable;
@@ -33,6 +37,35 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton(SurveyValidationService::class, function ($app) {
             return new SurveyValidationService();
+        });
+
+        $this->app->singleton(SurveyCreationService::class, function ($app) {
+            return new SurveyCreationService(
+                $app->make(TemplateStrategyFactory::class),
+                $app->make(FeedbackRepository::class),
+                $app->make(SurveyAccessService::class)
+            );
+        });
+
+        $this->app->singleton(SurveyStatisticsService::class, function ($app) {
+            return new SurveyStatisticsService(
+                $app->make(StatisticsService::class)
+            );
+        });
+
+        $this->app->singleton(SurveyResponseHandlerService::class, function ($app) {
+            return new SurveyResponseHandlerService(
+                $app->make(SurveyResponseService::class)
+            );
+        });
+
+        $this->app->singleton(SurveyService::class, function ($app) {
+            return new SurveyService(
+                $app->make(SurveyCreationService::class),
+                $app->make(SurveyResponseHandlerService::class),
+                $app->make(SurveyStatisticsService::class),
+                $app->make(SurveyValidationService::class)
+            );
         });
 
         // Register FeedbackRepository
