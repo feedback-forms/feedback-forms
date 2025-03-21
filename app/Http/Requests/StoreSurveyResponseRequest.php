@@ -6,11 +6,10 @@ use App\Exceptions\InvalidAccessKeyException;
 use App\Exceptions\SurveyNotAvailableException;
 use App\Repositories\FeedbackRepository;
 use App\Services\SurveyService;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Validator;
 
-class StoreSurveyResponseRequest extends FormRequest
+class StoreSurveyResponseRequest extends BaseFormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -214,12 +213,7 @@ class StoreSurveyResponseRequest extends FormRequest
      */
     protected function isValidJson($string): bool
     {
-        if (!is_string($string)) {
-            return false;
-        }
-
-        json_decode($string);
-        return json_last_error() === JSON_ERROR_NONE;
+        return parent::isValidJson($string);
     }
 
     /**
@@ -345,25 +339,13 @@ class StoreSurveyResponseRequest extends FormRequest
      * @param \Illuminate\Validation\Validator $validator The validator instance
      * @param string $text The text to validate
      * @param string $attribute The attribute name for error messages
+     * @param int $maxLength Maximum allowed length (default: 10000)
      * @return void
      */
-    protected function validateTextContent($validator, string $text, string $attribute): void
+    protected function validateTextContent($validator, string $text, string $attribute, int $maxLength = 10000): void
     {
-        // Check length (prevent DoS attacks with extremely long inputs)
-        if (strlen($text) > 10000) {
-            $validator->errors()->add(
-                $attribute,
-                __('validation.max.string', ['attribute' => $attribute, 'max' => 10000])
-            );
-        }
-
-        // Check for potentially malicious content
-        if ($this->containsSuspiciousContent($text)) {
-            $validator->errors()->add(
-                $attribute,
-                "The response contains potentially malicious content."
-            );
-        }
+        // Use the parent implementation from BaseFormRequest
+        parent::validateTextContent($validator, $text, $attribute, $maxLength);
     }
 
     /**
@@ -374,26 +356,7 @@ class StoreSurveyResponseRequest extends FormRequest
      */
     protected function containsSuspiciousContent(string $content): bool
     {
-        // Check for common script injection patterns
-        $suspiciousPatterns = [
-            '/<script\b[^>]*>/i',                    // Script tags
-            '/javascript:/i',                        // JavaScript protocol
-            '/on\w+\s*=\s*["\'][^"\']*["\']/i',    // Event handlers (onclick, onload, etc.)
-            '/eval\s*\(/i',                          // eval()
-            '/document\.(location|cookie|write)/i',  // Document manipulation
-            '/<iframe\b[^>]*>/i',                    // iframes
-            '/<object\b[^>]*>/i',                    // object tags
-            '/<embed\b[^>]*>/i',                     // embed tags
-            '/\bdata:(?:text|image)\/[a-z]*;base64/i' // Data URIs
-        ];
-
-        foreach ($suspiciousPatterns as $pattern) {
-            if (preg_match($pattern, $content)) {
-                return true;
-            }
-        }
-
-        return false;
+        return parent::containsSuspiciousContent($content);
     }
 
     /**

@@ -3,9 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Models\Feedback;
-use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateSurveyRequest extends FormRequest
+class UpdateSurveyRequest extends BaseFormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -46,6 +45,32 @@ class UpdateSurveyRequest extends FormRequest
             'class' => 'required|exists:school_classes,id',
             'subject' => 'required|exists:subjects,id',
         ];
+    }
+
+    /**
+     * Configure the validator instance.
+     *
+     * @param  \Illuminate\Validation\Validator  $validator
+     * @return void
+     */
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            // Validate the name field for security concerns
+            if ($this->has('name') && is_string($this->input('name'))) {
+                $this->validateTextContent($validator, $this->input('name'), 'name', 255);
+            }
+
+            // Check any other text fields that might contain potentially harmful content
+            $textFields = ['description', 'notes', 'additional_info'];
+
+            foreach ($textFields as $field) {
+                if ($this->has($field) && is_string($this->input($field))) {
+                    $maxLength = ($field === 'description') ? 2000 : 1000;
+                    $this->validateTextContent($validator, $this->input($field), $field, $maxLength);
+                }
+            }
+        });
     }
 
     /**

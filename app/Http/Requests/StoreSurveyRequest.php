@@ -2,9 +2,7 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-
-class StoreSurveyRequest extends FormRequest
+class StoreSurveyRequest extends BaseFormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -37,20 +35,55 @@ class StoreSurveyRequest extends FormRequest
     }
 
     /**
+     * Configure the validator instance.
+     *
+     * @param  \Illuminate\Validation\Validator  $validator
+     * @return void
+     */
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            // Validate the name field for security concerns
+            if ($this->has('name') && is_string($this->input('name'))) {
+                $this->validateTextContent($validator, $this->input('name'), 'name', 255);
+            }
+
+            // Validate survey_data if it's provided (could be a JSON string)
+            if ($this->has('survey_data') && is_string($this->input('survey_data'))) {
+                if ($this->isValidJson($this->input('survey_data'))) {
+                    // Validate as JSON for security concerns
+                    $jsonData = $this->validateJsonString($validator, $this->input('survey_data'), 'survey_data');
+
+                    if ($jsonData) {
+                        // Store the validated data for later use
+                        session(['survey_data' => $jsonData]);
+                    }
+                } else {
+                    // Treat as regular text and validate
+                    $this->validateTextContent(
+                        $validator,
+                        $this->input('survey_data'),
+                        'survey_data',
+                        50000 // Allowing larger limit for survey data
+                    );
+
+                    $validator->errors()->add(
+                        'survey_data',
+                        'The survey data must be a valid JSON string.'
+                    );
+                }
+            }
+        });
+    }
+
+    /**
      * Prepare the data for validation.
      *
      * @return void
      */
     protected function prepareForValidation(): void
     {
-        // Handle survey data as JSON if it exists
-        if ($this->has('survey_data') && is_string($this->survey_data)) {
-            $surveyData = json_decode($this->survey_data, true);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                // Store the survey data for later use
-                session(['survey_data' => $surveyData]);
-            }
-        }
+        // No longer needed as JSON validation is handled in withValidator
     }
 
     /**
