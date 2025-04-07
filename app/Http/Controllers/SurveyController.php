@@ -136,6 +136,11 @@ class SurveyController extends Controller
         return view('survey_templates.target');
     }
 
+    public function showCheckbox()
+    {
+        return view('survey_templates.checkbox');
+    }
+
     public function retrieveSmiley(SmileyRequest $request)
     {
         try {

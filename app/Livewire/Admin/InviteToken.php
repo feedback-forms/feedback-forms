@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
+use Illuminate\Support\Facades\Log;
 
 class InviteToken extends Component
 {
@@ -85,5 +86,13 @@ class InviteToken extends Component
         ]);
 
         $this->registerKeys = $keyService->getAll();
+    }
+
+    public function deleteToken($id, RegisterKeyService $keyService)
+    {
+        Log::debug('Delete token with id: ' . $id);
+        $keyService->delete($id);
+        
+        $this->registerKeys = $keyService->getAll();   
     }
 }

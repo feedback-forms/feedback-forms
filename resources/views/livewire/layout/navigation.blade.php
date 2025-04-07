@@ -23,7 +23,7 @@ new class extends Component
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('welcome') }}" wire:navigate>
+                    <a href="{{ route('welcome') }}">
                         <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
                     </a>
                 </div>
@@ -31,13 +31,11 @@ new class extends Component
                 @auth
                     <!-- Navigation Links -->
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link :href="route('surveys.list')" :active="request()->routeIs('surveys.list')"
-                                    wire:navigate>
+                        <x-nav-link :href="route('surveys.list')" :active="request()->routeIs('surveys.list')">
                             {{ __('surveys.surveys') }}
                         </x-nav-link>
 
-                        <x-nav-link :href="route('templates.list')" :active="request()->routeIs('templates.list')"
-                                    wire:navigate>
+                        <x-nav-link :href="route('templates.list')" :active="request()->routeIs('templates.list')">
                             {{ __('templates.templates') }}
                         </x-nav-link>
 
@@ -61,28 +59,23 @@ new class extends Component
                                     </x-slot>
 
                                     <x-slot name="content">
-                                        <x-dropdown-link :href="route('admin.panel')" wire:navigate
-                                                         :active="request()->routeIs('admin.panel')">
+                                        <x-dropdown-link :href="route('admin.panel')" :active="request()->routeIs('admin.panel')">
                                             {{ __('admin.admin_panel') }}
                                         </x-dropdown-link>
 
-                                        <x-dropdown-link :href="route('admin.users')" wire:navigate
-                                                         :active="request()->routeIs('admin.users')">
+                                        <x-dropdown-link :href="route('admin.users')" :active="request()->routeIs('admin.users')">
                                             {{ __('admin.users') }}
                                         </x-dropdown-link>
 
-                                    <x-dropdown-link :href="route('admin.invite-token')" wire:navigate
-                                                     :active="request()->routeIs('admin.invite-token')">
+                                    <x-dropdown-link :href="route('admin.invite-token')" :active="request()->routeIs('admin.invite-token')">
                                         {{ __('admin.invite_tokens') }}
                                     </x-dropdown-link>
 
-                                    <x-dropdown-link :href="route('admin.survey-aggregation')" wire:navigate
-                                                     :active="request()->routeIs('admin.survey-aggregation')">
+                                    <x-dropdown-link :href="route('admin.survey-aggregation')" :active="request()->routeIs('admin.survey-aggregation')">
                                         {{ __('admin.survey_aggregation') }}
                                     </x-dropdown-link>
 
-                                        <x-dropdown-link :href="route('admin.options')" wire:navigate
-                                            :active="request()->routeIs('admin.options')">
+                                        <x-dropdown-link :href="route('admin.options')" :active="request()->routeIs('admin.options')">
                                             {{ __('admin.options') }}
                                         </x-dropdown-link>
                                     </x-slot>
@@ -110,7 +103,7 @@ new class extends Component
                         </x-slot>
 
                         <x-slot name="content">
-                            <x-dropdown-link :href="route('profile')" wire:navigate>
+                            <x-dropdown-link :href="route('profile')">
                                 {{ __('navigation.profile') }}
                             </x-dropdown-link>
 
@@ -123,8 +116,8 @@ new class extends Component
                         </x-slot>
                     </x-dropdown>
                 @else
-                    <a wire:navigate href="{{ route('login') }}" class="text-sm text-gray-700 dark:text-gray-300">{{ __('navigation.login') }}</a>
-                    <a wire:navigate href="{{ route('register') }}" class="ml-4 text-sm text-gray-700 dark:text-gray-300">{{ __('navigation.register') }}</a>
+                    <a href="{{ route('login') }}" class="text-sm text-gray-700 dark:text-gray-300">{{ __('navigation.login') }}</a>
+                    <a href="{{ route('register') }}" class="ml-4 text-sm text-gray-700 dark:text-gray-300">{{ __('navigation.register') }}</a>
                 @endauth
             </div>
 
@@ -144,13 +137,11 @@ new class extends Component
     <div :class="{'flex': open, 'hidden': ! open}" class="hidden sm:hidden flex-col gap-4">
         @auth
             <div>
-                <x-responsive-nav-link :href="route('surveys.list')" :active="request()->routeIs('surveys.list')"
-                                       wire:navigate>
+                <x-responsive-nav-link :href="route('surveys.list')" :active="request()->routeIs('surveys.list')">
                     {{ __('surveys.surveys') }}
                 </x-responsive-nav-link>
 
-                <x-responsive-nav-link :href="route('templates.list')" :active="request()->routeIs('templates.list')"
-                                       wire:navigate>
+                <x-responsive-nav-link :href="route('templates.list')" :active="request()->routeIs('templates.list')">
                     {{ __('templates.templates') }}
                 </x-responsive-nav-link>
 
@@ -162,24 +153,23 @@ new class extends Component
                         <div>{{__('admin.admin_tools')}}</div>
                         <x-fas-arrow-down class="w-4 h-4 transition" />
                     </summary>
-                    <x-responsive-nav-link :href="route('admin.panel')" wire:navigate :active="request()->routeIs('admin.panel')">
+                    <x-responsive-nav-link :href="route('admin.panel')" :active="request()->routeIs('admin.panel')">
                         {{ __('admin.admin_panel') }}
                     </x-responsive-nav-link>
 
-                        <x-responsive-nav-link :href="route('admin.users')" wire:navigate
-                                               :active="request()->routeIs('admin.users')">
+                        <x-responsive-nav-link :href="route('admin.users')" :active="request()->routeIs('admin.users')">
                             {{ __('admin.users') }}
                         </x-responsive-nav-link>
 
-                    <x-responsive-nav-link :href="route('admin.invite-token')" wire:navigate :active="request()->routeIs('admin.invite-token')">
+                    <x-responsive-nav-link :href="route('admin.invite-token')" :active="request()->routeIs('admin.invite-token')">
                         {{ __('admin.invite_tokens') }}
                     </x-responsive-nav-link>
 
-                    <x-responsive-nav-link :href="route('admin.survey-aggregation')" wire:navigate :active="request()->routeIs('admin.survey-aggregation')">
+                    <x-responsive-nav-link :href="route('admin.survey-aggregation')" :active="request()->routeIs('admin.survey-aggregation')">
                         {{ __('admin.survey_aggregation') }}
                     </x-responsive-nav-link>
 
-                        <x-responsive-nav-link :href="route('admin.options')" wire:navigate :active="request()->routeIs('admin.options')">
+                        <x-responsive-nav-link :href="route('admin.options')" :active="request()->routeIs('admin.options')">
                             {{ __('admin.options') }}
                         </x-responsive-nav-link>
                     </details>
@@ -196,7 +186,7 @@ new class extends Component
                 </div>
 
                 <div class="mt-3 space-y-1">
-                    <x-responsive-nav-link :href="route('profile')" wire:navigate>
+                    <x-responsive-nav-link :href="route('profile')">
                         {{ __('navigation.profile') }}
                     </x-responsive-nav-link>
 
@@ -210,10 +200,10 @@ new class extends Component
             </div>
         @else
             <div class="border-t border-gray-200 dark:border-gray-600">
-                <x-responsive-nav-link :href="route('login')" wire:navigate>
+                <x-responsive-nav-link :href="route('login')">
                     {{ __('navigation.login') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('register')" wire:navigate>
+                <x-responsive-nav-link :href="route('register')">
                     {{ __('navigation.register') }}
                 </x-responsive-nav-link>
             </div>
