@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Services\SurveyAggregationService;
 use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 /**
@@ -223,6 +224,12 @@ class SurveyAggregation extends Component
         } finally {
             $this->loading = false;
         }
+    }
+
+    #[Computed]
+    public function aviailableValuesById()
+    {
+        return array_flip($this->availableValues);
     }
 
     /**
