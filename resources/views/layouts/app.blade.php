@@ -21,6 +21,9 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @vite(['resources/css/surveys-page.css'])
+        @livewireScripts
+        @vite(['resources/js/survey-filter.js'])
+        @stack('scripts')
         <style>[x-cloak] { display: none !important; }</style>
         @livewireStyles
     </head>
@@ -42,9 +45,5 @@
                 {{ $slot }}
             </main>
         </div>
-
-        @livewireScripts
-        @vite(['resources/js/survey-filter.js'])
-        @stack('scripts')
     </body>
 </html>
