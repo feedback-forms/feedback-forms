@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Feedback-Forms'),
+    'name' => env('APP_NAME', 'Feedback Forms'),
 
     /*
     |--------------------------------------------------------------------------
