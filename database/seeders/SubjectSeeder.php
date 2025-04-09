@@ -29,7 +29,7 @@ class SubjectSeeder extends Seeder
         ];
 
         foreach ($subjects as $subject) {
-            Subject::updateOrCreate($subject);
+            Subject::updateOrCreate(['code' => $subject['code']], $subject);
         }
     }
 }

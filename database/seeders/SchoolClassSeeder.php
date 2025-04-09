@@ -21,7 +21,7 @@ class SchoolClassSeeder extends Seeder
         ];
 
         foreach ($schoolClasses as $class) {
-            SchoolClass::UpdateOrcreate($class);
+            SchoolClass::updateOrCreate(['name' => $class['name']], $class);
         }
     }
 }
