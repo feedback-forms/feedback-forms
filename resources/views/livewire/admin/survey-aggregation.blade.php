@@ -101,7 +101,7 @@
                     <p class="mt-2 text-yellow-700 dark:text-yellow-300">
                         {{ __('admin.threshold_not_met_description', [
                             'category' => __('admin.' . $aggregatedData['category']),
-                            'value' => $aggregatedData['value'],
+                            'value' => $this->aviailableValuesById[$aggregatedData['value']],
                             'count' => $aggregatedData['submission_count'],
                             'required' => $aggregatedData['min_threshold']
                         ]) }}
