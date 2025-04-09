@@ -26,8 +26,18 @@ class SurveyResponseSeeder extends Seeder
             return;
         }
 
-        // For each feedback, create responses
+        // For each feedback, create responses if none exist yet
         foreach ($feedbacks as $feedback) {
+            // Check if results already exist for this feedback to ensure idempotency
+            $existingResultsCount = Result::join('questions', 'results.question_id', '=', 'questions.id')
+                                          ->where('questions.feedback_id', $feedback->id)
+                                          ->count();
+
+            if ($existingResultsCount > 0) {
+                $this->command->info("Skipping feedback {$feedback->id}: Already has {$existingResultsCount} results.");
+                continue; // Skip to the next feedback
+            }
+
             // Generate between 1 and 5 responses per feedback
             $responseCount = rand(1, 5);
 
@@ -106,27 +116,26 @@ class SurveyResponseSeeder extends Seeder
     {
         // Define the categories and the minimum number of responses needed
         $categories = [
-            'class' => 3,
-            'department' => 2,
-            'subject' => 3,
-            'school_year' => 2
+            'school_class_id' => 3, // Corrected column name
+            'department_id' => 2,   // Assuming FK convention for consistency
+            'subject_id' => 3,      // Assuming FK convention for consistency
+            'school_year_id' => 2   // Assuming FK convention for consistency
         ];
 
         foreach ($categories as $category => $minResponses) {
-            // Get distinct values for this category
+            // Get distinct non-null foreign key values for this category
+            // Ensure we only query for IDs that actually exist in the related table if applicable
+            // Note: This assumes related tables exist and are populated. A more robust check might be needed.
             $values = Feedback::whereNotNull($category)
-                ->distinct($category)
-                ->pluck($category)
-                ->toArray();
+                                ->distinct($category)
+                                ->pluck($category)
+                                ->toArray();
 
             foreach ($values as $value) {
-                // Get feedbacks for this category value
+                // Get feedbacks for this specific category ID value
                 $feedbacks = Feedback::where($category, $value)
-                    ->where(function($query) {
-                        $query->where('status', 'running')
-                              ->orWhere('status', 'expired');
-                    })
-                    ->get();
+                                     ->whereIn('status', ['running', 'expired']) // Simplified status check
+                                     ->get();
 
                 if ($feedbacks->isEmpty()) {
                     continue;
