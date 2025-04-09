@@ -42,6 +42,7 @@ class Feedback extends Model
      */
     protected $appends = [
         'submission_count',
+        'already_answered',
     ];
 
     public function user(): BelongsTo
