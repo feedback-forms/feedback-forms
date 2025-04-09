@@ -30,10 +30,10 @@
                         <div class="p-4 border rounded-lg bg-white dark:bg-gray-700">
                             <h3 class="font-semibold mb-3">1. Der Unterricht ist gut vorbereitet.</h3>
                             <div class="space-y-2">
-                                @foreach(['Yes', 'No', 'Not applicable'] as $option)
+                                @foreach(['yes', 'no', 'na'] as $optionKey)
                                     <label class="flex items-center space-x-2 cursor-pointer">
-                                        <input type="radio" name="sample_question_1" value="{{ $option }}" class="form-radio">
-                                        <span>{{ $option }}</span>
+                                        <input type="radio" name="sample_question_1" value="{{ $optionKey }}" class="form-radio">
+                                        <span>{{ __('surveys.checkbox_options.' . $optionKey) }}</span>
                                     </label>
                                 @endforeach
                             </div>
@@ -41,10 +41,10 @@
                         <div class="p-4 border rounded-lg bg-white dark:bg-gray-700">
                             <h3 class="font-semibold mb-3">2. Die Aufgaben sind klar formuliert.</h3>
                             <div class="space-y-2">
-                                @foreach(['Yes', 'No', 'Not applicable'] as $option)
+                                @foreach(['yes', 'no', 'na'] as $optionKey)
                                     <label class="flex items-center space-x-2 cursor-pointer">
-                                        <input type="radio" name="sample_question_2" value="{{ $option }}" class="form-radio">
-                                        <span>{{ $option }}</span>
+                                        <input type="radio" name="sample_question_2" value="{{ $optionKey }}" class="form-radio">
+                                        <span>{{ __('surveys.checkbox_options.' . $optionKey) }}</span>
                                     </label>
                                 @endforeach
                             </div>
@@ -52,10 +52,10 @@
                         <div class="p-4 border rounded-lg bg-white dark:bg-gray-700">
                             <h3 class="font-semibold mb-3">3. Die Lehrkraft erklärt verständlich.</h3>
                             <div class="space-y-2">
-                                @foreach(['Yes', 'No', 'Not applicable'] as $option)
+                                @foreach(['yes', 'no', 'na'] as $optionKey)
                                     <label class="flex items-center space-x-2 cursor-pointer">
-                                        <input type="radio" name="sample_question_3" value="{{ $option }}" class="form-radio">
-                                        <span>{{ $option }}</span>
+                                        <input type="radio" name="sample_question_3" value="{{ $optionKey }}" class="form-radio">
+                                        <span>{{ __('surveys.checkbox_options.' . $optionKey) }}</span>
                                     </label>
                                 @endforeach
                             </div>
