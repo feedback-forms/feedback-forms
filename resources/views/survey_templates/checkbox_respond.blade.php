@@ -215,20 +215,16 @@
 
                                             @if($templateType === 'checkbox')
                                                 <div class="space-y-2">
-                                                    @foreach([
-                                                        'Yes',
-                                                        'No',
-                                                        'Not applicable'
-                                                    ] as $option)
+                                                    @foreach(['yes', 'no', 'na'] as $optionKey)
                                                         <label class="flex items-center space-x-2 cursor-pointer">
                                                             <input
                                                                 type="radio"
                                                                 name="responses[{{ $question->id }}]"
-                                                                value="{{ $option }}"
+                                                                value="{{ $optionKey }}"
                                                                 class="form-radio"
                                                                 required
                                                             >
-                                                            <span>{{ $option }}</span>
+                                                            <span>{{ __('surveys.checkbox_options.' . $optionKey) }}</span>
                                                         </label>
                                                     @endforeach
                                                 </div>
