@@ -5,16 +5,16 @@
         @php
             // Define valid options with their translations
             $validOptions = [
-                'Yes' => __('surveys.checkbox_options.yes'),
-                'No' => __('surveys.checkbox_options.no'),
-                'Not applicable' => __('surveys.checkbox_options.na')
+                'yes' => __('surveys.checkbox_options.yes'),
+                'no' => __('surveys.checkbox_options.no'),
+                'na' => __('surveys.checkbox_options.na')
             ];
 
             // Map English option keys to their translations for display
             $translationMap = [
-                'Yes' => __('surveys.checkbox_options.yes'),
-                'No' => __('surveys.checkbox_options.no'),
-                'Not applicable' => __('surveys.checkbox_options.na')
+                'yes' => __('surveys.checkbox_options.yes'),
+                'no' => __('surveys.checkbox_options.no'),
+                'na' => __('surveys.checkbox_options.na')
             ];
 
             // Initialize valid options with zero values if they don't exist
@@ -29,9 +29,9 @@
             // Special handling for Yes/No/NA responses
             $isYesNoQuestion = true;
             $colors = [
-                'Yes' => 'bg-gradient-to-r from-green-400 to-green-600',
-                'No' => 'bg-gradient-to-r from-red-400 to-red-600',
-                'Not applicable' => 'bg-gradient-to-r from-gray-400 to-gray-500',
+                'yes' => 'bg-gradient-to-r from-green-400 to-green-600',
+                'no' => 'bg-gradient-to-r from-red-400 to-red-600',
+                'na' => 'bg-gradient-to-r from-gray-400 to-gray-500',
             ];
         @endphp
 
