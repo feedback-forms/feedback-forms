@@ -57,7 +57,7 @@ class Overview extends Component
     protected function loadSurveys()
     {
         // Start with a base query for the authenticated user
-        $query = Feedback::with(['feedback_template', 'user'])
+        $query = Feedback::with(['feedback_template', 'user', 'year', 'department', 'grade_level', 'class', 'subject'])
             ->where('user_id', auth()->id())
             ->orderBy('created_at', 'desc');
 

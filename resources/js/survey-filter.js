@@ -28,11 +28,11 @@ document.addEventListener('alpine:init', () => {
             if (this.allSurveys.length > 0) {
                 const survey = this.allSurveys[0];
                 console.log('Sample survey property values:');
-                console.log('school_year:', survey.school_year);
-                console.log('department:', survey.department);
-                console.log('grade_level:', survey.grade_level);
-                console.log('class:', survey.class);
-                console.log('subject:', survey.subject);
+                console.log('year:', survey.year ? survey.year.name : 'N/A');
+                console.log('department:', survey.department ? survey.department.name : 'N/A');
+                console.log('grade_level:', survey.grade_level ? survey.grade_level.name : 'N/A');
+                console.log('class:', survey.class ? survey.class.name : 'N/A');
+                console.log('subject:', survey.subject ? survey.subject.name : 'N/A');
             }
         },
 
@@ -51,53 +51,55 @@ document.addEventListener('alpine:init', () => {
 
             const results = this.allSurveys.filter(survey => {
                 // Helper function to check property value regardless of type
-                const checkProperty = (filterKey, propName) => {
-                    if (!this.filters[filterKey]) return true; // No filter active
+                const checkProperty = (filterKey, relationName, propName = 'name') => {
+                    // If this specific filter is not active, the survey passes this check
+                    if (!this.filters[filterKey]) return true;
 
-                    // Cast to string/number as needed for comparison
                     const filterValue = this.filters[filterKey];
-                    let surveyValue = survey[propName];
+                    const relationObject = survey[relationName];
 
-                    // Handle missing properties gracefully
-                    if (surveyValue === undefined || surveyValue === null) {
-                        console.log(`Survey missing property ${propName} for filter ${filterKey}`);
+                    // Check if the relationship object exists and has the property
+                    if (!relationObject || relationObject[propName] === undefined || relationObject[propName] === null) {
+                        console.log(`Survey ${survey.id} missing or has null value for ${relationName}.${propName} (Filter: ${filterKey})`);
+                        // If the filter is set, but the survey property is missing/null, it shouldn't match
                         return false;
                     }
 
-                    // Type-agnostic comparison (handles string/number mismatches)
-                    return String(filterValue) === String(surveyValue);
+                    const surveyValue = relationObject[propName];
+
+                    // Compare filter value with the property value from the related object
+                    const match = String(filterValue) === String(surveyValue);
+                    if (!match) {
+                         console.log(`Survey ${survey.id} excluded by ${filterKey}: Filter='${filterValue}' (type: ${typeof filterValue}), Survey='${surveyValue}' (type: ${typeof surveyValue}) from ${relationName}.${propName}`);
+                    }
+                    return match;
                 };
 
                 // Track which filter excluded this survey
                 let passed = true;
 
-                // Check school year
-                if (this.filters.schoolYear && !checkProperty('schoolYear', 'school_year')) {
-                    console.log(`Survey ${survey.id} excluded by school year filter: ${this.filters.schoolYear} != ${survey.school_year}`);
+                // Check year (using the 'year' relation and its 'name' property)
+                if (!checkProperty('schoolYear', 'year', 'name')) {
                     passed = false;
                 }
 
                 // Check department
-                if (passed && this.filters.department && !checkProperty('department', 'department')) {
-                    console.log(`Survey ${survey.id} excluded by department filter: ${this.filters.department} != ${survey.department}`);
+                if (passed && !checkProperty('department', 'department', 'name')) {
                     passed = false;
                 }
 
                 // Check grade level
-                if (passed && this.filters.gradeLevel && !checkProperty('gradeLevel', 'grade_level')) {
-                    console.log(`Survey ${survey.id} excluded by grade level filter: ${this.filters.gradeLevel} != ${survey.grade_level}`);
+                if (passed && !checkProperty('gradeLevel', 'grade_level', 'name')) {
                     passed = false;
                 }
 
                 // Check class
-                if (passed && this.filters.class && !checkProperty('class', 'class')) {
-                    console.log(`Survey ${survey.id} excluded by class filter: ${this.filters.class} != ${survey.class}`);
+                if (passed && !checkProperty('class', 'class', 'name')) {
                     passed = false;
                 }
 
                 // Check subject
-                if (passed && this.filters.subject && !checkProperty('subject', 'subject')) {
-                    console.log(`Survey ${survey.id} excluded by subject filter: ${this.filters.subject} != ${survey.subject}`);
+                if (passed && !checkProperty('subject', 'subject', 'name')) {
                     passed = false;
                 }
 
@@ -113,7 +115,7 @@ document.addEventListener('alpine:init', () => {
 
                 // If status filters are active but survey doesn't match any
                 if (statusFiltersActive) {
-                    console.log(`Survey ${survey.id} excluded by status filters: expired=${survey.isExpired}, running=${survey.isRunning}`);
+                    // No need for extra log here, checkProperty already logs failures
                     return false;
                 }
 
@@ -146,8 +148,8 @@ document.addEventListener('alpine:init', () => {
                     const survey = this.allSurveys[0];
                     console.log('First survey:', survey);
                     console.log('First survey ID:', survey.id);
-                    console.log('School year value:', survey.school_year);
-                    console.log('Type of school_year:', typeof survey.school_year);
+                    console.log('Year object:', survey.year);
+                    console.log('Year name:', survey.year ? survey.year.name : 'N/A');
                 }
 
                 // Log filter options values
