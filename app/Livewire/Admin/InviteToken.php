@@ -47,13 +47,7 @@ class InviteToken extends Component
 
     public function generateToken(RegisterKeyService $keyService)
     {
-        $faker = Factory::create();
-
-        do {
-            $generatedToken = $faker->regexify(Registerkey::KEY_REGEX);
-        } while ($keyService->getByCode($generatedToken) !== null);
-
-        $this->token = $generatedToken;
+        $this->token = $keyService->generateUniqueRegisterKey();
     }
 
     public function revokeToken(int $tokenId, RegisterKeyService $keyService)
