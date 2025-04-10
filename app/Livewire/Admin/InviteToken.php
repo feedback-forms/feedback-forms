@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Models\Registerkey;
 use App\Services\RegisterKeyService;
 use Carbon\Carbon;
+use Faker\Factory;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -46,8 +47,10 @@ class InviteToken extends Component
 
     public function generateToken(RegisterKeyService $keyService)
     {
+        $faker = Factory::create();
+
         do {
-            $generatedToken = fake()->regexify(Registerkey::KEY_REGEX);
+            $generatedToken = $faker->regexify(Registerkey::KEY_REGEX);
         } while ($keyService->getByCode($generatedToken) !== null);
 
         $this->token = $generatedToken;
@@ -92,7 +95,7 @@ class InviteToken extends Component
     {
         Log::debug('Delete token with id: ' . $id);
         $keyService->delete($id);
-        
-        $this->registerKeys = $keyService->getAll();   
+
+        $this->registerKeys = $keyService->getAll();
     }
 }
