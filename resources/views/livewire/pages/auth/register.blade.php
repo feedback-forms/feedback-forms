@@ -41,7 +41,7 @@ new #[Layout('layouts.guest')] class extends Component {
 
         Auth::login($user);
 
-        $this->redirect(route('surveys.list', absolute: false), navigate: true);
+        $this->redirect(route('surveys.list', absolute: false));
     }
 }; ?>
 

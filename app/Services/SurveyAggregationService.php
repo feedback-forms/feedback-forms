@@ -864,7 +864,7 @@ class SurveyAggregationService
     {
         $results = [];
         // English keys used in the database
-        $validOptions = ['Yes', 'No', 'Not applicable'];
+        $validOptions = ['yes', 'no', 'na'];
 
         Log::debug("Starting to aggregate checkbox questions", [
             'question_count' => $questions->count(),
