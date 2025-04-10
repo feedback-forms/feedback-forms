@@ -19,7 +19,7 @@ class SchoolYearSeeder extends Seeder
         ];
 
         foreach ($schoolYears as $year) {
-            SchoolYear::create($year);
+            SchoolYear::updateOrCreate(['name' => $year['name']], $year);
         }
     }
 }

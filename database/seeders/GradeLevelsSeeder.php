@@ -21,7 +21,7 @@ class GradeLevelsSeeder extends Seeder
         ];
 
         foreach ($gradeLevels as $grade) {
-            GradeLevel::UpdateOrcreate($grade);
+            GradeLevel::updateOrCreate(['name' => $grade['name']], $grade);
         }
     }
 }
